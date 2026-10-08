@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Replace example.com with the final shop domain and rename to sitemap.xml before publishing. Add product routes from the backend catalogue. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/</loc></url>
+  <url><loc>https://example.com/mobiles</loc></url>
+  <url><loc>https://example.com/second-hand</loc></url>
+  <url><loc>https://example.com/accessories</loc></url>
+  <url><loc>https://example.com/digital-meter-repair</loc></url>
+  <url><loc>https://example.com/mobile-repair</loc></url>
+  <url><loc>https://example.com/contact</loc></url>
+</urlset>

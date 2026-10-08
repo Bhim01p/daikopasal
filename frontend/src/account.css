@@ -1,0 +1,203 @@
+.account-page {
+  padding-block: 45px 70px;
+}
+.account-heading {
+  max-width: 680px;
+  margin-bottom: 28px;
+}
+.account-page h1 {
+  font-size: clamp(32px, 4vw, 46px);
+  margin: 8px 0 14px;
+}
+.account-page p {
+  font-size: 17px;
+  line-height: 1.65;
+}
+.account-form {
+  width: 100%;
+  max-width: 560px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.account-form h2 {
+  font-size: 25px;
+  margin-bottom: 18px;
+}
+.account-form label {
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  margin: 18px 0 8px;
+}
+.account-form input {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  font-size: 18px;
+  border: 1px solid #d5d5da;
+  padding: 12px;
+  border-radius: 3px;
+}
+.account-form input:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+.account-form > .button {
+  margin-top: 18px;
+}
+.account-form > .text-link {
+  display: inline-flex;
+  margin-top: 20px;
+}
+.account-demo-note {
+  padding: 14px;
+  background: #fff5df;
+  color: #5c461c;
+  border: 1px solid #ead5a7;
+}
+.account-demo-code {
+  padding: 12px;
+  background: #f7f7f8;
+}
+.account-demo-code strong {
+  letter-spacing: 3px;
+  font-size: 24px;
+}
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 560px) minmax(0, 380px);
+  gap: 28px;
+  align-items: start;
+}
+.account-phone {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.account-notice {
+  color: #256645;
+}
+.my-orders-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.customer-orders {
+  display: grid;
+  gap: 24px;
+  max-width: 950px;
+  margin-top: 28px;
+}
+.customer-order {
+  padding: 26px;
+  border: 1px solid var(--line);
+  min-width: 0;
+}
+.customer-order h2 {
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+.customer-order-top,
+.customer-order-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.customer-order ul {
+  padding: 18px 0 18px 20px;
+  border-block: 1px solid var(--line);
+  margin: 18px 0;
+}
+.customer-order li {
+  font-size: 18px;
+  margin: 7px 0;
+}
+.customer-order-bottom strong {
+  font-size: 25px;
+}
+.customer-order p {
+  margin: 4px 0;
+}
+.order-status {
+  padding: 8px 12px;
+  background: #fceaf1;
+  color: #9c1142;
+  font-size: 16px;
+  font-weight: 600;
+}
+.order-status.cancelled {
+  background: #f1f1f3;
+  color: #55555f;
+}
+.saved-customer {
+  background: #f7f7f8;
+  padding: 18px;
+  margin-bottom: 22px;
+}
+.saved-customer p {
+  margin: 5px 0;
+  overflow-wrap: anywhere;
+}
+.order-history {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  text-align: left;
+}
+.order-history li {
+  border-left: 3px solid var(--teal);
+  padding: 9px 16px;
+  margin: 12px 0;
+}
+.order-history strong,
+.order-history time {
+  display: block;
+}
+.order-history time {
+  color: var(--muted);
+  font-size: 15px;
+}
+.customer-account-link {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .customer-account-link {
+    display: none;
+  }
+  .account-page {
+    padding-block: 28px 40px;
+  }
+  .account-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+  .account-form,
+  .customer-order {
+    padding: 20px;
+  }
+  .account-form {
+    max-width: none;
+  }
+  .my-orders-heading,
+  .customer-order-top,
+  .customer-order-bottom {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .my-orders-heading .button,
+  .customer-order-bottom .button {
+    width: 100%;
+  }
+  .order-status {
+    align-self: flex-start;
+  }
+}

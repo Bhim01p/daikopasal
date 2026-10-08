@@ -1,0 +1,670 @@
+[
+  {
+    "id": "new-0",
+    "slug": "samsung-galaxy-a55-5g",
+    "brand": "Samsung",
+    "name": "Galaxy A55 5G",
+    "category": "new",
+    "price": 47999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#aecac9",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Samsung Galaxy A55 5G for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 100
+  },
+  {
+    "id": "new-1",
+    "slug": "apple-iphone-15",
+    "brand": "Apple",
+    "name": "iPhone 15",
+    "category": "new",
+    "price": 109999,
+    "ram": 6,
+    "storage": 128,
+    "color": "#b4ced0",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Apple iPhone 15 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "6 GB",
+      "Storage": "128 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 99
+  },
+  {
+    "id": "new-2",
+    "slug": "xiaomi-redmi-note-13-pro",
+    "brand": "Xiaomi",
+    "name": "Redmi Note 13 Pro",
+    "category": "new",
+    "price": 34999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#c3b4d7",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Xiaomi Redmi Note 13 Pro for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 98
+  },
+  {
+    "id": "new-3",
+    "slug": "nothing-phone-2a",
+    "brand": "Nothing",
+    "name": "Phone (2a)",
+    "category": "new",
+    "price": 45999,
+    "ram": 8,
+    "storage": 128,
+    "color": "#e7e8e1",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Nothing Phone (2a) for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "128 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 97
+  },
+  {
+    "id": "new-4",
+    "slug": "oneplus-nord-ce4",
+    "brand": "OnePlus",
+    "name": "Nord CE4",
+    "category": "new",
+    "price": 42999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#98bca8",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the OnePlus Nord CE4 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 96
+  },
+  {
+    "id": "new-5",
+    "slug": "realme-12-pro",
+    "brand": "Realme",
+    "name": "12 Pro",
+    "category": "new",
+    "price": 39999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#b9c5d9",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Realme 12 Pro for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 95
+  },
+  {
+    "id": "new-6",
+    "slug": "vivo-v30",
+    "brand": "Vivo",
+    "name": "V30",
+    "category": "new",
+    "price": 59999,
+    "ram": 12,
+    "storage": 256,
+    "color": "#c4d9e2",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Vivo V30 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "12 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 94
+  },
+  {
+    "id": "new-7",
+    "slug": "oppo-reno11",
+    "brand": "Oppo",
+    "name": "Reno11",
+    "category": "new",
+    "price": 54999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#bccbbf",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Oppo Reno11 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 93
+  },
+  {
+    "id": "new-8",
+    "slug": "honor-x9b",
+    "brand": "Honor",
+    "name": "X9b",
+    "category": "new",
+    "price": 43999,
+    "ram": 12,
+    "storage": 256,
+    "color": "#e3bf9f",
+    "image": "/assets/phone.svg",
+    "available": false,
+    "description": "Explore the Honor X9b for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "12 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 92
+  },
+  {
+    "id": "new-9",
+    "slug": "samsung-galaxy-s24",
+    "brand": "Samsung",
+    "name": "Galaxy S24",
+    "category": "new",
+    "price": 99999,
+    "ram": 8,
+    "storage": 256,
+    "color": "#bdb7ce",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "Explore the Samsung Galaxy S24 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Connectivity": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 91
+  },
+  {
+    "id": "used-0",
+    "slug": "used-apple-iphone-13",
+    "brand": "Apple",
+    "name": "iPhone 13",
+    "category": "used",
+    "price": 55000,
+    "ram": 4,
+    "storage": 128,
+    "condition": "Excellent",
+    "battery": 89,
+    "color": "#c8d6c6",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand Apple iPhone 13 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "4 GB",
+      "Storage": "128 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 90
+  },
+  {
+    "id": "used-1",
+    "slug": "used-samsung-galaxy-s22",
+    "brand": "Samsung",
+    "name": "Galaxy S22",
+    "category": "used",
+    "price": 42000,
+    "ram": 8,
+    "storage": 128,
+    "condition": "Good",
+    "battery": 85,
+    "color": "#c6c0cb",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand Samsung Galaxy S22 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "128 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 89
+  },
+  {
+    "id": "used-2",
+    "slug": "used-apple-iphone-12",
+    "brand": "Apple",
+    "name": "iPhone 12",
+    "category": "used",
+    "price": 39000,
+    "ram": 4,
+    "storage": 128,
+    "condition": "Good",
+    "battery": 84,
+    "color": "#b3c6d6",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand Apple iPhone 12 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "4 GB",
+      "Storage": "128 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 88
+  },
+  {
+    "id": "used-3",
+    "slug": "used-oneplus-9-pro",
+    "brand": "OnePlus",
+    "name": "9 Pro",
+    "category": "used",
+    "price": 32000,
+    "ram": 8,
+    "storage": 256,
+    "condition": "Excellent",
+    "battery": 90,
+    "color": "#bfcac6",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand OnePlus 9 Pro listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 87
+  },
+  {
+    "id": "used-4",
+    "slug": "used-xiaomi-redmi-note-12",
+    "brand": "Xiaomi",
+    "name": "Redmi Note 12",
+    "category": "used",
+    "price": 15500,
+    "ram": 6,
+    "storage": 128,
+    "condition": "Fair",
+    "battery": 82,
+    "color": "#becbd4",
+    "image": "/assets/phone.svg",
+    "available": false,
+    "description": "A sample second-hand Xiaomi Redmi Note 12 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "6 GB",
+      "Storage": "128 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 86
+  },
+  {
+    "id": "used-5",
+    "slug": "used-apple-iphone-14",
+    "brand": "Apple",
+    "name": "iPhone 14",
+    "category": "used",
+    "price": 69000,
+    "ram": 6,
+    "storage": 128,
+    "condition": "Like New",
+    "battery": 95,
+    "color": "#cfc4da",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand Apple iPhone 14 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "6 GB",
+      "Storage": "128 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 85
+  },
+  {
+    "id": "used-6",
+    "slug": "used-vivo-v27",
+    "brand": "Vivo",
+    "name": "V27",
+    "category": "used",
+    "price": 28000,
+    "ram": 8,
+    "storage": 256,
+    "condition": "Excellent",
+    "battery": 91,
+    "color": "#b8cec0",
+    "image": "/assets/phone.svg",
+    "available": true,
+    "description": "A sample second-hand Vivo V27 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "specs": {
+      "RAM": "8 GB",
+      "Storage": "256 GB",
+      "Warranty": "To be confirmed with shop"
+    },
+    "added": 84
+  },
+  {
+    "id": "accessory-0",
+    "slug": "soft-touch-phone-cover",
+    "brand": "Accessories",
+    "name": "Soft-touch phone cover",
+    "category": "accessory",
+    "accessoryCategory": "Mobile Covers",
+    "price": 650,
+    "image": "/assets/cover.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Mobile Covers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 80
+  },
+  {
+    "id": "accessory-1",
+    "slug": "clear-protective-case",
+    "brand": "Accessories",
+    "name": "Clear protective case",
+    "category": "accessory",
+    "accessoryCategory": "Mobile Covers",
+    "price": 450,
+    "image": "/assets/cover.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Mobile Covers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 79
+  },
+  {
+    "id": "accessory-2",
+    "slug": "usb-c-wall-charger",
+    "brand": "Accessories",
+    "name": "USB-C wall charger",
+    "category": "accessory",
+    "accessoryCategory": "Chargers",
+    "price": 1800,
+    "image": "/assets/charger.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Chargers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 78
+  },
+  {
+    "id": "accessory-3",
+    "slug": "20w-charging-adapter",
+    "brand": "Accessories",
+    "name": "20W charging adapter",
+    "category": "accessory",
+    "accessoryCategory": "Chargers",
+    "price": 2400,
+    "image": "/assets/charger.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Chargers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 77
+  },
+  {
+    "id": "accessory-4",
+    "slug": "wireless-everyday-earbuds",
+    "brand": "Accessories",
+    "name": "Wireless everyday earbuds",
+    "category": "accessory",
+    "accessoryCategory": "Earbuds",
+    "price": 2800,
+    "image": "/assets/earbuds.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Earbuds",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 76
+  },
+  {
+    "id": "accessory-5",
+    "slug": "compact-wireless-earbuds",
+    "brand": "Accessories",
+    "name": "Compact wireless earbuds",
+    "category": "accessory",
+    "accessoryCategory": "Earbuds",
+    "price": 1900,
+    "image": "/assets/earbuds.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Earbuds",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 75
+  },
+  {
+    "id": "accessory-6",
+    "slug": "tempered-glass-protector",
+    "brand": "Accessories",
+    "name": "Tempered glass protector",
+    "category": "accessory",
+    "accessoryCategory": "Screen Protectors",
+    "price": 350,
+    "image": "/assets/cover.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Screen Protectors",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 74
+  },
+  {
+    "id": "accessory-7",
+    "slug": "privacy-screen-protector",
+    "brand": "Accessories",
+    "name": "Privacy screen protector",
+    "category": "accessory",
+    "accessoryCategory": "Screen Protectors",
+    "price": 600,
+    "image": "/assets/cover.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Screen Protectors",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 73
+  },
+  {
+    "id": "accessory-8",
+    "slug": "portable-bluetooth-speaker",
+    "brand": "Accessories",
+    "name": "Portable Bluetooth speaker",
+    "category": "accessory",
+    "accessoryCategory": "Speakers",
+    "price": 3200,
+    "image": "/assets/speaker.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Speakers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 72
+  },
+  {
+    "id": "accessory-9",
+    "slug": "mini-desktop-speaker",
+    "brand": "Accessories",
+    "name": "Mini desktop speaker",
+    "category": "accessory",
+    "accessoryCategory": "Speakers",
+    "price": 1600,
+    "image": "/assets/speaker.svg",
+    "color": "#c1d4d1",
+    "available": false,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Speakers",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 71
+  },
+  {
+    "id": "accessory-10",
+    "slug": "wired-in-ear-earphones",
+    "brand": "Accessories",
+    "name": "Wired in-ear earphones",
+    "category": "accessory",
+    "accessoryCategory": "Earphones",
+    "price": 700,
+    "image": "/assets/earbuds.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Earphones",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 70
+  },
+  {
+    "id": "accessory-11",
+    "slug": "usb-c-earphones",
+    "brand": "Accessories",
+    "name": "USB-C earphones",
+    "category": "accessory",
+    "accessoryCategory": "Earphones",
+    "price": 1200,
+    "image": "/assets/earbuds.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Earphones",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 69
+  },
+  {
+    "id": "accessory-12",
+    "slug": "led-bulb-9w",
+    "brand": "Accessories",
+    "name": "LED bulb 9W",
+    "category": "accessory",
+    "accessoryCategory": "Bulbs",
+    "price": 250,
+    "image": "/assets/bulb.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Bulbs",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 68
+  },
+  {
+    "id": "accessory-13",
+    "slug": "led-bulb-12w",
+    "brand": "Accessories",
+    "name": "LED bulb 12W",
+    "category": "accessory",
+    "accessoryCategory": "Bulbs",
+    "price": 350,
+    "image": "/assets/bulb.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Bulbs",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 67
+  },
+  {
+    "id": "accessory-14",
+    "slug": "usb-c-charging-cable",
+    "brand": "Accessories",
+    "name": "USB-C charging cable",
+    "category": "accessory",
+    "accessoryCategory": "Other Accessories",
+    "price": 550,
+    "image": "/assets/charger.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Other Accessories",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 66
+  },
+  {
+    "id": "accessory-15",
+    "slug": "adjustable-phone-stand",
+    "brand": "Accessories",
+    "name": "Adjustable phone stand",
+    "category": "accessory",
+    "accessoryCategory": "Other Accessories",
+    "price": 800,
+    "image": "/assets/cover.svg",
+    "color": "#c1d4d1",
+    "available": true,
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "specs": {
+      "Category": "Other Accessories",
+      "Compatibility": "Confirm with shop",
+      "Warranty": "Please confirm with shop"
+    },
+    "added": 65
+  }
+]

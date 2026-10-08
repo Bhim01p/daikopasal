@@ -1,0 +1,15 @@
+node_modules
+frontend/dist
+qa-results
+backend/data
+backend/.env
+backend/.env.*
+backend/ADMIN-ACCESS.txt
+backend/deployment.env
+.git
+.codex
+.agents
+design
+scripts
+backend/test
+*.tsbuildinfo

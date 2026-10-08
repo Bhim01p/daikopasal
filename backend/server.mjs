@@ -1,0 +1,678 @@
+import http from "node:http";
+import {
+  randomBytes,
+  randomUUID,
+  scryptSync,
+  timingSafeEqual,
+  createHash,
+} from "node:crypto";
+import { loadEnvFile } from "node:process";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createStore, defaultStorePath } from "./store.mjs";
+import { stateMap } from "./state-map.mjs";
+import { bufferedResponse } from "./buffered-response.mjs";
+import { saveProductImage } from "./images.mjs";
+import { createSmsTransport } from "./sms.mjs";
+import { previewInventory, replaceSamples } from "./catalogue.mjs";
+import {
+  createCustomerAuth,
+  publicCustomer,
+  profileComplete,
+} from "./customer-auth.mjs";
+import {
+  createOrderEmail,
+  createEmailTransport,
+  createEmailWorker,
+  emailSummary,
+} from "./email.mjs";
+import {
+  HttpError,
+  text,
+  validateProduct,
+  validateCustomer,
+  statuses,
+} from "./validation.mjs";
+const backendRoot = path.dirname(fileURLToPath(import.meta.url));
+if (existsSync(path.join(backendRoot, ".env")))
+  loadEnvFile(path.join(backendRoot, ".env"));
+const sessionDuration = 8 * 60 * 60 * 1000;
+function equal(a, b) {
+  const first = Buffer.from(String(a));
+  const second = Buffer.from(String(b));
+  return first.length === second.length && timingSafeEqual(first, second);
+}
+function json(response, status, data) {
+  response.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+  });
+  response.end(JSON.stringify(data));
+}
+async function body(request) {
+  if (!request.headers["content-type"]?.startsWith("application/json"))
+    throw new HttpError(415, "Send JSON content.");
+  const chunks = [];
+  let bytes = 0;
+  for await (const chunk of request) {
+    bytes += chunk.length;
+    if (bytes > 65536) throw new HttpError(413, "Request is too large.");
+    chunks.push(chunk);
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw new HttpError(400, "Invalid JSON.");
+  }
+}
+function publicOrder(order) {
+  const { requestId, fingerprint, customerId, stockReserved, ...receipt } =
+    order;
+  if (customerId) delete receipt.receiptToken;
+  return { ...receipt, accountOrder: !!customerId };
+}
+function adminOrder(order) {
+  const { receiptToken, ...receipt } = publicOrder(order);
+  return receipt;
+}
+export function createApp(options = {}) {
+  const dataFile =
+    options.dataFile || process.env.DATA_FILE || defaultStorePath;
+  const store = options.store || createStore(dataFile);
+  const customerAuth = createCustomerAuth(store, {
+    mode: options.customerAuthMode,
+    smsTransport:
+      options.smsTransport === undefined
+        ? createSmsTransport()
+        : options.smsTransport,
+    now: options.customerNow,
+  });
+  const emailWorker = createEmailWorker(
+    store,
+    options.emailTransport === undefined
+      ? createEmailTransport()
+      : options.emailTransport,
+    { automatic: !options.serverless },
+  );
+  function sendQueuedEmails() {
+    if (store.transaction) return; // Drain after the request has committed.
+    void emailWorker
+      .drain()
+      .catch(() => console.error("Email queue could not be processed."));
+  }
+  const imageDirectory = path.join(
+    path.dirname(path.resolve(dataFile)),
+    "images",
+  );
+  const username = options.username || process.env.ADMIN_USERNAME || "admin";
+  const passwordHash =
+    options.passwordHash || process.env.ADMIN_PASSWORD_HASH || "";
+  const [salt, hash] = passwordHash.split(":");
+  const configured =
+    /^[a-f0-9]{32}$/.test(salt || "") && /^[a-f0-9]{128}$/.test(hash || "");
+  const sessions = stateMap(store, "adminSessions");
+  const attempts = stateMap(store, "adminAttempts");
+  const orderEmailLimits = stateMap(store, "orderEmailLimits");
+  const sessionKey = (token) =>
+    createHash("sha256").update(token).digest("hex");
+  function limitOrderEmails(request, email) {
+    const now = Date.now();
+    for (const [key, value] of orderEmailLimits)
+      if (value.until <= now) orderEmailLimits.delete(key);
+    const limits = [
+      [`ip:${request.clientIp || request.socket.remoteAddress}`, 20],
+      [`email:${email.toLowerCase()}`, 5],
+    ];
+    for (const [key, maximum] of limits) {
+      if ((orderEmailLimits.get(key)?.count || 0) >= maximum)
+        throw new HttpError(
+          429,
+          "Too many order requests. Please wait 15 minutes or contact the shop.",
+        );
+    }
+    for (const [key] of limits) {
+      const current = orderEmailLimits.get(key);
+      orderEmailLimits.set(key, {
+        count: (current?.count || 0) + 1,
+        until: current?.until || now + 15 * 60 * 1000,
+      });
+    }
+  }
+  const secureCookie = process.env.COOKIE_SECURE === "true";
+  function setCookie(response, token, maxAge = sessionDuration / 1000) {
+    response.setHeader(
+      "Set-Cookie",
+      `me_admin=${token}; HttpOnly; SameSite=Strict; Path=/api; Max-Age=${maxAge}${secureCookie ? "; Secure" : ""}`,
+    );
+  }
+  function session(request) {
+    const token = request.headers.cookie
+      ?.split(";")
+      .map((v) => v.trim())
+      .find((v) => v.startsWith("me_admin="))
+      ?.slice(9);
+    if (!token) return null;
+    const value = sessions.get(sessionKey(token));
+    if (
+      !value ||
+      value.expires <= Date.now() ||
+      value.credentialHash !== passwordHash
+    ) {
+      sessions.delete(sessionKey(token));
+      return null;
+    }
+    return { token, ...value };
+  }
+  async function handleRequest(request, response) {
+    try {
+      const url = new URL(request.url, "http://localhost");
+      const route = url.pathname;
+      const method = request.method;
+      if (
+        route.startsWith("/api") &&
+        ["POST", "PATCH", "DELETE", "PUT"].includes(method)
+      ) {
+        const origin = request.headers.origin;
+        if (origin && new URL(origin).host !== request.headers.host)
+          throw new HttpError(403, "This request origin is not allowed.");
+      }
+      if (route === "/api/health" && method === "GET")
+        return json(response, 200, { ok: true });
+      if (route === "/api/products" && method === "GET")
+        return json(response, 200, { products: store.read().products });
+      if (route === "/api/customer/session" && method === "GET")
+        return json(response, 200, {
+          customer: publicCustomer(customerAuth.session(request)?.customer),
+          mode: customerAuth.mode(request),
+        });
+      if (route === "/api/customer/auth/start" && method === "POST")
+        return json(
+          response,
+          200,
+          await customerAuth.start(request, await body(request)),
+        );
+      if (route === "/api/customer/auth/verify" && method === "POST")
+        return json(response, 200, {
+          customer: customerAuth.verify(request, response, await body(request)),
+        });
+      if (route === "/api/customer/logout" && method === "POST") {
+        customerAuth.logout(request, response);
+        return json(response, 200, { ok: true });
+      }
+      if (route === "/api/customer/profile" && method === "PATCH")
+        return json(response, 200, {
+          customer: customerAuth.updateProfile(request, await body(request)),
+        });
+      if (route === "/api/customer/orders" && method === "GET") {
+        const { customer } = customerAuth.requireSession(request);
+        return json(response, 200, {
+          orders: store
+            .read()
+            .orders.filter((order) => order.customerId === customer.id)
+            .map(publicOrder)
+            .sort((a, b) => b.date.localeCompare(a.date)),
+        });
+      }
+      if (route === "/api/admin/session" && method === "GET")
+        return json(response, 200, {
+          user: session(request) ? { username } : null,
+          configured,
+        });
+      if (route === "/api/admin/login" && method === "POST") {
+        if (!configured)
+          throw new HttpError(
+            503,
+            "Admin access is not configured. Run npm run admin:setup.",
+          );
+        const key = request.clientIp || request.socket.remoteAddress || "local";
+        for (const [address, value] of attempts)
+          if (value.until < Date.now()) attempts.delete(address);
+        const attempt = attempts.get(key);
+        if (attempt && attempt.count >= 5)
+          throw new HttpError(
+            429,
+            "Too many login attempts. Try again in 15 minutes.",
+          );
+        const input = await body(request);
+        const password = text(input?.password, "Password", 1, 200);
+        const login = text(input?.username, "Username", 1, 100);
+        const candidate = scryptSync(password, salt, 64).toString("hex");
+        if (!equal(login, username) || !equal(candidate, hash)) {
+          attempts.set(key, {
+            count: (attempt?.count || 0) + 1,
+            until: attempt?.until || Date.now() + 15 * 60 * 1000,
+          });
+          throw new HttpError(401, "Incorrect username or password.");
+        }
+        attempts.delete(key);
+        for (const [key, value] of sessions)
+          if (value.expires <= Date.now()) sessions.delete(key);
+        const token = randomBytes(32).toString("hex");
+        sessions.set(sessionKey(token), {
+          username,
+          credentialHash: passwordHash,
+          expires: Date.now() + sessionDuration,
+        });
+        setCookie(response, token);
+        return json(response, 200, { user: { username } });
+      }
+      if (route === "/api/admin/logout" && method === "POST") {
+        const current = session(request);
+        if (current) sessions.delete(sessionKey(current.token));
+        setCookie(response, "", 0);
+        return json(response, 200, { ok: true });
+      }
+      if (route.startsWith("/api/admin/") && !session(request))
+        throw new HttpError(401, "Please sign in to the admin area.");
+      if (route === "/api/admin/images" && method === "POST")
+        return json(
+          response,
+          201,
+          await saveProductImage(
+            request,
+            imageDirectory,
+            store.saveImage ? store : undefined,
+          ),
+        );
+      const emailRetry = route.match(/^\/api\/admin\/emails\/([^/]+)\/retry$/);
+      if (emailRetry && method === "POST") {
+        if (!emailWorker.configured)
+          throw new HttpError(503, "Configure the email service first.");
+        const current = store.read();
+        const job = current.emailQueue.find(
+          (email) => email.id === emailRetry[1],
+        );
+        if (!job) throw new HttpError(404, "Email notification not found.");
+        if (job.state !== "failed")
+          throw new HttpError(409, "Only a failed email can be retried.");
+        if (
+          job.firstAttemptAt &&
+          Date.now() - job.firstAttemptAt >= 23 * 60 * 60 * 1000
+        )
+          throw new HttpError(
+            409,
+            "Review delivery in your email service before resending. The duplicate-prevention window has elapsed.",
+          );
+        store.commit({
+          ...current,
+          emailQueue: current.emailQueue.map((email) =>
+            email.id === job.id
+              ? {
+                  ...email,
+                  state: "queued",
+                  attempts: 0,
+                  nextAttemptAt: 0,
+                  sendInProgress: false,
+                  leaseUntil: 0,
+                  error: null,
+                }
+              : email,
+          ),
+        });
+        sendQueuedEmails();
+        return json(response, 200, { ok: true });
+      }
+      const imageRoute = route.match(
+        /^\/api\/images\/(upload-[a-f0-9-]{36}\.(png|jpg|webp))$/,
+      );
+      if (imageRoute && ["GET", "HEAD"].includes(method)) {
+        if (store.readImage) {
+          const image = await store.readImage(imageRoute[1]);
+          if (!image) throw new HttpError(404, "Photo not found.");
+          response.writeHead(200, {
+            "Content-Type": image.content_type,
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "public, max-age=31536000, immutable",
+          });
+          return response.end(method === "HEAD" ? undefined : image.data);
+        }
+        const file = path.join(imageDirectory, imageRoute[1]);
+        if (!existsSync(file)) throw new HttpError(404, "Photo not found.");
+        response.writeHead(200, {
+          "Content-Type": {
+            png: "image/png",
+            jpg: "image/jpeg",
+            webp: "image/webp",
+          }[imageRoute[2]],
+          "X-Content-Type-Options": "nosniff",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        });
+        return response.end(method === "HEAD" ? undefined : readFileSync(file));
+      }
+      if (route === "/api/admin/orders" && method === "GET")
+        return json(response, 200, {
+          emailConfigured: emailWorker.configured,
+          orders: store
+            .read()
+            .orders.map((order) => ({
+              ...adminOrder(order),
+              emailNotifications: emailSummary(order, store.read().emailQueue),
+            }))
+            .sort((a, b) => b.date.localeCompare(a.date)),
+        });
+      if (route === "/api/admin/catalogue/preview" && method === "POST")
+        return json(
+          response,
+          200,
+          previewInventory(await body(request), store.read()),
+        );
+      if (route === "/api/admin/catalogue/replace-samples" && method === "POST")
+        return json(
+          response,
+          200,
+          await replaceSamples(await body(request), store, dataFile),
+        );
+      const orderStatus = route.match(/^\/api\/admin\/orders\/([^/]+)$/);
+      if (orderStatus && method === "PATCH") {
+        const input = await body(request);
+        if (!statuses.includes(input?.status))
+          throw new HttpError(400, "Select a valid order status.");
+        const current = store.read();
+        const order = current.orders.find((o) => o.id === orderStatus[1]);
+        if (!order) throw new HttpError(404, "Order not found.");
+        if (order.status === input.status)
+          return json(response, 200, {
+            order: {
+              ...adminOrder(order),
+              emailNotifications: emailSummary(order, current.emailQueue),
+            },
+          });
+        if (["Cancelled", "Completed"].includes(order.status))
+          throw new HttpError(
+            409,
+            "This order is closed. Cancelled and completed orders cannot be changed.",
+          );
+        const releaseStock =
+          input.status === "Cancelled" && order.stockReserved === true;
+        const products = releaseStock
+          ? current.products.map((product) => {
+              const item = order.items.find(
+                (item) => item.product.id === product.id,
+              );
+              if (!item || product.stockQuantity === null) return product;
+              return {
+                ...product,
+                stockQuantity: product.stockQuantity + item.quantity,
+                stockVersion: product.stockVersion + 1,
+                available: true,
+              };
+            })
+          : current.products;
+        const updated = {
+          ...order,
+          status: input.status,
+          ...(releaseStock ? { stockReserved: false } : {}),
+          history: [
+            ...(order.history || [{ status: order.status, date: order.date }]),
+            { status: input.status, date: new Date().toISOString() },
+          ],
+        };
+        const email = createOrderEmail(updated);
+        store.commit({
+          ...current,
+          products,
+          orders: current.orders.map((o) => (o.id === order.id ? updated : o)),
+          emailQueue: email
+            ? [...current.emailQueue, email]
+            : current.emailQueue,
+        });
+        sendQueuedEmails();
+        return json(response, 200, {
+          order: {
+            ...adminOrder(updated),
+            emailNotifications: emailSummary(updated, store.read().emailQueue),
+          },
+        });
+      }
+      if (route === "/api/admin/products" && method === "POST") {
+        const product = validateProduct(await body(request));
+        product.id = randomUUID();
+        product.slug =
+          `${product.brand}-${product.name}`
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "product";
+        if (store.read().products.some((p) => p.slug === product.slug))
+          product.slug += "-" + product.id.slice(0, 8);
+        const current = store.read();
+        store.commit({ ...current, products: [product, ...current.products] });
+        return json(response, 201, { product });
+      }
+      const productRoute = route.match(/^\/api\/admin\/products\/([^/]+)$/);
+      if (productRoute && ["PATCH", "DELETE"].includes(method)) {
+        const input = method === "PATCH" ? await body(request) : null;
+        const current = store.read();
+        const product = current.products.find((p) => p.id === productRoute[1]);
+        if (!product) throw new HttpError(404, "Product not found.");
+        if (method === "DELETE") {
+          store.commit({
+            ...current,
+            products: current.products.filter((p) => p.id !== product.id),
+          });
+          return json(response, 200, { ok: true });
+        }
+        const updated = validateProduct(input, product);
+        store.commit({
+          ...current,
+          products: current.products.map((p) =>
+            p.id === product.id ? updated : p,
+          ),
+        });
+        return json(response, 200, { product: updated });
+      }
+      if (route === "/api/orders" && method === "POST") {
+        const input = await body(request);
+        const account = customerAuth.session(request)?.customer;
+        if (input.accountOrder === true && !account)
+          throw new HttpError(
+            401,
+            "Your login has expired. Please log in again before placing the order.",
+          );
+        if (account && !profileComplete(account))
+          throw new HttpError(
+            400,
+            "Complete your name and email in your profile before ordering.",
+          );
+        const customer = validateCustomer(
+          account
+            ? {
+                ...input,
+                name: account.name,
+                phone: account.phone,
+                email: account.email,
+              }
+            : input,
+        );
+        const fingerprint = createHash("sha256")
+          .update(
+            JSON.stringify({ ...customer, customerId: account?.id || null }),
+          )
+          .digest("hex");
+        const current = store.read();
+        const duplicate = current.orders.find(
+          (o) => o.requestId === customer.requestId,
+        );
+        if (duplicate) {
+          if (duplicate.fingerprint !== fingerprint)
+            throw new HttpError(
+              409,
+              "Order details changed. Return to your bag and try again.",
+            );
+          return json(response, 200, { order: publicOrder(duplicate) });
+        }
+        const items = customer.items.map((item) => {
+          const product = current.products.find((p) => p.id === item.productId);
+          if (!product?.available)
+            throw new HttpError(
+              409,
+              "A product is no longer available. Refresh your bag.",
+            );
+          if (item.quantity > product.stockQuantity)
+            throw new HttpError(
+              409,
+              `Only ${product.stockQuantity} of ${product.name} are available. Review your bag quantity.`,
+            );
+          return { product, quantity: item.quantity };
+        });
+        const total = items.reduce(
+          (sum, item) => sum + item.product.price * item.quantity,
+          0,
+        );
+        if (
+          typeof input.expectedTotal !== "number" ||
+          input.expectedTotal !== total
+        )
+          throw new HttpError(
+            409,
+            "Prices have changed. Review the updated bag total before ordering.",
+          );
+        limitOrderEmails(request, customer.email);
+        const order = {
+          id: `ME-${Date.now().toString(36).toUpperCase()}-${randomBytes(4).toString("hex").toUpperCase()}`,
+          name: customer.name,
+          email: customer.email,
+          ...(account ? { customerId: account.id } : {}),
+          phone: customer.phone,
+          note: customer.note,
+          items,
+          total,
+          date: new Date().toISOString(),
+          status: statuses[0],
+          history: [{ status: statuses[0], date: new Date().toISOString() }],
+          fulfillment: "Shop pickup",
+          receiptToken: randomBytes(32).toString("hex"),
+          requestId: customer.requestId,
+          fingerprint,
+          stockReserved: true,
+        };
+        store.commit({
+          ...current,
+          products: current.products.map((product) => {
+            const item = items.find((item) => item.product.id === product.id);
+            if (!item) return product;
+            const stockQuantity = product.stockQuantity - item.quantity;
+            return {
+              ...product,
+              stockQuantity,
+              stockVersion: product.stockVersion + 1,
+              available: stockQuantity > 0,
+            };
+          }),
+          orders: [...current.orders, order],
+          emailQueue: [
+            ...current.emailQueue,
+            createOrderEmail(order, "received"),
+          ],
+        });
+        sendQueuedEmails();
+        return json(response, 201, { order: publicOrder(order) });
+      }
+      const receiptRoute = route.match(/^\/api\/orders\/([^/]+)$/);
+      if (receiptRoute && method === "GET") {
+        const order = store.read().orders.find((o) => o.id === receiptRoute[1]);
+        if (
+          !order ||
+          (order.customerId
+            ? customerAuth.session(request)?.customer.id !== order.customerId
+            : !equal(
+                request.headers["x-order-token"] || "",
+                order.receiptToken,
+              ))
+        )
+          throw new HttpError(404, "Order not found.");
+        return json(response, 200, { order: publicOrder(order) });
+      }
+      if (route.startsWith("/api"))
+        throw new HttpError(404, "API route not found.");
+      if (method !== "GET" && method !== "HEAD")
+        throw new HttpError(405, "Method not allowed.");
+      const dist =
+        options.staticDir || path.join(backendRoot, "../frontend/dist");
+      const requested = path.resolve(dist, "." + decodeURIComponent(route));
+      if (
+        !requested.startsWith(path.resolve(dist) + path.sep) &&
+        requested !== path.resolve(dist)
+      )
+        throw new HttpError(404, "File not found.");
+      let file = requested;
+      if (!existsSync(file) || !statSync(file).isFile()) {
+        if (path.extname(route)) throw new HttpError(404, "File not found.");
+        file = path.join(dist, "index.html");
+      }
+      if (!existsSync(file))
+        return json(response, 404, {
+          error:
+            "Start the frontend with npm run dev, or build it with npm run build.",
+        });
+      const mime = {
+        ".html": "text/html",
+        ".js": "text/javascript",
+        ".css": "text/css",
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".webp": "image/webp",
+        ".txt": "text/plain",
+        ".xml": "application/xml",
+      };
+      response.writeHead(200, {
+        "Content-Type":
+          (mime[path.extname(file)] || "application/octet-stream") +
+          "; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "same-origin",
+        "Cache-Control": "no-cache",
+      });
+      response.end(method === "HEAD" ? undefined : readFileSync(file));
+    } catch (error) {
+      if (!response.headersSent)
+        json(response, error instanceof HttpError ? error.status : 500, {
+          error:
+            error instanceof HttpError
+              ? error.message
+              : "Something went wrong. Please try again.",
+        });
+      if (!(error instanceof HttpError)) console.error("Request failed.");
+    }
+  }
+  async function handle(request, response) {
+    if (!store.transaction) return handleRequest(request, response);
+    const buffered = bufferedResponse(response);
+    try {
+      await store.transaction(() => handleRequest(request, buffered));
+      buffered.flush();
+    } catch {
+      console.error("Database request could not be committed.");
+      if (!response.headersSent)
+        json(response, 503, {
+          error: "The shop is temporarily unavailable. Please try again.",
+        });
+    }
+  }
+  const server = http.createServer(handle);
+  server.handle = handle;
+  server.drainEmails = () => emailWorker.drain();
+  server.requestTimeout = 15000;
+  server.on("listening", sendQueuedEmails);
+  server.on("close", () => emailWorker.stop());
+  return server;
+}
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  const port = Number(process.env.PORT || 3001);
+  const host = process.env.HOST || "127.0.0.1";
+  const app = createApp();
+  app.listen(port, host, () =>
+    console.log(`Backend ready at http://${host}:${port}`),
+  );
+  app.on("error", (error) => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+  process.on("SIGINT", () => app.close(() => process.exit(0)));
+  process.on("SIGTERM", () => app.close(() => process.exit(0)));
+}

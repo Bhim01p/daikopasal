@@ -1,0 +1,35 @@
+[
+  {
+    "name": "",
+    "brand": "",
+    "category": "new",
+    "price": null,
+    "stockQuantity": null,
+    "ram": null,
+    "storage": null,
+    "description": "",
+    "specs": {}
+  },
+  {
+    "name": "",
+    "brand": "",
+    "category": "used",
+    "price": null,
+    "stockQuantity": null,
+    "storage": null,
+    "condition": "",
+    "battery": null,
+    "description": "",
+    "specs": {}
+  },
+  {
+    "name": "",
+    "brand": "",
+    "category": "accessory",
+    "accessoryCategory": "Other Accessories",
+    "price": null,
+    "stockQuantity": null,
+    "description": "",
+    "specs": {}
+  }
+]

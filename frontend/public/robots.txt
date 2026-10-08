@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order/
+Disallow: /search
+Disallow: /admin
+Disallow: /login
+Disallow: /account
+Disallow: /my-orders
+# Add the public sitemap URL after choosing a production domain.
