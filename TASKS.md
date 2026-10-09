@@ -1,5 +1,35 @@
 # Pending project tasks
 
+## Compact admin lists and white-theme accents — 9 October 2026
+
+Completed: Orders shows compact reference/date/customer/item-count/total/status rows. Open order displays full contacts, items, notes, email history and status controls in a separate detail view; Back to orders retains the list filters. Inventory lists products without a side editor. Edit and New product open a dedicated editing view, with Back to inventory, save/cancel and existing unsaved-change protection. Successful saves return to the filtered inventory list.
+
+The white theme now adds an amber/yellow cart icon and count, purple profile accent, warm theme toggle and mint Filter button. These accents are scoped to the light palette.
+
+Verification: production build and translation check passed. Isolated desktop browser checks covered compact summaries, detail-only controls, status progression, completion confirmation, keeping details open after status/filter changes, inventory editing/saving, retained category selection, unsaved changes and new-product/back flow. Mobile testing and deployment remain paused.
+
+## Cart notification contrast — 9 October 2026
+
+Fixed the add-to-cart confirmation toast and dismiss icon to use the chosen theme's surface/text/border/accent. Production build passed; isolated desktop checks confirmed at least 4.5:1 text/icon contrast in both palettes and working dismissal. Mobile checks and deployment remain paused.
+
+## Dark-mode fixes and inventory categories — 9 October 2026
+
+Completed: Help/Repair headings, contact/map/prepared-message panels, empty cart and order states, selected/unselected My orders filters, active search summary and account-window close button now use the selected theme palette. Inventory has All categories, New phones, Used phones and Accessories buttons with counts, combined with search and low-stock filtering. The dashboard low-stock shortcut resets category selection to show all low-stock products.
+
+Verification: production build and 495-message translation check passed. Isolated desktop checks measured at least 4.5:1 contrast for affected text in both themes, verified the profile window, and confirmed category product membership, combined search, low-stock and reset behavior. No real customer/order records or outbound messages were used. Mobile checks and deployment remain paused.
+
+## Light/dark theme choice — 9 October 2026
+
+Completed: approved Ice Cobalt is the default white theme; the previous navy/slate/sky palette remains as the dark theme. Moon/sun controls appear in the storefront, admin login and admin dashboard. A shared browser preference survives navigation and refreshes, synchronizes between tabs and falls back gracefully when storage is unavailable. Both English and Nepali switch labels are included.
+
+Verification: production build and 493-message translation check passed. Desktop browser checks verified both palettes on shop/category/help/repair/cart/checkout/admin pages, default white even with a dark system preference, saved choices, cross-tab sync, and disabled-storage fallback. Desktop screenshots were inspected. Mobile checks remain deferred; deployment remains paused.
+
+## Owner theme and staff administration — 9 October 2026
+
+Completed locally: navy/slate/sky-blue theme, supplied `logo.png`, admin access at `/not-admin` only, Dashboard first, left menu for Orders and Inventory, and owner-only Staff logins. Owner credentials remain configurable through the VS Code terminal (`npm.cmd run admin:setup -- --custom`). Staff can manage orders/inventory; the owner creates, edits, resets passwords and disables logins. Password hashes and session revocation are enforced by the backend. English/Nepali translations include the new screens.
+
+Verification: production build and 24 backend tests passed; isolated desktop browser checks covered dashboard navigation, creating/signing in as staff, owner-only menu, loaded logo and page layouts. Mobile verification is deferred at the user's request. Deployment remains paused; no commit or push was performed.
+
 ## Deployment preparation — 9 October 2026
 
 Status: The owner resumed setup, saved the private Neon connection and Gmail app password, authorized Vercel CLI sign-in, then asked to perform the Git push personally to learn. The workspace is linked to the existing `machhapuchhreeelectronics` project. No environment variables were uploaded and no new deployment or Git commit/push was made by this work.

@@ -51,13 +51,14 @@ async function run() {
     const access = fs.readFileSync("backend/ADMIN-ACCESS.txt", "utf8");
     const username = access.match(/Username:\s*(.+)/)[1].trim();
     const password = access.match(/Password:\s*(.+)/)[1].trim();
-    await admin.goto(base + "/admin");
+    await admin.goto(base + "/not-admin");
     await admin.getByLabel("Username", { exact: true }).fill(username);
     await admin.getByLabel("Password", { exact: true }).fill(password);
     await admin.getByRole("button", { name: "Sign in", exact: true }).click();
     await admin
-      .getByRole("heading", { name: "Keep your shop up to date." })
+      .getByRole("heading", { name: "Dashboard", exact: true })
       .waitFor();
+    await admin.getByRole("tab", { name: "Inventory", exact: true }).click();
     const existing = await adminContext.request.post(
       base + "/api/admin/products",
       {

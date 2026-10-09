@@ -1,6 +1,8 @@
 # Machhapuchhree Electronics
 
-A small shop website with a React storefront, lightweight Node backend, and a single-admin page. The white, charcoal and pink storefront has a compact desktop header with logo, category navigation, simple search, account and cart in one row. The homepage contains promotional banners and budget links. Product lists live on category pages, starting with compact search and a Filter button instead of photo banners or a sidebar. Help and Repair have separate navigation links. Phone layouts retain readable text and roomy touch controls.
+A small shop website with a React storefront, lightweight Node backend, and owner/staff administration. The navy and slate storefront uses sky-blue accents and the owner's logo, with category navigation, simple search, account and cart in one compact desktop header. The homepage contains promotional banners and budget links. Product lists live on category pages, starting with compact search and a Filter button instead of photo banners or a sidebar. Help and Repair have separate navigation links.
+
+Ice Cobalt (white/ice surfaces, cobalt buttons and navy text) is the default theme. The moon/sun button in storefront and admin headers switches to the earlier navy/slate/sky dark theme. The browser remembers the choice across refreshes, routes and tabs using `me-theme`; system dark mode does not override the white default. Theme setup runs before rendering to avoid a flash of the wrong palette. The same preference applies to shop, checkout and administration. If browser storage is unavailable, switching still works during the current visit.
 
 The banner and generic phone imagery are illustrative. Actual product photos uploaded through the admin take precedence. The built-in imagegen prompts and saved asset paths are recorded in `design/reference-assets.md`.
 
@@ -14,7 +16,7 @@ npm run admin:setup
 npm run dev
 ```
 
-Storefront: `http://127.0.0.1:8767/` · Admin: `http://127.0.0.1:8767/admin` · Backend: `http://127.0.0.1:3001/`.
+Storefront: `http://127.0.0.1:8767/` · Admin: `http://127.0.0.1:8767/not-admin` · Backend: `http://127.0.0.1:3001/`.
 
 The admin is already configured on this machine. Open `backend/ADMIN-ACCESS.txt` for the generated local username and password. The password hash lives in ignored `backend/.env`, and the access file is also ignored. Running setup again preserves the current login. Choose your own username and password with `npm.cmd run admin:setup -- --custom`; enter a 3–40 character username and a password of at least 12 characters in the private terminal prompts. Custom passwords are stored only as a salted hash and are not copied into the access file. To generate a random password, use `npm.cmd run admin:setup -- --reset`. Restart the backend after either change. Active sessions expire after eight hours; changing credentials invalidates old sessions when the backend restarts.
 
@@ -34,7 +36,7 @@ npm run build
 npm start
 ```
 
-Then use `http://127.0.0.1:3001/` and `/admin`. The backend serves app routes, images, and API requests together. Development uses Vite's `/api` proxy.
+Then use `http://127.0.0.1:3001/` and `/not-admin`. The backend serves app routes, images, and API requests together. Development uses Vite's `/api` proxy.
 
 ## Folders
 
@@ -50,7 +52,13 @@ Then use `http://127.0.0.1:3001/` and `/admin`. The backend serves app routes, i
 
 ## Minimum admin features
 
-Sign in at `/admin`, add/edit/remove products, change price or stock quantity, upload product photos, enter specifications, view pickup orders and customer contact details, and update an order to Awaiting shop confirmation, Confirmed, Ready for pickup, Completed, or Cancelled. The overview shows pending orders, orders ready for pickup, and real listings with 0–3 units remaining; each count opens its corresponding filter. Use Refresh overview for the latest orders and stock. Admin actions are checked by the backend. Login uses a salted password hash, an HttpOnly session cookie, same-origin checks, and a basic login attempt limit.
+Inventory includes category filters for New phones, Used phones and Accessories, plus All categories. Counts show the catalogue total for each category. Category selection combines with search and stock-level filters; the Dashboard low-stock shortcut shows low stock across all categories.
+
+Orders uses compact summaries with an Open order button. Full customer contacts, items, notes, email history and status controls appear only in the opened detail view. Back to orders preserves search/status/date filters. Inventory similarly opens Edit and New product in a separate editing screen instead of a side panel; saving returns to the list and keeps its filters, while leaving an unsaved draft still requires discard confirmation. These views remain inside the authenticated `/not-admin` workspace.
+
+Only `/not-admin` opens administration; `/admin` has no login page or redirect. Sign-in opens Dashboard first. The left menu contains Dashboard, Orders and Inventory. The main admin also sees Staff logins, where they can create accounts, edit names/usernames, reset passwords, or disable and re-enable access. Staff can manage orders and inventory but cannot manage logins. Disabling or editing a staff account revokes its current sessions; re-enabling it requires a fresh sign-in. Staff passwords are salted hashes and cannot be viewed after saving. The owner login is configured from the VS Code terminal with `npm.cmd run admin:setup -- --custom`, then restart the backend. Credentials stay in ignored local configuration.
+
+Sign in at `/not-admin`, add/edit/remove products, change price or stock quantity, upload product photos, enter specifications, view pickup orders and customer contact details, and update an order to Awaiting shop confirmation, Confirmed, Ready for pickup, Completed, or Cancelled. The overview shows pending orders, orders ready for pickup, and real listings with 0–3 units remaining; each count opens its corresponding filter. Use Refresh overview for the latest orders and stock. Admin actions are checked by the backend. Login uses a salted password hash, an HttpOnly session cookie, same-origin checks, and a basic login attempt limit.
 
 Each product supports up to six photos. Upload several JPG, PNG, or WebP files at once, up to 5 MB each, choose the cover or remove a photo, then save the product. Customers can swipe, use thumbnails or arrow buttons, and browse with keyboard arrows. Existing single-photo products still work. Uploads are saved in `backend/data/images/` and served by the backend through `/api/images/`; they work in both development and the compiled website. Only signed-in admins can upload. Back up the full `backend/data/` folder to preserve product photos and orders. Replaced photos are retained so old order receipts keep their images.
 

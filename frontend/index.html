@@ -3,7 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#102b3c" />
+    <meta name="theme-color" content="#F4F8FF" />
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("me-theme") === "dark" ? "dark" : "light";
+      } catch {
+        document.documentElement.dataset.theme = "light";
+      }
+      if (document.documentElement.dataset.theme === "dark")
+        document.querySelector('meta[name="theme-color"]').content = "#15222e";
+    </script>
+    <link rel="icon" type="image/png" href="/assets/logo.png" />
     <meta
       name="description"
       content="Explore mobiles, second-hand phones, accessories and repair services at Machhapuchhree Electronics in Lekhnath, Pokhara."

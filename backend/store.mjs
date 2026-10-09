@@ -49,10 +49,12 @@ export function normalizeStore(current) {
     emailQueue: current.emailQueue ?? [],
     customers: current.customers ?? [],
     customerSessions: current.customerSessions ?? [],
+    staffAccounts: current.staffAccounts ?? [],
   };
   if (
     !Array.isArray(current.customers) ||
-    !Array.isArray(current.customerSessions)
+    !Array.isArray(current.customerSessions) ||
+    !Array.isArray(current.staffAccounts)
   )
     throw new Error("Invalid customer store.");
   if (!Array.isArray(current.emailQueue))

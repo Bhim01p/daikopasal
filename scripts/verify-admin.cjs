@@ -18,7 +18,7 @@ async function run() {
   });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto(base + "/admin");
+  await page.goto(base + "/not-admin");
   await page.getByRole("heading", { name: "Welcome back." }).waitFor();
   await page.getByLabel("Username", { exact: true }).fill(username);
   await page.getByLabel("Password", { exact: true }).fill("incorrect-password");
@@ -29,8 +29,9 @@ async function run() {
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page
-    .getByRole("heading", { name: "Keep your shop up to date." })
+    .getByRole("heading", { name: "Dashboard", exact: true })
     .waitFor();
+  await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   assert.equal(await page.locator(".admin-product").count(), 33);
   await page.getByLabel("Product name *", { exact: true }).fill("QA USB Cable");
   await page.getByLabel("Brand *", { exact: true }).fill("QA");
@@ -156,7 +157,7 @@ async function run() {
   ).products.find((product) => product.id === stockProduct.id);
   assert.equal(soldOut.stockQuantity, 0);
   assert.equal(soldOut.available, false);
-  await page.goto(base + "/admin");
+  await page.goto(base + "/not-admin");
   await page.getByRole("tab", { name: "Orders", exact: true }).click();
   const orderCard = page.locator(".admin-order").filter({ hasText: reference });
   await orderCard
@@ -178,7 +179,7 @@ async function run() {
     .locator(".reference")
     .getByText("Ready for pickup", { exact: true })
     .waitFor();
-  await page.goto(base + "/admin");
+  await page.goto(base + "/not-admin");
   await page.getByRole("tab", { name: "Orders", exact: true }).click();
   await page
     .locator(".admin-order")
@@ -204,10 +205,10 @@ async function run() {
   ).products.find((product) => product.id === stockProduct.id);
   assert.equal(restocked.stockQuantity, 1);
   assert.equal(restocked.available, true);
-  await page.getByRole("tab", { name: "Products", exact: true }).click();
+  await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page
-    .getByRole("heading", { name: "Keep your shop up to date." })
+    .getByRole("heading", { name: "Inventory", exact: true })
     .waitFor();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByLabel("Delete QA USB Cable", { exact: true }).click();
@@ -228,7 +229,7 @@ async function run() {
       () => document.documentElement.scrollWidth,
     );
     assert.ok(orderWidth <= width, `Admin orders overflow at ${width}`);
-    await page.getByRole("tab", { name: "Products", exact: true }).click();
+    await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: "qa-results/admin-mobile.png" });

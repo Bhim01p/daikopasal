@@ -1,13 +1,7 @@
 import { randomBytes, scryptSync } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-export function configureAdmin({
-  envPath,
-  accessPath,
-  username,
-  password,
-  custom = false,
-}) {
+export function validateAdminCredentials(username, password) {
   if (!/^[A-Za-z0-9_.-]{3,40}$/.test(username))
     throw new Error(
       "Username must be 3–40 letters, numbers, dots, hyphens or underscores.",
@@ -22,8 +16,23 @@ export function configureAdmin({
     throw new Error(
       "Password must have 12–200 characters, without surrounding spaces or control characters.",
     );
+}
+
+export function hashAdminPassword(password) {
   const salt = randomBytes(16).toString("hex");
   const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+export function configureAdmin({
+  envPath,
+  accessPath,
+  username,
+  password,
+  custom = false,
+}) {
+  validateAdminCredentials(username, password);
+  const passwordHash = hashAdminPassword(password);
   const previous = existsSync(envPath)
     ? readFileSync(envPath, "utf8")
         .split(/\r?\n/)
@@ -34,14 +43,14 @@ export function configureAdmin({
     [
       ...previous,
       `ADMIN_USERNAME=${username}`,
-      `ADMIN_PASSWORD_HASH=${salt}:${hash}`,
+      `ADMIN_PASSWORD_HASH=${passwordHash}`,
       "",
     ].join("\n"),
     { mode: 0o600 },
   );
   writeFileSync(
     accessPath,
-    `Local admin access\n\nURL: http://127.0.0.1:8767/admin\nUsername: ${username}\n` +
+    `Local admin access\n\nURL: http://127.0.0.1:8767/not-admin\nUsername: ${username}\n` +
       (custom
         ? "Password: Your chosen password is not stored in this file.\n"
         : `Password: ${password}\n`) +

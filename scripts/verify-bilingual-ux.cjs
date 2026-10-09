@@ -123,7 +123,7 @@ async function run() {
       1,
     );
     const receiptUrl = page.url();
-    await owner.goto(base + "/admin");
+    await owner.goto(base + "/not-admin");
     await owner.getByLabel("Username", { exact: true }).fill(username);
     await owner.getByLabel("Password", { exact: true }).fill(password);
     await owner.getByRole("button", { name: "Sign in", exact: true }).click();

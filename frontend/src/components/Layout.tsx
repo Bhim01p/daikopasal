@@ -9,7 +9,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 import {
-  Mountain,
   Menu,
   X,
   Search,
@@ -25,6 +24,7 @@ import { useCart } from "../context/CartContext";
 import { useCustomer } from "../context/CustomerContext";
 import AccountDialog from "./AccountDialog";
 import WhatsAppIcon from "./WhatsAppIcon";
+import { ThemeSwitch } from "../context/ThemeContext";
 const links = [
   ["/", "Home"],
   ["/mobiles", "New phones"],
@@ -42,7 +42,13 @@ export function Brand() {
       className="brand"
       aria-label={t("{{v0}} home", { v0: String(shop.name) })}
     >
-      <Mountain size={33} />
+      <img
+        className="brand-logo"
+        src="/assets/logo.png"
+        alt=""
+        width="52"
+        height="52"
+      />
       <span>
         {shop.name.replace(/\s+Electronics$/i, "")}
         <small>{t("ELECTRONICS")}</small>
@@ -133,6 +139,7 @@ export default function Layout() {
           </form>
           <div className="nav-tools">
             <LanguageSwitch />
+            <ThemeSwitch />
             <button
               className="customer-account-link"
               onClick={() => setAccountOpen(true)}

@@ -35,6 +35,9 @@ import "./account.css";
 import "./product-gallery.css";
 import "./shopping.css";
 import "./refinement.css";
+import "./sky-theme.css";
+import "./ice-cobalt.css";
+import { ThemeProvider } from "./context/ThemeContext";
 function Meta() {
   const t = useT();
   const { language } = useLanguage();
@@ -53,7 +56,7 @@ function Meta() {
       "/help": "Help",
       "/repair": "Repair",
       "/search": "Search Products",
-      "/admin": "Shop Admin",
+      "/not-admin": "Shop Admin",
       "/login": "Customer Login",
       "/account": "Your Profile",
       "/my-orders": "My Orders",
@@ -85,7 +88,7 @@ function Meta() {
     }
     robots.setAttribute(
       "content",
-      /\/(cart|checkout|order|search|admin|login|account|my-orders)/.test(
+      /\/(cart|checkout|order|search|not-admin|login|account|my-orders)/.test(
         pathname,
       )
         ? "noindex, nofollow"
@@ -112,7 +115,7 @@ function App() {
             <CartProvider>
               <Meta />
               <Routes>
-                <Route path="admin" element={<Admin />} />
+                <Route path="not-admin" caseSensitive element={<Admin />} />
                 <Route element={<Layout />}>
                   <Route index element={<Home />} />
                   <Route
@@ -163,6 +166,8 @@ function App() {
 }
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>,
 );

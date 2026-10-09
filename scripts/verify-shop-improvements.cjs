@@ -71,7 +71,7 @@ async function run() {
   try {
     fs.mkdirSync("qa-results", { recursive: true });
     const access = fs.readFileSync("backend/ADMIN-ACCESS.txt", "utf8");
-    await admin.goto(base + "/admin");
+    await admin.goto(base + "/not-admin");
     await admin
       .getByLabel("Username", { exact: true })
       .fill(access.match(/^Username: (.+)$/m)[1].trim());
@@ -80,11 +80,12 @@ async function run() {
       .fill(access.match(/^Password: (.+)$/m)[1].trim());
     await admin.getByRole("button", { name: "Sign in", exact: true }).click();
     await admin
-      .getByRole("heading", { name: "Keep your shop up to date." })
+      .getByRole("heading", { name: "Dashboard", exact: true })
       .waitFor();
     await admin
       .getByRole("button", { name: "Pending orders: 0", exact: true })
       .waitFor();
+    await admin.getByRole("tab", { name: "Inventory", exact: true }).click();
     await admin
       .getByLabel("Product name *", { exact: true })
       .fill("QA Gallery Phone");

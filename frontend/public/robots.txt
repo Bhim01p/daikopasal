@@ -3,7 +3,7 @@ Disallow: /cart
 Disallow: /checkout
 Disallow: /order/
 Disallow: /search
-Disallow: /admin
+Disallow: /not-admin
 Disallow: /login
 Disallow: /account
 Disallow: /my-orders

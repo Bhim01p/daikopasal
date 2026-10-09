@@ -1,0 +1,217 @@
+/* Ice Cobalt is the default. Slate/Sky remains available through data-theme. */
+/* Small bright accents belong to the white theme only. */
+:root:not([data-theme="dark"]) body .site-header .bag-link > svg {
+  color: #a66a00;
+}
+:root:not([data-theme="dark"]) body .site-header .bag-link > span {
+  background: #ffe18b;
+  color: #654000;
+}
+:root:not([data-theme="dark"]) body .site-header .customer-account-link {
+  background: #f1eaff;
+  color: #7040b5;
+  border-radius: 50%;
+}
+:root:not([data-theme="dark"]) body .theme-switch {
+  color: #a06400;
+  background: #fff7de;
+  border-color: #eedca3;
+}
+:root:not([data-theme="dark"]) body .catalogue-filter-button.button.white {
+  color: #16715e;
+  background: #e9f8f2;
+  border-color: #b8ddce;
+}
+:root:not([data-theme="dark"]) body .shop-empty-icon {
+  background: #fff2cb;
+  color: #956000;
+}
+:root:not([data-theme="dark"])
+  body
+  footer
+  :is(a, p, small, li, .brand, .brand small) {
+  color: #526581;
+}
+:root:not([data-theme="dark"]) {
+  color-scheme: light;
+  --sky-background: #f4f8ff;
+  --sky-surface: #ffffff;
+  --sky-input: #ffffff;
+  --sky-accent: #2457e6;
+  --sky-text: #142443;
+  --sky-muted: #526581;
+  --sky-border: #dce8ff;
+}
+.theme-switch {
+  width: 36px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--sky-border);
+  border-radius: 6px;
+  background: var(--sky-input);
+  color: var(--sky-text);
+}
+.theme-switch:hover {
+  color: var(--sky-accent);
+  border-color: var(--sky-accent);
+}
+.admin-login-theme {
+  position: absolute;
+  top: 24px;
+  right: 130px;
+}
+:root:not([data-theme="dark"]) body .site-header {
+  background: #fff;
+  box-shadow: 0 1px 0 #dce8ff;
+}
+:root:not([data-theme="dark"]) body :is(input, select, textarea)::placeholder {
+  color: #64748b;
+}
+:root:not([data-theme="dark"])
+  body
+  .site-header
+  .reference-main-nav
+  a:is(.active, :hover),
+:root:not([data-theme="dark"]) body .admin-side-menu button.selected {
+  background: #e7efff;
+  color: #2457e6;
+  border-color: #c5d6ff;
+}
+:root:not([data-theme="dark"]) body .admin-side-menu button:hover {
+  background: #edf3ff;
+}
+:root:not([data-theme="dark"]) body .reference-banner-main {
+  background: #eaf2ff;
+  border-color: #dce8ff;
+  border-left-color: #2457e6;
+}
+:root:not([data-theme="dark"]) body .reference-banner-photo {
+  opacity: 1;
+}
+:root:not([data-theme="dark"]) body .reference-banner-main .hero-copy {
+  background: linear-gradient(90deg, #eaf2ff 4%, #eaf2ffe8 54%, #eaf2ff00);
+}
+:root:not([data-theme="dark"]) body .reference-banner-main .hero-copy > p {
+  color: #526581;
+}
+:root:not([data-theme="dark"]) body .reference-promo {
+  background: #eaf2ff;
+}
+:root:not([data-theme="dark"]) body .reference-promo > img {
+  opacity: 1;
+}
+:root:not([data-theme="dark"]) body .reference-promo > div {
+  background: linear-gradient(90deg, #eaf2ffed, #eaf2ff00);
+}
+:root:not([data-theme="dark"])
+  body
+  :is(
+    .button.dark,
+    .button.teal,
+    .button.primary,
+    .add-button,
+    .catalogue-grid .add-button,
+    .reference-banner-main .hero-copy .button
+  ),
+:root:not([data-theme="dark"]) body .site-header .shop-header-search button {
+  background: #2457e6;
+  color: #fff;
+  border-color: #2457e6;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(.button.dark, .button.teal, .add-button):hover {
+  background: #1945c4;
+  color: #fff;
+  border-color: #1945c4;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(.button.white, .button.outline, .reference-budget-row a) {
+  background: #fff;
+  color: #142443;
+  border-color: #dce8ff;
+}
+:root:not([data-theme="dark"]) body .overview-card {
+  border-color: #dce8ff;
+  border-left-color: #2457e6;
+}
+:root:not([data-theme="dark"]) body .admin-sidebar {
+  box-shadow: 0 8px 24px #14244306;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(.staff-active, .availability, .in-stock),
+:root:not([data-theme="dark"])
+  body
+  .catalogue-grid
+  .product-body
+  .availability {
+  background: #eaf8f2;
+  color: #176345;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(
+    .availability.unavailable,
+    .availability.out,
+    .out-of-stock,
+    .staff-disabled
+  ),
+:root:not([data-theme="dark"])
+  body
+  .catalogue-grid
+  .product-body
+  .availability.unavailable {
+  background: #edf1f6;
+  color: #526581;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(.badge, .catalogue-grid .badge, .badge.used-badge) {
+  background: #e7efff;
+  color: #142443;
+}
+:root:not([data-theme="dark"]) body :is(.admin-error, .field-error) {
+  background: #fff0f1;
+  color: #982039;
+  border-color: #f4c7d0;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(.admin-notice, .checkout-notice, .account-notice) {
+  background: #eaf8f2;
+  color: #176345;
+  border-color: #b8dfca;
+}
+:root:not([data-theme="dark"]) body .tile-icon {
+  background: #e7efff;
+}
+:root:not([data-theme="dark"]) body .admin-login .tile-icon {
+  background: #e7efff;
+}
+:root:not([data-theme="dark"]) body .site-header .brand,
+:root:not([data-theme="dark"]) body .admin-header .brand {
+  color: #142443;
+}
+:root:not([data-theme="dark"]) body .admin-layout .overview-card {
+  background: #fff;
+  color: #142443;
+}
+:root:not([data-theme="dark"])
+  body
+  :is(
+    .language-switch button[aria-pressed="true"],
+    .admin-filter-bar button[aria-pressed="true"]
+  ) {
+  background: #e7efff;
+}
+@media (max-width: 767px) {
+  :root:not([data-theme="dark"]) body .reference-banner-main .hero-copy {
+    background: linear-gradient(90deg, #eaf2fff2, #eaf2ff99);
+  }
+}

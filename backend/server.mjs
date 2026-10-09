@@ -14,6 +14,7 @@ import { createStore, defaultStorePath } from "./store.mjs";
 import { stateMap } from "./state-map.mjs";
 import { bufferedResponse } from "./buffered-response.mjs";
 import { saveProductImage } from "./images.mjs";
+import { publicStaff, saveStaff } from "./staff.mjs";
 import { createSmsTransport } from "./sms.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
 import {
@@ -155,15 +156,26 @@ export function createApp(options = {}) {
       ?.slice(9);
     if (!token) return null;
     const value = sessions.get(sessionKey(token));
-    if (
-      !value ||
-      value.expires <= Date.now() ||
-      value.credentialHash !== passwordHash
-    ) {
+    const staff =
+      value?.role === "staff"
+        ? (store.read().staffAccounts || []).find(
+            (account) => account.id === value.staffId,
+          )
+        : null;
+    const credentialsMatch =
+      value?.role === "staff"
+        ? staff?.enabled &&
+          staff.username === value.username &&
+          staff.passwordHash === value.credentialHash &&
+          staff.accessVersion === value.accessVersion
+        : configured &&
+          value?.username === username &&
+          value?.credentialHash === passwordHash;
+    if (!value || value.expires <= Date.now() || !credentialsMatch) {
       sessions.delete(sessionKey(token));
       return null;
     }
-    return { token, ...value };
+    return { token, ...value, role: value.role || "owner" };
   }
   async function handleRequest(request, response) {
     try {
@@ -215,11 +227,15 @@ export function createApp(options = {}) {
             .sort((a, b) => b.date.localeCompare(a.date)),
         });
       }
-      if (route === "/api/admin/session" && method === "GET")
+      if (route === "/api/admin/session" && method === "GET") {
+        const active = session(request);
         return json(response, 200, {
-          user: session(request) ? { username } : null,
+          user: active
+            ? { username: active.username, role: active.role }
+            : null,
           configured,
         });
+      }
       if (route === "/api/admin/login" && method === "POST") {
         if (!configured)
           throw new HttpError(
@@ -238,8 +254,19 @@ export function createApp(options = {}) {
         const input = await body(request);
         const password = text(input?.password, "Password", 1, 200);
         const login = text(input?.username, "Username", 1, 100);
-        const candidate = scryptSync(password, salt, 64).toString("hex");
-        if (!equal(login, username) || !equal(candidate, hash)) {
+        const owner = equal(login, username);
+        const staff = owner
+          ? null
+          : (store.read().staffAccounts || []).find(
+              (account) =>
+                account.username.toLowerCase() === login.toLowerCase(),
+            );
+        const credential = owner
+          ? passwordHash
+          : staff?.passwordHash || passwordHash;
+        const [loginSalt, loginHash] = credential.split(":");
+        const candidate = scryptSync(password, loginSalt, 64).toString("hex");
+        if ((!owner && !staff?.enabled) || !equal(candidate, loginHash)) {
           attempts.set(key, {
             count: (attempt?.count || 0) + 1,
             until: attempt?.until || Date.now() + 15 * 60 * 1000,
@@ -250,13 +277,21 @@ export function createApp(options = {}) {
         for (const [key, value] of sessions)
           if (value.expires <= Date.now()) sessions.delete(key);
         const token = randomBytes(32).toString("hex");
+        const accountUsername = owner ? username : staff.username;
+        const role = owner ? "owner" : "staff";
         sessions.set(sessionKey(token), {
-          username,
-          credentialHash: passwordHash,
+          username: accountUsername,
+          role,
+          ...(staff
+            ? { staffId: staff.id, accessVersion: staff.accessVersion }
+            : {}),
+          credentialHash: credential,
           expires: Date.now() + sessionDuration,
         });
         setCookie(response, token);
-        return json(response, 200, { user: { username } });
+        return json(response, 200, {
+          user: { username: accountUsername, role },
+        });
       }
       if (route === "/api/admin/logout" && method === "POST") {
         const current = session(request);
@@ -266,6 +301,35 @@ export function createApp(options = {}) {
       }
       if (route.startsWith("/api/admin/") && !session(request))
         throw new HttpError(401, "Please sign in to the admin area.");
+      if (
+        route === "/api/admin/staff" ||
+        route.startsWith("/api/admin/staff/")
+      ) {
+        if (session(request)?.role !== "owner")
+          throw new HttpError(
+            403,
+            "Only the main admin can manage staff logins.",
+          );
+        if (route === "/api/admin/staff" && method === "GET")
+          return json(response, 200, {
+            staff: (store.read().staffAccounts || []).map(publicStaff),
+          });
+        if (route === "/api/admin/staff" && method === "POST")
+          return json(response, 201, {
+            account: saveStaff(store, username, await body(request)),
+          });
+        const accountRoute = route.match(/^\/api\/admin\/staff\/([^/]+)$/);
+        if (accountRoute && method === "PATCH")
+          return json(response, 200, {
+            account: saveStaff(
+              store,
+              username,
+              await body(request),
+              accountRoute[1],
+            ),
+          });
+        throw new HttpError(404, "API route not found.");
+      }
       if (route === "/api/admin/images" && method === "POST")
         return json(
           response,
