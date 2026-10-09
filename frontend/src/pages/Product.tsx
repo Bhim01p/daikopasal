@@ -1,3 +1,5 @@
+import { useT } from "../context/LanguageContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -18,6 +20,8 @@ import WhatsAppIcon from "../components/WhatsAppIcon";
 import NotFound from "./NotFound";
 import { isSampleProduct, purchaseLimit } from "../utils/products";
 export default function Product() {
+  const t = useT();
+  const { language } = useLanguage();
   const { products } = useProducts();
   const { slug } = useParams();
   const product = products.find((p) => p.slug === slug);
@@ -31,7 +35,7 @@ export default function Product() {
   return (
     <div className="container product-page">
       <div className="breadcrumb">
-        <Link to="/">Home</Link>
+        <Link to="/">{t("Home")}</Link>
         <ArrowRight size={12} />
         <Link
           to={
@@ -43,10 +47,10 @@ export default function Product() {
           }
         >
           {product.category === "new"
-            ? "New mobiles"
+            ? t("New mobiles")
             : product.category === "used"
-              ? "Second-hand sets"
-              : "Accessories"}
+              ? t("Second-hand sets")
+              : t("Accessories")}
         </Link>
         <ArrowRight size={12} />
         <span>{product.name}</span>
@@ -55,36 +59,44 @@ export default function Product() {
         <ProductGallery key={product.id} product={product} />
         <div className="detail-copy">
           <span className="eyebrow">
-            {product.category === "used" ? "Second-hand set" : product.brand}
+            {product.category === "used" ? t("Second-hand set") : product.brand}
           </span>
           <h1>{product.name}</h1>
           <div
             className={`availability ${product.available ? "" : "unavailable"}`}
           >
-            {isSampleProduct(product) ? "Sample · " : ""}
+            {isSampleProduct(product) ? t("Sample · ") : ""}
             {product.available
-              ? `In stock · ${product.stockQuantity} available · Shop pickup`
-              : "Currently out of stock"}
+              ? t("In stock · {{v0}} available · Shop pickup", {
+                  v0: String(product.stockQuantity),
+                })
+              : t("Currently out of stock")}
           </div>
           <div className="detail-price">{money(product.price)}</div>
-          <p>{product.description}</p>
+          <p>
+            {language === "ne" && product.descriptionNe
+              ? product.descriptionNe
+              : product.description}
+          </p>
           {product.category === "used" && (
             <div className="condition-grid">
               <div>
-                <span>Condition</span>
-                <strong>{product.condition}</strong>
+                <span>{t("Condition")}</span>
+                <strong>{t(product.condition)}</strong>
               </div>
               <div>
-                <span>Battery health</span>
+                <span>{t("Battery health")}</span>
                 <strong>{product.battery}%</strong>
               </div>
               <div>
-                <span>Storage</span>
-                <strong>{product.storage} GB</strong>
+                <span>{t("Storage")}</span>
+                <strong>
+                  {product.storage} {t(" GB")}
+                </strong>
               </div>
               <div>
-                <span>Warranty</span>
-                <strong>Confirm with shop</strong>
+                <span>{t("Warranty")}</span>
+                <strong>{t("Confirm with shop")}</strong>
               </div>
             </div>
           )}
@@ -92,16 +104,17 @@ export default function Product() {
             <div className="sample-note">
               <Info size={17} />
               <span>
-                Sample price and details. Availability, condition, and warranty
-                require shop confirmation.
+                {t(
+                  "Sample price and details. Availability, condition, and warranty require shop confirmation.",
+                )}
               </span>
             </div>
           )}
-          <label className="quantity-label">Quantity</label>
+          <label className="quantity-label">{t("Quantity")}</label>
           <div className="purchase-row">
             <div className="quantity">
               <button
-                aria-label="Decrease quantity"
+                aria-label={t("Decrease quantity")}
                 disabled={selectedQuantity === 1 || !maximum}
                 onClick={() => setQuantity(selectedQuantity - 1)}
               >
@@ -109,7 +122,7 @@ export default function Product() {
               </button>
               <span aria-live="polite">{selectedQuantity}</span>
               <button
-                aria-label="Increase quantity"
+                aria-label={t("Increase quantity")}
                 disabled={selectedQuantity >= maximum}
                 onClick={() => setQuantity(selectedQuantity + 1)}
               >
@@ -122,7 +135,7 @@ export default function Product() {
               onClick={() => add(product.id, selectedQuantity)}
             >
               <ShoppingBag size={17} />
-              Add to bag
+              {t("Add to cart")}
             </button>
           </div>
           <div className="button-row detail-actions">
@@ -134,11 +147,14 @@ export default function Product() {
                 navigate("/checkout");
               }}
             >
-              Buy now <ArrowRight size={16} />
+              {t("Order for pickup ")}
+              <ArrowRight size={16} />
             </button>
             <a
               className="whatsapp-icon-button"
-              aria-label={`Ask about ${product.name} on WhatsApp`}
+              aria-label={t("Ask about {{v0}} on WhatsApp", {
+                v0: String(product.name),
+              })}
               href={whatsapp(
                 `Hello ${shop.name}, I would like to enquire about ${product.brand} ${product.name}${product.category === "used" ? " (second-hand)" : ""}. Please confirm its price and availability.`,
               )}
@@ -150,40 +166,41 @@ export default function Product() {
           </div>
           <div className="pickup-note">
             <MapPin size={17} />
-            Shop pickup in Lekhnath · Open {shop.hours}
+            {t("Shop pickup in Lekhnath · Open ")}
+            {t(shop.hours)}
           </div>
         </div>
       </div>
       <section className="specifications">
-        <h2>The details, at a glance.</h2>
+        <h2>{t("The details, at a glance.")}</h2>
         <dl>
           {Object.entries(product.specs).map(([key, value]) => (
             <div key={key}>
-              <dt>{key}</dt>
-              <dd>{value}</dd>
+              <dt>{t(key)}</dt>
+              <dd>{t(value)}</dd>
             </div>
           ))}
           <div>
-            <dt>Product type</dt>
+            <dt>{t("Product type")}</dt>
             <dd>
               {product.category === "new"
-                ? "New mobile"
+                ? t("New mobile")
                 : product.category === "used"
-                  ? "Second-hand mobile"
-                  : "Accessory"}
+                  ? t("Second-hand mobile")
+                  : t("Accessory")}
             </dd>
           </div>
           <div>
-            <dt>Collection</dt>
-            <dd>Shop pickup only</dd>
+            <dt>{t("Collection")}</dt>
+            <dd>{t("Shop pickup only")}</dd>
           </div>
         </dl>
       </section>
       <section className="home-section">
         <div className="section-heading">
           <div>
-            <h2>You might also like.</h2>
-            <p>A few more options to explore.</p>
+            <h2>{t("You might also like.")}</h2>
+            <p>{t("A few more options to explore.")}</p>
           </div>
           <Link
             to={
@@ -194,7 +211,8 @@ export default function Product() {
                   : "/accessories"
             }
           >
-            See collection <ArrowUpRight size={15} />
+            {t("See collection ")}
+            <ArrowUpRight size={15} />
           </Link>
         </div>
         <div className="product-grid">

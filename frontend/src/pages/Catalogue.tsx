@@ -1,5 +1,7 @@
+import { useT } from "../context/LanguageContext";
+import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useProducts } from "../context/ProductContext";
 import { accessoryCategories } from "../data/categories";
@@ -8,6 +10,7 @@ import ProductCard from "../components/ProductCard";
 import { money } from "../data/shop";
 import { isSampleProduct } from "../utils/products";
 export default function Catalogue({ category }: { category?: Category }) {
+  const t = useT();
   const { products } = useProducts();
   const [params, setParams] = useSearchParams();
   const query = params.get("q") || "";
@@ -40,9 +43,9 @@ export default function Catalogue({ category }: { category?: Category }) {
         .filter(
           (p) =>
             (!query ||
-              `${p.brand} ${p.name} ${p.accessoryCategory || ""}`
+              `${p.brand} ${p.name} ${p.accessoryCategory || ""} ${t(p.accessoryCategory)} ${p.descriptionNe || ""}`
                 .toLowerCase()
-                .includes(query.toLowerCase())) &&
+                .includes(normalizeDigits(query).toLowerCase())) &&
             (!brand || p.brand === brand) &&
             (!budget || p.price <= Number(budget)) &&
             (!ram || p.ram === Number(ram)) &&
@@ -70,6 +73,7 @@ export default function Catalogue({ category }: { category?: Category }) {
       accessory,
       sort,
       inStock,
+      t,
     ],
   );
   const reset = () => {
@@ -111,28 +115,21 @@ export default function Catalogue({ category }: { category?: Category }) {
   ].filter(Boolean).length;
   return (
     <>
-      <h1 className="sr-only">{title}</h1>
-      <div className="container catalogue-photo-banner">
-        <img
-          src={
-            category === "accessory"
-              ? "/assets/accessories-banner-v1.png"
-              : "/assets/shop-banner-v1.png"
-          }
-          alt={
-            category === "accessory"
-              ? "Headphones, earbuds and charger"
-              : "Phones and earbuds"
-          }
-        />
-      </div>
       <div className="container catalogue-layout">
         <div className="catalogue-results">
+          <div className="catalogue-heading">
+            <h1>{t(title)}</h1>
+            {category && (
+              <Link className="text-link" to="/search">
+                {t("Search all products")}
+              </Link>
+            )}
+          </div>
           <div className="catalogue-controls">
             <div className="search-input">
               <Search size={17} />
               <label className="sr-only" htmlFor="catalogue-search">
-                Search products
+                {t("Search products")}
               </label>
               <input
                 id="catalogue-search"
@@ -144,7 +141,7 @@ export default function Catalogue({ category }: { category?: Category }) {
                     : next.delete("q");
                   setParams(next, { replace: true });
                 }}
-                placeholder="Search products or brands…"
+                placeholder={t("Search products or brands…")}
               />
               {query && (
                 <button
@@ -153,7 +150,7 @@ export default function Catalogue({ category }: { category?: Category }) {
                     next.delete("q");
                     setParams(next, { replace: true });
                   }}
-                  aria-label="Clear search"
+                  aria-label={t("Clear search")}
                 >
                   <X size={16} />
                 </button>
@@ -161,44 +158,44 @@ export default function Catalogue({ category }: { category?: Category }) {
             </div>
             <button
               ref={filterButton}
-              aria-label="Filter"
+              aria-label={t("Filter")}
               className="catalogue-filter-button button white"
               onClick={() => setShowFilters(!showFilters)}
               aria-expanded={showFilters}
               aria-controls="product-filters"
             >
               <SlidersHorizontal size={18} />
-              Filter
+              {t("Filter")}
               {filterCount > 0 && (
                 <span className="filter-count">{filterCount}</span>
               )}
             </button>
             <label className="sort-label">
-              <span className="sr-only">Sort products</span>
+              <span className="sr-only">{t("Sort products")}</span>
               <select
-                aria-label="Sort products"
+                aria-label={t("Sort products")}
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
               >
-                <option value="newest">Newest first</option>
-                <option value="low">Price: low to high</option>
-                <option value="high">Price: high to low</option>
+                <option value="newest">{t("Newest first")}</option>
+                <option value="low">{t("Price: low to high")}</option>
+                <option value="high">{t("Price: high to low")}</option>
               </select>
             </label>
           </div>
           <section
             id="product-filters"
             className="filters catalogue-filter-panel"
-            aria-label="Product filters"
+            aria-label={t("Product filters")}
             hidden={!showFilters}
           >
             <div className="filter-heading">
-              <h2>Filter products</h2>
+              <h2>{t("Filter products")}</h2>
               <div className="filter-panel-actions">
-                {active && <button onClick={reset}>Reset</button>}
+                {active && <button onClick={reset}>{t("Reset")}</button>}
                 <button
                   className="icon-button"
-                  aria-label="Close filters"
+                  aria-label={t("Close filters")}
                   onClick={() => {
                     setShowFilters(false);
                     filterButton.current?.focus();
@@ -214,31 +211,33 @@ export default function Catalogue({ category }: { category?: Category }) {
                 checked={inStock}
                 onChange={(event) => setInStock(event.target.checked)}
               />{" "}
-              In stock only
+              {t("In stock only")}
             </label>
             {category !== "accessory" && (
               <label>
-                Brand
+                {t("Brand")}
                 <select
-                  aria-label="Brand"
+                  aria-label={t("Brand")}
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                 >
-                  <option value="">All brands</option>
+                  <option value="">{t("All brands")}</option>
                   {brands.map((b) => (
-                    <option key={b}>{b}</option>
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
                   ))}
                 </select>
               </label>
             )}
             <label>
-              Maximum price
+              {t("Maximum price")}
               <select
-                aria-label="Maximum price"
+                aria-label={t("Maximum price")}
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
               >
-                <option value="">Any price</option>
+                <option value="">{t("Any price")}</option>
                 {(category === "accessory"
                   ? [500, 1000, 2000, 3500]
                   : [20000, 35000, 50000, 70000, 100000, 150000]
@@ -252,33 +251,33 @@ export default function Catalogue({ category }: { category?: Category }) {
             {category !== "accessory" && (
               <>
                 <label>
-                  RAM
+                  {t("RAM")}
                   <select
-                    aria-label="RAM"
+                    aria-label={t("RAM")}
                     value={ram}
                     onChange={(e) => setRam(e.target.value)}
                   >
-                    <option value="">Any RAM</option>
+                    <option value="">{t("Any RAM")}</option>
                     {[...new Set(base.filter((p) => p.ram).map((p) => p.ram))]
                       .sort((a, b) => a! - b!)
                       .map((v) => (
                         <option value={v} key={v}>
-                          {v} GB
+                          {v} {t(" GB")}
                         </option>
                       ))}
                   </select>
                 </label>
                 <label>
-                  Storage
+                  {t("Storage")}
                   <select
-                    aria-label="Storage"
+                    aria-label={t("Storage")}
                     value={storage}
                     onChange={(e) => setStorage(e.target.value)}
                   >
-                    <option value="">Any storage</option>
+                    <option value="">{t("Any storage")}</option>
                     {[128, 256].map((v) => (
                       <option value={v} key={v}>
-                        {v} GB
+                        {v} {t(" GB")}
                       </option>
                     ))}
                   </select>
@@ -287,30 +286,34 @@ export default function Catalogue({ category }: { category?: Category }) {
             )}
             {category === "used" && (
               <label>
-                Condition
+                {t("Condition")}
                 <select
-                  aria-label="Condition"
+                  aria-label={t("Condition")}
                   value={condition}
                   onChange={(e) => setCondition(e.target.value)}
                 >
-                  <option value="">All conditions</option>
+                  <option value="">{t("All conditions")}</option>
                   {["Like New", "Excellent", "Good", "Fair"].map((v) => (
-                    <option key={v}>{v}</option>
+                    <option key={v} value={v}>
+                      {t(v)}
+                    </option>
                   ))}
                 </select>
               </label>
             )}
             {(category === "accessory" || !category) && (
               <label>
-                Accessory category
+                {t("Accessory category")}
                 <select
-                  aria-label="Accessory category"
+                  aria-label={t("Accessory category")}
                   value={accessory}
                   onChange={(e) => setAccessory(e.target.value)}
                 >
-                  <option value="">All categories</option>
+                  <option value="">{t("All categories")}</option>
                   {accessoryCategories.map((v) => (
-                    <option key={v}>{v}</option>
+                    <option key={v} value={v}>
+                      {t(v)}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -322,17 +325,18 @@ export default function Catalogue({ category }: { category?: Category }) {
                 filterButton.current?.focus();
               }}
             >
-              Show {result.length}{" "}
-              {result.length === 1 ? "product" : "products"}
+              {t("Show ")}
+              {result.length}{" "}
+              {result.length === 1 ? t("product") : t("products")}
             </button>
           </section>
           <div className="result-count">
-            {result.length} {result.length === 1 ? "product" : "products"}{" "}
-            {query && `matching “${query}”`}
+            {result.length} {result.length === 1 ? t("product") : t("products")}{" "}
+            {query && t("matching “{{query}}”", { query })}
             <span>
               {base.some(isSampleProduct)
-                ? "Includes sample listings"
-                : "Shop pickup available"}
+                ? t("Includes sample listings")
+                : t("Shop pickup available")}
             </span>
           </div>
           {active && (
@@ -341,18 +345,20 @@ export default function Catalogue({ category }: { category?: Category }) {
                 {[
                   query && `“${query}”`,
                   brand,
-                  budget && `Under ${money(Number(budget))}`,
+                  budget &&
+                    t("Under {{price}}", { price: money(Number(budget)) }),
                   ram && `${ram} GB RAM`,
-                  storage && `${storage} GB storage`,
-                  condition,
-                  accessory,
-                  inStock && "In stock",
+                  storage && t("{{count}} GB storage", { count: storage }),
+                  t(condition),
+                  t(accessory),
+                  inStock && t("In stock"),
                 ]
                   .filter(Boolean)
                   .join(" · ")}
               </span>
               <button onClick={reset}>
-                Clear all <X size={14} />
+                {t("Clear all ")}
+                <X size={14} />
               </button>
             </div>
           )}
@@ -365,10 +371,14 @@ export default function Catalogue({ category }: { category?: Category }) {
           ) : (
             <div className="empty-state">
               <Search size={40} />
-              <h2>No matches this time.</h2>
-              <p>Try another search or clear a filter to see more products.</p>
+              <h2>{t("No matches this time.")}</h2>
+              <p>
+                {t(
+                  "Try another search or clear a filter to see more products.",
+                )}
+              </p>
               <button className="button dark" onClick={reset}>
-                Clear filters
+                {t("Clear filters")}
               </button>
             </div>
           )}

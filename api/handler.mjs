@@ -1,17 +1,10 @@
 import { Readable } from "node:stream";
 import { waitUntil } from "@vercel/functions";
-import { createApp } from "../backend/server.mjs";
-import { createDatabaseStore } from "../backend/database-store.mjs";
+import { getHostedApp, hostedEmailBatch } from "../backend/hosted-app.mjs";
 
-let app;
 export default async function handler(request, response) {
   try {
-    if (!process.env.DATABASE_URL)
-      throw new Error("Database is not configured.");
-    app ||= createApp({
-      store: createDatabaseStore(process.env.DATABASE_URL),
-      serverless: true,
-    });
+    const app = getHostedApp();
     // Vercel's Node helper may already have consumed/parsed the request body.
     // Pass a stream containing the same bytes to the existing backend handler.
     let input = request;
@@ -38,7 +31,7 @@ export default async function handler(request, response) {
     await app.handle(input, response);
     waitUntil(
       app
-        .drainEmails()
+        .drainEmails(hostedEmailBatch)
         .catch(() => console.error("Email queue could not be processed.")),
     );
   } catch {

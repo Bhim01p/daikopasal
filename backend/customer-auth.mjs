@@ -1,3 +1,4 @@
+import { normalizeDigits } from "../shared/locale.mjs";
 import {
   createHash,
   randomBytes,
@@ -9,7 +10,10 @@ import { HttpError, text } from "./validation.mjs";
 import { stateMap } from "./state-map.mjs";
 
 export function normalizePhone(value) {
-  let number = text(value, "Phone number", 10, 20).replace(/[\s()-]/g, "");
+  let number = text(normalizeDigits(value), "Phone number", 10, 20).replace(
+    /[\s()-]/g,
+    "",
+  );
   if (/^\+9779[78]\d{8}$/.test(number)) number = number.slice(4);
   else if (/^9779[78]\d{8}$/.test(number)) number = number.slice(3);
   if (!/^9[78]\d{8}$/.test(number))
@@ -178,7 +182,7 @@ export function createCustomerAuth(store, options = {}) {
   }
   function verify(request, response, input) {
     const id = text(input?.challengeId, "Login reference", 48, 48);
-    const code = text(input?.code, "Verification code", 6, 6);
+    const code = text(normalizeDigits(input?.code), "Verification code", 6, 6);
     const challenge = challenges.get(id);
     if (
       !challenge ||

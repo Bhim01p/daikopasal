@@ -4,7 +4,12 @@ import { normalizeStore, seedStore } from "./store.mjs";
 
 // A database row lock serializes stock/order changes across Vercel instances.
 // The transaction snapshot stays private to its asynchronous request context.
-export function createDatabaseStore(url, { client } = {}) {
+export function createDatabaseStore(
+  url,
+  { client, schema = "machhapuchhree" } = {},
+) {
+  if (!/^[a-z][a-z0-9_]{0,62}$/.test(schema))
+    throw new Error("Invalid database schema name.");
   if (!url && !client)
     throw new Error("Configure DATABASE_URL before deploying.");
   const sql =
@@ -16,26 +21,27 @@ export function createDatabaseStore(url, { client } = {}) {
       connect_timeout: 10,
       idle_timeout: 20,
       max_lifetime: 300,
+      onnotice: () => {},
     });
   const context = new AsyncLocalStorage();
   let initialization;
   async function initialize() {
     if (!initialization)
       initialization = (async () => {
-        await sql`create schema if not exists machhapuchhree`;
-        await sql`create table if not exists machhapuchhree.store (
+        await sql`create schema if not exists ${sql(schema)}`;
+        await sql`create table if not exists ${sql(schema)}.store (
         id integer primary key check (id = 1),
         data jsonb not null, updated_at timestamptz not null default now()
       )`;
-        await sql`create table if not exists machhapuchhree.images (
+        await sql`create table if not exists ${sql(schema)}.images (
         name text primary key, content_type text not null, data bytea not null,
         created_at timestamptz not null default now()
       )`;
-        await sql`create table if not exists machhapuchhree.catalogue_backups (
+        await sql`create table if not exists ${sql(schema)}.catalogue_backups (
         name text primary key, data jsonb not null,
         created_at timestamptz not null default now()
       )`;
-        await sql`insert into machhapuchhree.store (id, data)
+        await sql`insert into ${sql(schema)}.store (id, data)
         values (1, ${sql.json(seedStore())}) on conflict (id) do nothing`;
       })().catch((error) => {
         initialization = undefined;
@@ -65,30 +71,31 @@ export function createDatabaseStore(url, { client } = {}) {
       return sql.begin(async (tx) => {
         await tx`set local lock_timeout = '15s'`;
         const [row] =
-          await tx`select data from machhapuchhree.store where id = 1 for update`;
+          await tx`select data from ${tx(schema)}.store where id = 1 for update`;
         const current = { data: normalizeStore(row.data), dirty: false, tx };
         const result = await context.run(current, callback);
         if (current.dirty)
-          await tx`update machhapuchhree.store
+          await tx`update ${tx(schema)}.store
           set data = ${tx.json(current.data)}, updated_at = now() where id = 1`;
         return result;
       });
     },
     async saveImage(name, contentType, data) {
-      await snapshot()
-        .tx`insert into machhapuchhree.images (name, content_type, data)
+      const tx = snapshot().tx;
+      await tx`insert into ${tx(schema)}.images (name, content_type, data)
         values (${name}, ${contentType}, ${data})`;
       return { image: `/api/images/${name}` };
     },
     async readImage(name) {
-      const [image] = await snapshot().tx`select content_type, data
-        from machhapuchhree.images where name = ${name}`;
+      const tx = snapshot().tx;
+      const [image] = await tx`select content_type, data
+        from ${tx(schema)}.images where name = ${name}`;
       return image;
     },
     async backupCatalogue(name, data) {
-      await snapshot()
-        .tx`insert into machhapuchhree.catalogue_backups (name, data)
-        values (${name}, ${snapshot().tx.json(data)})`;
+      const tx = snapshot().tx;
+      await tx`insert into ${tx(schema)}.catalogue_backups (name, data)
+        values (${name}, ${tx.json(data)})`;
     },
     async close() {
       await sql.end({ timeout: 5 });

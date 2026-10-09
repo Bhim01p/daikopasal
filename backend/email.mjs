@@ -1,3 +1,4 @@
+import { translate } from "../shared/locale.mjs";
 import { randomUUID } from "node:crypto";
 import { createGmailTransport } from "./gmail.mjs";
 
@@ -34,6 +35,7 @@ const descriptions = {
 };
 export function createOrderEmail(order, kind = "status") {
   if (!order.email) return null; // Older orders may not have an email address.
+  const t = (key) => translate(key, order.language === "ne" ? "ne" : "en");
   const title =
     kind === "received" ? "Order received" : `Order update: ${order.status}`;
   const sample = order.items.some(({ product }) => product.isSample !== false);
@@ -43,7 +45,7 @@ export function createOrderEmail(order, kind = "status") {
       `${product.brand} ${product.name} × ${quantity} — ${money(product.price * quantity)}`,
   );
   const summary = descriptions[order.status];
-  const text = [
+  let text = [
     `Hello ${order.name},`,
     "",
     title,
@@ -69,7 +71,7 @@ export function createOrderEmail(order, kind = "status") {
     "",
     shop.name,
   ].join("\n");
-  const html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f7;color:#222228;font-family:Arial,sans-serif;font-size:16px;line-height:1.6">
+  let html = `<!doctype html><html><body style="margin:0;padding:24px;background:#f6f6f7;color:#222228;font-family:Arial,sans-serif;font-size:16px;line-height:1.6">
     <div style="max-width:600px;margin:auto;padding:28px;background:white;border-top:5px solid #d70750">
     <p style="font-weight:bold">${shop.name}</p><h1 style="font-size:26px">${escape(title)}</h1>
     <p>Hello ${escape(order.name)},</p><p>${escape(summary)}</p>
@@ -81,6 +83,37 @@ export function createOrderEmail(order, kind = "status") {
     <p><strong>Shop pickup</strong><br>${shop.location}<br>Open ${shop.hours}</p>
     <p>Payment is arranged with the shop at pickup. No online payment has been taken.</p>
     <p>Questions? Call <a href="tel:+977${shop.phone}">${shop.phone}</a>.</p></div></body></html>`;
+  if (order.language === "ne") {
+    const paragraphs = [
+      translate("Hello {{name}},", "ne", { name: order.name }),
+      kind === "received"
+        ? t("Order received")
+        : translate("Order update: {{status}}", "ne", {
+            status: t(order.status),
+          }),
+      `${t("Reference")}: ${order.id}`,
+      `${t("Status")}: ${t(order.status)}`,
+      t(summary),
+      ...items,
+      `${t(totalLabel)}: ${money(order.total)}`,
+      ...(sample
+        ? [
+            t(
+              "This order includes sample listings. Confirm actual prices and availability with the shop.",
+            ),
+          ]
+        : []),
+      ...(order.note ? [`${t("Your note")}: ${order.note}`] : []),
+      `${t("Shop pickup")}: ${shop.location}`,
+      `${t("Open")} ${shop.hours}`,
+      t(
+        "Payment is arranged with the shop at pickup. No online payment has been taken.",
+      ),
+      translate("Questions? Call {{phone}}.", "ne", { phone: shop.phone }),
+    ];
+    text = paragraphs.join("\n\n");
+    html = `<!doctype html><html lang="ne"><body style="font-family:Arial,sans-serif;font-size:16px;line-height:1.8;padding:24px"><h1>${escape(t("Machhapuchhree Electronics"))}</h1>${paragraphs.map((p) => `<p>${escape(p)}</p>`).join("")}</body></html>`;
+  }
   return {
     id: randomUUID(),
     orderId: order.id,
@@ -92,7 +125,7 @@ export function createOrderEmail(order, kind = "status") {
     nextAttemptAt: 0,
     message: {
       to: [order.email],
-      subject: `${title} · ${order.id} · ${shop.name}`,
+      subject: `${order.language === "ne" ? (kind === "received" ? t("Order received") : translate("Order update: {{status}}", "ne", { status: t(order.status) })) : title} · ${order.id} · ${shop.name}`,
       text,
       html,
     },
@@ -159,12 +192,19 @@ export function createEmailWorker(
       ),
     });
   }
-  async function drain() {
+  async function drain({ maxJobs = Infinity, maxDurationMs = Infinity } = {}) {
     if (!transport || draining || stopped) return;
     draining = true;
+    const startedAt = Date.now();
+    let processed = 0;
     try {
       for (;;) {
-        if (stopped) break;
+        if (
+          stopped ||
+          processed >= maxJobs ||
+          Date.now() - startedAt >= maxDurationMs
+        )
+          break;
         const claimed = await scope(() => {
           const queue = store.read().emailQueue;
           const job = queue.find(
@@ -222,6 +262,7 @@ export function createEmailWorker(
           return { job, attempts, message };
         });
         if (!claimed) break;
+        processed++;
         if (claimed.skipped) continue;
         const { job, attempts, message } = claimed;
         let providerId;

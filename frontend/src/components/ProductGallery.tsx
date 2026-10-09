@@ -1,3 +1,4 @@
+import { useT } from "../context/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "../types";
@@ -5,6 +6,7 @@ import { productImages, productImageSource } from "../utils/products";
 import { ProductImage } from "./ProductCard";
 
 export default function ProductGallery({ product }: { product: Product }) {
+  const t = useT();
   const images = productImages(product);
   const signature = images.join("|");
   const [selected, setSelected] = useState(0);
@@ -24,12 +26,15 @@ export default function ProductGallery({ product }: { product: Product }) {
     });
   }
   return (
-    <section className="product-gallery" aria-label={`${product.name} photos`}>
+    <section
+      className="product-gallery"
+      aria-label={t("{{v0}} photos", { v0: String(product.name) })}
+    >
       <div
         className="product-gallery-rail"
         ref={rail}
         tabIndex={images.length > 1 ? 0 : undefined}
-        aria-label="Product photos. Swipe to browse."
+        aria-label={t("Product photos. Swipe to browse.")}
         onKeyDown={(event) => {
           if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
             event.preventDefault();
@@ -51,7 +56,10 @@ export default function ProductGallery({ product }: { product: Product }) {
             className="detail-image product-gallery-frame"
             key={image}
             role="group"
-            aria-label={`Photo ${index + 1} of ${images.length}`}
+            aria-label={t("Photo {{v0}} of {{v1}}", {
+              v0: String(index + 1),
+              v1: String(images.length),
+            })}
           >
             <ProductImage product={{ ...product, image }} />
           </div>
@@ -62,19 +70,21 @@ export default function ProductGallery({ product }: { product: Product }) {
           <div className="product-gallery-controls">
             <button
               className="icon-button"
-              aria-label="Previous product photo"
+              aria-label={t("Previous product photo")}
               disabled={selected === 0}
               onClick={() => show(selected - 1)}
             >
               <ChevronLeft size={22} />
             </button>
             <p aria-live="polite">
-              Photo {selected + 1} of {images.length}
-              <span>Swipe or choose a photo below</span>
+              {t("Photo ")}
+              {selected + 1} {t(" of ")}
+              {images.length}
+              <span>{t("Swipe or choose a photo below")}</span>
             </p>
             <button
               className="icon-button"
-              aria-label="Next product photo"
+              aria-label={t("Next product photo")}
               disabled={selected === images.length - 1}
               onClick={() => show(selected + 1)}
             >
@@ -83,13 +93,15 @@ export default function ProductGallery({ product }: { product: Product }) {
           </div>
           <div
             className="product-gallery-thumbnails"
-            aria-label="Choose a product photo"
+            aria-label={t("Choose a product photo")}
           >
             {images.map((image, index) => (
               <button
                 key={image}
                 className={selected === index ? "selected" : ""}
-                aria-label={`View product photo ${index + 1}`}
+                aria-label={t("View product photo {{v0}}", {
+                  v0: String(index + 1),
+                })}
                 aria-pressed={selected === index}
                 onClick={() => show(index)}
               >
@@ -106,8 +118,9 @@ export default function ProductGallery({ product }: { product: Product }) {
       )}
       {images[selected]?.endsWith(".svg") && (
         <p className="image-disclaimer">
-          Illustrative placeholder. Actual product photos can be added by the
-          shop.
+          {t(
+            "Illustrative placeholder. Actual product photos can be added by the shop.",
+          )}
         </p>
       )}
     </section>

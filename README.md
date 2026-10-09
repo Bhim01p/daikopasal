@@ -1,6 +1,6 @@
 # Machhapuchhree Electronics
 
-A small shop website with a React storefront, lightweight Node backend, and a single-admin page. The white, charcoal and pink storefront has a compact desktop header with logo, category navigation, simple search, account and cart in one row. The homepage contains promotional banners and budget links. Product lists live on category pages, with photo banners and a Filter button beside search instead of a sidebar. Phone layouts retain readable text and roomy touch controls.
+A small shop website with a React storefront, lightweight Node backend, and a single-admin page. The white, charcoal and pink storefront has a compact desktop header with logo, category navigation, simple search, account and cart in one row. The homepage contains promotional banners and budget links. Product lists live on category pages, starting with compact search and a Filter button instead of photo banners or a sidebar. Help and Repair have separate navigation links. Phone layouts retain readable text and roomy touch controls.
 
 The banner and generic phone imagery are illustrative. Actual product photos uploaded through the admin take precedence. The built-in imagegen prompts and saved asset paths are recorded in `design/reference-assets.md`.
 
@@ -16,7 +16,7 @@ npm run dev
 
 Storefront: `http://127.0.0.1:8767/` · Admin: `http://127.0.0.1:8767/admin` · Backend: `http://127.0.0.1:3001/`.
 
-The admin is already configured on this machine. Open `backend/ADMIN-ACCESS.txt` for the generated local username and password. The password hash lives in ignored `backend/.env`, and the access file is also ignored. Running setup again preserves the current login. To change it, run `npm run admin:setup -- --reset`, then restart the backend. Active sessions expire after eight hours and are cleared when the server restarts.
+The admin is already configured on this machine. Open `backend/ADMIN-ACCESS.txt` for the generated local username and password. The password hash lives in ignored `backend/.env`, and the access file is also ignored. Running setup again preserves the current login. Choose your own username and password with `npm.cmd run admin:setup -- --custom`; enter a 3–40 character username and a password of at least 12 characters in the private terminal prompts. Custom passwords are stored only as a salted hash and are not copied into the access file. To generate a random password, use `npm.cmd run admin:setup -- --reset`. Restart the backend after either change. Active sessions expire after eight hours; changing credentials invalidates old sessions when the backend restarts.
 
 To run each side separately:
 
@@ -62,7 +62,7 @@ Checkout now requires an email address for order updates. The backend saves an o
 
 Customer accounts now connect phone login, saved name/email, checkout and My orders. Account orders are private to their owner and have status history, active/past filters and pickup guidance. Mobile cart and order empty states offer clear next steps. Guest checkout remains available. Local phone login uses an explicitly labelled development code; live SMS verification still needs a provider. See [backend/CUSTOMER-LOGIN.md](backend/CUSTOMER-LOGIN.md) for testing and production setup.
 
-The header avatar and mobile Account button open a separate login/profile window above the current page. It keeps the current route and catalogue filters, traps keyboard focus, supports Escape/backdrop/close controls and returns focus when closed. New customers complete their profile in the same window. Direct `/login` and checkout login links continue to work as standalone routes. Contact & Help combines shop information, phone repairs and digital meter repair enquiries; old repair URLs redirect to the relevant sections. WhatsApp shortcuts use small icon controls.
+The header avatar and mobile Account button open a separate login/profile window above the current page. It keeps the current route and catalogue filters, traps keyboard focus, supports Escape/backdrop/close controls and returns focus when closed. New customers complete their profile in the same window. Direct `/login` and checkout login links continue to work as standalone routes. Help at `/help` contains shop information, Google Maps links and general enquiries; Repair at `/repair` contains phone and digital meter repair information. `/contact` redirects to Help, and legacy repair URLs redirect to matching Repair sections. Catalogue pages start with compact search/filter/sort controls, without photo banners. The top address/hours/phone strip is removed. WhatsApp shortcuts use small icon controls.
 
 The optional Sparrow SMS adapter is wired into the backend and tested against mocked provider responses. Real delivery needs the shop's provider account/token/sender configuration; it is not active yet. Activation is covered in [backend/SMS-SETUP.md](backend/SMS-SETUP.md). Admin → Products also has a validated inventory import preview that can replace samples while preserving real listings and order receipts, with a private backup before replacement. See [backend/INVENTORY-SETUP.md](backend/INVENTORY-SETUP.md).
 
@@ -97,8 +97,10 @@ For the complete inventory-to-pickup check, start a second fresh QA store with `
 
 Results and screenshots are saved in `qa-results/`. Mobile checks cover text sizes, 44-pixel shopping controls, 16-pixel inputs, navigation, and checkout from 320 to 767 pixels. These are browser-emulated checks, not physical device certification.
 
-The UI refinement check covers the single-row desktop header, compact desktop controls, photo-only catalogue intros, all category filter panels, Contact & Help redirects, overlay login/profile/logout, focus/closing controls and preservation of the underlying route and filters. Layouts are checked from 320 to 1920 pixels.
+The UI refinement check covers the single-row desktop header without a top contact strip, compact catalogue search without banners, all category filter panels, separate Help/Repair pages and legacy redirects, overlay login/profile/logout, focus/closing controls and preservation of the underlying route and filters. Layouts are checked from 320 to 1920 pixels.
 
 `node scripts/verify-shop-improvements.cjs` requires its own fresh isolated QA store (default URL port 8771). It creates temporary listings/orders and checks multiple photo uploads, cover changes/removal, native touch swiping, keyboard navigation, overview filters/counts, exclusion of sample stock, customer privacy, active/past orders and layouts at 320, 390, 768 and 1440 pixels. Email and SMS transports are disabled in the QA server.
 
 Before publishing, replace sample products, set a real domain in `frontend/public/sitemap-template.xml`, rename it to `sitemap.xml`, add its URL to `robots.txt`, and decide on hosted data storage and secure deployment. Nothing is published by this project setup.
+
+Vercel + Neon instructions, including the repository root, `npm run build`, `frontend/dist`, private environment setup and Git push steps, are in [DEPLOYMENT.md](DEPLOYMENT.md). Run `npm run deploy:check` for non-sending service authentication checks, `npm run deploy:test` for isolated Neon order/photo checks, and `npm run deploy:configure` to upload settings to the linked Vercel project. The last command changes remote settings; it does not deploy code.

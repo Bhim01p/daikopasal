@@ -1,9 +1,11 @@
+import { LanguageSwitch, useT } from "../context/LanguageContext";
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { Login } from "../pages/Account";
 import { useCustomer } from "../context/CustomerContext";
 
 export default function AccountDialog({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const dialog = useRef<HTMLDialogElement>(null);
   const { customer } = useCustomer();
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function AccountDialog({ onClose }: { onClose: () => void }) {
           first.focus();
         }
       }}
-      aria-label={customer ? "My account" : "Customer login"}
+      aria-label={customer ? t("My account") : t("Customer login")}
       onCancel={onClose}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return;
@@ -67,11 +69,14 @@ export default function AccountDialog({ onClose }: { onClose: () => void }) {
     >
       <button
         className="icon-button dialog-close"
-        aria-label="Close account window"
+        aria-label={t("Close account window")}
         onClick={onClose}
       >
         <X size={22} />
       </button>
+      <div className="dialog-language">
+        <LanguageSwitch />
+      </div>
       <Login embedded onComplete={onClose} />
     </dialog>
   );

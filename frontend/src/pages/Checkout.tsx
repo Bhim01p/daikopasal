@@ -1,3 +1,6 @@
+import { currentLanguage, useT } from "../context/LanguageContext";
+import { normalizeDigits } from "../../../shared/locale.mjs";
+import { useLanguage } from "../context/LanguageContext";
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -10,7 +13,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../context/ProductContext";
-import { money, shop, whatsapp } from "../data/shop";
+import { money, shop, shopDirections, whatsapp } from "../data/shop";
 import {
   orderMessage,
   readOrders,
@@ -23,6 +26,8 @@ import { EmptyBag } from "./Cart";
 import { isSampleProduct } from "../utils/products";
 import { useCustomer } from "../context/CustomerContext";
 export default function Checkout() {
+  const t = useT();
+  const { language } = useLanguage();
   const { customer, checking, setCustomer } = useCustomer();
   const { products, refresh } = useProducts();
   const { items, total, clear } = useCart();
@@ -47,14 +52,20 @@ export default function Checkout() {
     if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(details.email.trim()))
       next.email = "Enter a valid email address for order updates.";
     if (
-      !/^(?:\+977|977)?9[78]\d{8}$/.test(details.phone.replace(/[\s()-]/g, ""))
+      !/^(?:\+977|977)?9[78]\d{8}$/.test(
+        normalizeDigits(details.phone).replace(/[\s()-]/g, ""),
+      )
     )
       next.phone = "Enter a valid Nepal mobile number, such as 9806600444.";
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      document.getElementById(`customer-${Object.keys(next)[0]}`)?.focus();
+      return;
+    }
     setSaving(true);
     try {
       const order = await createOrder({
+        language,
         accountOrder: !!customer,
         name: details.name.trim(),
         email: details.email.trim(),
@@ -82,18 +93,18 @@ export default function Checkout() {
   }
   return (
     <div className="container standard-page">
-      <span className="eyebrow">Collect your next upgrade</span>
+      <span className="eyebrow">{t("Collect your next upgrade")}</span>
       <h1>
         {customer?.profileComplete
-          ? "Review your pickup order."
-          : "Let’s get your details."}
+          ? t("Review your pickup order.")
+          : t("Let’s get your details.")}
       </h1>
       {!items.length ? (
         <EmptyBag />
       ) : (
         <div className="cart-layout">
           <form className="checkout-form" onSubmit={submit} noValidate>
-            <h2>Customer details</h2>
+            <h2>{t("Customer details")}</h2>
             {customer ? (
               <div className="saved-customer">
                 {customer.profileComplete ? (
@@ -102,31 +113,38 @@ export default function Checkout() {
                     <p>{customer.phone}</p>
                     <p>{customer.email}</p>
                     <p className="summary-note">
-                      Using your saved profile details.
+                      {t("Using your saved profile details.")}
                     </p>
                   </>
                 ) : (
-                  <p>Complete your name and email before placing your order.</p>
+                  <p>
+                    {t(
+                      "Complete your name and email before placing your order.",
+                    )}
+                  </p>
                 )}
                 <Link className="text-link" to="/account?next=/checkout">
                   {customer.profileComplete
-                    ? "Edit saved details"
-                    : "Complete your profile"}
+                    ? t("Edit saved details")
+                    : t("Complete your profile")}
                 </Link>
               </div>
             ) : (
               <>
                 <p>
                   <Link className="text-link" to="/login?next=/checkout">
-                    Log in to use saved details
+                    {t("Log in to use saved details")}
                   </Link>{" "}
-                  or continue as a guest.
+                  {t("or continue as a guest.")}
                 </p>
                 <p>
-                  We’ll save these details with your pickup order for the shop.
+                  {t(
+                    "We’ll save these details with your pickup order for the shop.",
+                  )}
                 </p>
                 <label htmlFor="customer-name">
-                  Full name <span>*</span>
+                  {t("Full name ")}
+                  <span>*</span>
                 </label>
                 <input
                   id="customer-name"
@@ -144,14 +162,15 @@ export default function Checkout() {
                   </p>
                 )}
                 <label htmlFor="customer-phone">
-                  Phone number <span>*</span>
+                  {t("Phone number ")}
+                  <span>*</span>
                 </label>
                 <input
                   id="customer-phone"
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel"
-                  placeholder="98XXXXXXXX"
+                  placeholder={t("98XXXXXXXX")}
                   value={phone}
                   maxLength={20}
                   onChange={(e) => setPhone(e.target.value)}
@@ -165,14 +184,15 @@ export default function Checkout() {
                   </p>
                 )}
                 <label htmlFor="customer-email">
-                  Email address <span>*</span>
+                  {t("Email address ")}
+                  <span>*</span>
                 </label>
                 <input
                   id="customer-email"
                   type="email"
                   inputMode="email"
                   autoComplete="email"
-                  placeholder="you@example.com"
+                  placeholder={t("you@example.com")}
                   value={email}
                   maxLength={254}
                   onChange={(e) => setEmail(e.target.value)}
@@ -181,8 +201,9 @@ export default function Checkout() {
                   required
                 />
                 <p id="email-help" className="summary-note">
-                  Use the email address where you want to receive order and
-                  pickup updates.
+                  {t(
+                    "Use the email address where you want to receive order and pickup updates.",
+                  )}
                 </p>
                 {errors.email && (
                   <p id="email-error" className="field-error">
@@ -194,37 +215,44 @@ export default function Checkout() {
             <div className="pickup-panel">
               <MapPin size={22} />
               <div>
-                <strong>Shop pickup only</strong>
+                <strong>{t("Shop pickup only")}</strong>
                 <p>
-                  {shop.location}
+                  {t(shop.location)}
                   <br />
-                  Open {shop.hours}. Confirm a pickup time with the shop.
+                  {t("Open ")}
+                  {t(shop.hours)}
+                  {t(". Confirm a pickup time with the shop.")}
                   <br />
-                  No delivery address is needed.
+                  {t("No delivery address is needed.")}
                 </p>
               </div>
             </div>
             <label htmlFor="order-note">
-              Order note <span className="optional">(optional)</span>
+              {t("Order note ")}
+              <span className="optional">{t("(optional)")}</span>
             </label>
             <textarea
               id="order-note"
               rows={4}
               maxLength={1000}
-              placeholder="A preferred pickup time or a question about your order…"
+              placeholder={t(
+                "A preferred pickup time or a question about your order…",
+              )}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
             <div className="payment-panel">
-              <strong>Payment confirmed with the shop</strong>
+              <strong>{t("Pay at pickup")}</strong>
               <p>
-                Arrange payment at pickup. There is no online payment on this
-                prototype.
+                {t(
+                  "Arrange payment at pickup. There is no online payment on this prototype.",
+                )}
               </p>
             </div>
             <p className="privacy-note">
-              Your order details are saved on the shop’s local server. You can
-              also send the summary through WhatsApp for pickup confirmation.
+              {t(
+                "Your details are shared with the shop to arrange your pickup. You can also send the summary through WhatsApp for pickup confirmation.",
+              )}
             </p>
             {errors.save && (
               <p className="field-error" role="alert">
@@ -238,12 +266,12 @@ export default function Checkout() {
               }
               type="submit"
             >
-              {saving ? "Saving…" : "Create pickup order"}
+              {saving ? t("Saving…") : t("Create pickup order")}
               <ArrowRight size={17} />
             </button>
           </form>
           <aside className="order-summary">
-            <h2>Your order</h2>
+            <h2>{t("Your order")}</h2>
             {items.map((i) => {
               const p = products.find((p) => p.id === i.productId)!;
               if (!p) return null;
@@ -260,12 +288,12 @@ export default function Checkout() {
               );
             })}
             <div className="summary-line">
-              <span>Subtotal</span>
+              <span>{t("Subtotal")}</span>
               <strong>{money(total)}</strong>
             </div>
             <div className="summary-line">
-              <span>Collection</span>
-              <span>Shop pickup</span>
+              <span>{t("Collection")}</span>
+              <span>{t("Shop pickup")}</span>
             </div>
             <div className="summary-line total">
               <strong>
@@ -274,17 +302,18 @@ export default function Checkout() {
                     (p) => p.id === item.productId && isSampleProduct(p),
                   ),
                 )
-                  ? "Sample total"
-                  : "Total"}
+                  ? t("Sample total")
+                  : t("Total")}
               </strong>
               <strong>{money(total)}</strong>
             </div>
             <p className="summary-note">
-              Your order will appear in the shop’s admin area. Prices and pickup
-              timing will be confirmed by the shop.
+              {t(
+                "Your order will appear in the shop’s admin area. Prices and pickup timing will be confirmed by the shop.",
+              )}
             </p>
             <Link className="text-link" to="/cart">
-              Edit your bag
+              {t("Edit your cart")}
             </Link>
           </aside>
         </div>
@@ -293,6 +322,7 @@ export default function Checkout() {
   );
 }
 export function OrderSuccess({ id }: { id?: string }) {
+  const t = useT();
   const { customer, checking } = useCustomer();
   const location = useLocation();
   const [order, setOrder] = useState<Order | undefined>(() => {
@@ -301,60 +331,81 @@ export function OrderSuccess({ id }: { id?: string }) {
       ? receipt
       : readOrders().find((o) => o.id === id && !o.accountOrder);
   });
+  const [updatedAt, setUpdatedAt] = useState("");
   const [receiptLoading, setReceiptLoading] = useState(true);
   const [receiptError, setReceiptError] = useState("");
   const token = order?.receiptToken;
   useEffect(() => {
     if (!id || checking) return;
     let active = true;
-    api<{ order: Order }>(`/orders/${encodeURIComponent(id)}`, {
-      headers: token ? { "X-Order-Token": token } : {},
-    })
-      .then((result) => {
-        if (active) {
-          setOrder(result.order);
-          saveOrder(result.order);
-        }
+    const refreshReceipt = () =>
+      api<{ order: Order }>(`/orders/${encodeURIComponent(id)}`, {
+        headers: token ? { "X-Order-Token": token } : {},
       })
-      .catch((error) => {
-        if (active && (!token || error.status === 404)) setOrder(undefined);
-        else if (active)
-          setReceiptError(
-            "Your saved receipt is shown. We could not refresh its latest status.",
-          );
-      })
-      .finally(() => {
-        if (active) setReceiptLoading(false);
-      });
+        .then((result) => {
+          if (active) {
+            setOrder(result.order);
+            setReceiptError("");
+            setUpdatedAt(new Date().toISOString());
+            saveOrder(result.order);
+          }
+        })
+        .catch((error) => {
+          if (active && [401, 404].includes(error.status)) setOrder(undefined);
+          else if (active)
+            setReceiptError(
+              "Your saved receipt is shown. We could not refresh its latest status.",
+            );
+        })
+        .finally(() => {
+          if (active) setReceiptLoading(false);
+        });
+    void refreshReceipt();
+    const onFocus = () => {
+      if (document.visibilityState === "visible") void refreshReceipt();
+    };
+    const timer = setInterval(onFocus, 20000);
+    window.addEventListener("focus", onFocus);
     return () => {
       active = false;
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
     };
   }, [id, token, customer?.id, checking]);
   const [copied, setCopied] = useState(false);
   if (checking || receiptLoading)
     return (
       <div className="container empty-state" role="status">
-        Opening your order…
+        {t("Opening your order…")}
       </div>
     );
   if (!order)
     return (
       <div className="container standard-page empty-state">
-        <h1>Let’s find your order.</h1>
+        <h1>{t("Let’s find your order.")}</h1>
+        {receiptError && <p role="alert">{t(receiptError)}</p>}
+        {receiptError && (
+          <button
+            className="button white"
+            onClick={() => window.location.reload()}
+          >
+            {t("Try again")}
+          </button>
+        )}
         <p>
-          For an account order, log in with the number used to place it. For a
-          guest order, use the original browser or contact the shop with your
-          reference.
+          {t(
+            "For an account order, log in with the number used to place it. For a guest order, use the original browser or contact the shop with your reference.",
+          )}
         </p>
         <Link className="button dark" to="/cart">
-          Go to your bag
+          {t("Go to your cart")}
         </Link>
         {!customer && (
           <Link
             className="button white"
             to={`/login?next=${encodeURIComponent(`/order/${id}`)}`}
           >
-            Log in to view order
+            {t("Log in to view order")}
           </Link>
         )}
       </div>
@@ -364,43 +415,67 @@ export function OrderSuccess({ id }: { id?: string }) {
       <div className="success-icon">
         <Check size={36} />
       </div>
-      <span className="eyebrow">Your pickup order</span>
+      <span className="eyebrow">{t("Your pickup order")}</span>
       <h1>
         {order.status === "Completed"
-          ? "Your pickup is complete."
+          ? t("Your pickup is complete.")
           : order.status === "Cancelled"
-            ? "Your order has been cancelled."
-            : "Your order has been received."}
+            ? t("Your order has been cancelled.")
+            : t("Your order has been received.")}
       </h1>
       <p>
-        Thank you, {order.name}. Your order has been received by the shop
-        system.
+        {t("Thank you, ")}
+        {order.name}
+        {t(". Your order has been received by the shop system.")}
         <br />
         <strong>
           {order.status === "Completed"
-            ? "Thank you for shopping with us. Keep this receipt for your records."
+            ? t(
+                "Thank you for shopping with us. Keep this receipt for your records.",
+              )
             : order.status === "Cancelled"
-              ? "This order is closed. Contact the shop if you have a question."
+              ? t(
+                  "This order is closed. Contact the shop if you have a question.",
+                )
               : order.status === "Ready for pickup"
-                ? `Your order is ready. Bring your order reference when collecting it. Open ${shop.hours}.`
+                ? t(
+                    "Your order is ready. Bring your order reference when collecting it. Open {{v0}}.",
+                    { v0: String(shop.hours) },
+                  )
                 : order.status === "Confirmed"
-                  ? "The shop has confirmed your order. Contact us to arrange pickup timing."
-                  : "Contact the shop to confirm availability and pickup timing."}
+                  ? t(
+                      "The shop has confirmed your order. Contact us to arrange pickup timing.",
+                    )
+                  : t(
+                      "Contact the shop to confirm availability and pickup timing.",
+                    )}
         </strong>
       </p>
       <div className="reference">
         {order.id}
-        <span>{order.status}</span>
+        <span>{t(order.status)}</span>
       </div>
+      {updatedAt && (
+        <p className="summary-note">
+          {t("Last refreshed:")}{" "}
+          {new Date(updatedAt).toLocaleTimeString(
+            currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+            { timeZone: "Asia/Kathmandu" },
+          )}
+        </p>
+      )}
       {order.history && (
-        <ol className="order-history" aria-label="Order progress">
+        <ol className="order-history" aria-label={t("Order progress")}>
           {order.history.map((event, index) => (
             <li key={index}>
-              <strong>{event.status}</strong>
+              <strong>{t(event.status)}</strong>
               <time dateTime={event.date}>
-                {new Date(event.date).toLocaleString("en-GB", {
-                  timeZone: "Asia/Kathmandu",
-                })}
+                {new Date(event.date).toLocaleString(
+                  currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+                  {
+                    timeZone: "Asia/Kathmandu",
+                  },
+                )}
               </time>
             </li>
           ))}
@@ -408,24 +483,28 @@ export function OrderSuccess({ id }: { id?: string }) {
       )}
       {order.email && (
         <p className="summary-note">
-          Email for order updates: <strong>{order.email}</strong>.
+          {t("Email for order updates: ")}
+          <strong>{order.email}</strong>.
         </p>
       )}
       {receiptError && (
         <p role="status" className="summary-note">
-          {receiptError}
+          {t(receiptError)}
         </p>
       )}
       <div className="success-summary">
         <div className="summary-line">
-          <span>Created</span>
+          <span>{t("Created")}</span>
           <span>
-            {new Date(order.date).toLocaleDateString("en-GB", {
-              timeZone: "Asia/Kathmandu",
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {new Date(order.date).toLocaleDateString(
+              currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+              {
+                timeZone: "Asia/Kathmandu",
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              },
+            )}
           </span>
         </div>
         {order.items.map((i) => (
@@ -439,14 +518,24 @@ export function OrderSuccess({ id }: { id?: string }) {
         <div className="summary-line total">
           <strong>
             {order.items.some((item) => isSampleProduct(item.product))
-              ? "Sample total"
-              : "Total"}
+              ? t("Sample total")
+              : t("Total")}
           </strong>
           <strong>{money(order.total)}</strong>
         </div>
+        <a
+          className="button white full"
+          href={shopDirections}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {t("Directions to the shop ")}
+          <ArrowUpRight size={16} />
+        </a>
         <div className="pickup-note">
           <MapPin size={17} />
-          Shop pickup · {shop.location}
+          {t("Shop pickup · ")}
+          {t(shop.location)}
         </div>
       </div>
       <a
@@ -456,7 +545,7 @@ export function OrderSuccess({ id }: { id?: string }) {
         rel="noreferrer"
       >
         <MessageCircle size={20} />
-        Contact shop about this order
+        {t("Contact shop about this order")}
         <ArrowUpRight size={17} />
       </a>
       <button
@@ -471,17 +560,20 @@ export function OrderSuccess({ id }: { id?: string }) {
         }}
       >
         <Copy size={16} />
-        {copied ? "Order summary copied" : "Copy order summary"}
+        {copied ? t("Order summary copied") : t("Copy order summary")}
       </button>
       <p className="summary-note">
-        Shop pickup only. Keep your order reference when contacting the shop.
+        {t(
+          "Shop pickup only. Keep your order reference when contacting the shop.",
+        )}
       </p>
       <Link className="text-link" to="/mobiles">
-        Continue exploring <ArrowRight size={16} />
+        {t("Continue exploring ")}
+        <ArrowRight size={16} />
       </Link>
       {order.accountOrder && (
         <Link className="button white full" to="/my-orders">
-          Back to My orders
+          {t("Back to My orders")}
         </Link>
       )}
     </div>

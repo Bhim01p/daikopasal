@@ -1,3 +1,4 @@
+import { normalizeDigits } from "../shared/locale.mjs";
 export class HttpError extends Error {
   constructor(status, message) {
     super(message);
@@ -126,6 +127,12 @@ export function validateProduct(input, existing) {
     stockVersion: existing ? existing.stockVersion + 1 : 0,
     isSample: input.isSample ?? existing?.isSample ?? true,
     description: text(input.description, "Description", 1, 2000),
+    descriptionNe: text(
+      input.descriptionNe ?? existing?.descriptionNe ?? "",
+      "Nepali description",
+      0,
+      2000,
+    ),
     specs,
     added: existing?.added || Date.now(),
   };
@@ -160,7 +167,10 @@ export function validateCustomer(input) {
   const email = text(input.email, "Email address", 3, 254);
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email))
     throw new HttpError(400, "Enter a valid email address for order updates.");
-  const phone = text(input.phone, "Phone", 10, 20).replace(/[\s()-]/g, "");
+  const phone = text(normalizeDigits(input.phone), "Phone", 10, 20).replace(
+    /[\s()-]/g,
+    "",
+  );
   if (!/^(?:\+977|977)?9[78]\d{8}$/.test(phone))
     throw new HttpError(400, "Enter a valid Nepal mobile number.");
   const note =
@@ -182,5 +192,13 @@ export function validateCustomer(input) {
     return { productId, quantity: integer(item.quantity, "Quantity", 1, 10) };
   });
   const requestId = text(input.requestId, "Request reference", 16, 100);
-  return { name, email, phone, note, items, requestId };
+  return {
+    name,
+    email,
+    phone,
+    note,
+    items,
+    requestId,
+    language: input.language === "ne" ? "ne" : "en",
+  };
 }

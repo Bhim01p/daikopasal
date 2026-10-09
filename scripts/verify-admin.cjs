@@ -44,7 +44,7 @@ async function run() {
     .getByLabel("Illustration", { exact: true })
     .selectOption("/assets/charger.svg");
   await page
-    .getByLabel("Description *", { exact: true })
+    .getByLabel("English description *", { exact: true })
     .fill("A temporary product used only by the isolated browser check.");
   await page.getByLabel("Product photo", { exact: true }).setInputFiles({
     name: "qa-product.png",
@@ -58,8 +58,24 @@ async function run() {
     .getByText("Photo uploaded. Save the product to use it in the shop.")
     .waitFor();
   await page
-    .getByLabel("Additional specifications", { exact: true })
-    .fill("Cable length: 1 metre\nConnector: USB-C");
+    .getByRole("button", { name: "Add specification", exact: true })
+    .click();
+  await page
+    .getByLabel("Specification 2 name", { exact: true })
+    .fill("Cable length");
+  await page
+    .getByLabel("Specification 2 value", { exact: true })
+    .fill("1 metre");
+  await page
+    .getByRole("button", { name: "Add specification", exact: true })
+    .click();
+  await page
+    .getByLabel("Specification 3 name", { exact: true })
+    .fill("Connector");
+  await page.getByLabel("Specification 3 value", { exact: true }).fill("USB-C");
+  await page
+    .getByLabel("Nepali description", { exact: true })
+    .fill("परीक्षण केबलको नेपाली विवरण।");
   await page.getByRole("button", { name: "Save product", exact: true }).click();
   await page
     .getByText("Product saved. The storefront catalogue has been updated.")
@@ -90,7 +106,7 @@ async function run() {
   assert.ok(
     await page.getByLabel("Increase quantity", { exact: true }).isDisabled(),
   );
-  await page.getByRole("button", { name: "Add to bag", exact: true }).click();
+  await page.getByRole("button", { name: "Add to cart", exact: true }).click();
   await page.goto(base + "/cart");
   assert.equal(await page.locator(".quantity span").textContent(), "3");
   assert.ok(
@@ -111,10 +127,10 @@ async function run() {
     200,
   );
   await page.reload();
-  await page.getByRole("heading", { name: "Your shopping bag." }).waitFor();
+  await page.getByRole("heading", { name: "Your shopping cart." }).waitFor();
   await page
     .getByText(
-      "Stock changed. We updated your bag to the available quantities.",
+      "Stock changed. We updated your cart to the available quantities.",
     )
     .waitFor();
   assert.equal(await page.locator(".quantity span").textContent(), "1");
@@ -142,16 +158,18 @@ async function run() {
   assert.equal(soldOut.available, false);
   await page.goto(base + "/admin");
   await page.getByRole("tab", { name: "Orders", exact: true }).click();
-  await page.getByLabel(`Status for ${reference}`).waitFor();
-  await page
-    .getByLabel(`Status for ${reference}`)
-    .selectOption("Ready for pickup");
-  await page.getByText("Order status updated.", { exact: true }).waitFor();
-  const orderCard = page
-    .locator(".admin-order")
-    .filter({ has: page.getByLabel(`Status for ${reference}`) });
-  assert.equal(await orderCard.locator(".admin-email-updates li").count(), 2);
-  assert.equal(await orderCard.getByText("Queued", { exact: true }).count(), 2);
+  const orderCard = page.locator(".admin-order").filter({ hasText: reference });
+  await orderCard
+    .getByRole("button", { name: "Confirm order", exact: true })
+    .click();
+  await orderCard
+    .getByRole("button", { name: "Ready for pickup", exact: true })
+    .click();
+  await orderCard
+    .getByRole("button", { name: "Complete pickup", exact: true })
+    .waitFor();
+  assert.equal(await orderCard.locator(".admin-email-updates li").count(), 3);
+  assert.equal(await orderCard.getByText("Queued", { exact: true }).count(), 3);
   await page
     .getByText("Email sending is not configured yet.", { exact: false })
     .waitFor();
@@ -162,9 +180,25 @@ async function run() {
     .waitFor();
   await page.goto(base + "/admin");
   await page.getByRole("tab", { name: "Orders", exact: true }).click();
-  await page.getByLabel(`Status for ${reference}`).selectOption("Cancelled");
+  await page
+    .locator(".admin-order")
+    .filter({ hasText: reference })
+    .getByRole("button", { name: "Cancel order", exact: true })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cancel order", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
   await page.getByText("Order status updated.", { exact: true }).waitFor();
-  assert.ok(await page.getByLabel(`Status for ${reference}`).isDisabled());
+  assert.equal(
+    await page
+      .locator(".admin-order")
+      .filter({ hasText: reference })
+      .getByRole("button", { name: "Cancel order", exact: true })
+      .count(),
+    0,
+  );
   const restocked = (
     await (await page.request.get(base + "/api/products")).json()
   ).products.find((product) => product.id === stockProduct.id);
@@ -189,7 +223,7 @@ async function run() {
     );
     assert.ok(productWidth <= width, `Admin products overflow at ${width}`);
     await page.getByRole("tab", { name: "Orders", exact: true }).click();
-    await page.getByLabel(`Status for ${reference}`).waitFor();
+    await page.locator('.admin-order').filter({hasText:reference}).waitFor();
     const orderWidth = await page.evaluate(
       () => document.documentElement.scrollWidth,
     );

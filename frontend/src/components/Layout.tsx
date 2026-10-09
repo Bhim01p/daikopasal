@@ -1,3 +1,5 @@
+import { useT } from "../context/LanguageContext";
+import { LanguageSwitch } from "../context/LanguageContext";
 import { useState, useEffect } from "react";
 import {
   Link,
@@ -28,21 +30,28 @@ const links = [
   ["/mobiles", "New phones"],
   ["/second-hand", "Used phones"],
   ["/accessories", "Accessories"],
-  ["/contact", "Contact & Help"],
+  ["/help", "Help"],
+  ["/repair", "Repair"],
   ["/my-orders", "My orders"],
 ];
 export function Brand() {
+  const t = useT();
   return (
-    <Link to="/" className="brand" aria-label={`${shop.name} home`}>
+    <Link
+      to="/"
+      className="brand"
+      aria-label={t("{{v0}} home", { v0: String(shop.name) })}
+    >
       <Mountain size={33} />
       <span>
         {shop.name.replace(/\s+Electronics$/i, "")}
-        <small>ELECTRONICS</small>
+        <small>{t("ELECTRONICS")}</small>
       </span>
     </Link>
   );
 }
 export default function Layout() {
+  const t = useT();
   const { customer } = useCustomer();
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
@@ -76,26 +85,17 @@ export default function Layout() {
   return (
     <>
       <a className="skip-link" href="#main">
-        Skip to content
+        {t("Skip to content")}
       </a>
-      <div className="top-bar">
-        <div className="container">
-          <span>
-            {shop.location}{" "}
-            <span className="top-divider">· Open {shop.hours}</span>
-          </span>
-          <a href={`tel:+${shop.internationalPhone}`}>
-            <Phone size={15} /> {shop.phone}
-          </a>
-        </div>
-      </div>
-      <header className="site-header">
+      <header
+        className={`site-header ${["/mobiles", "/second-hand", "/accessories", "/search"].includes(location.pathname) ? "catalogue-header" : ""}`}
+      >
         <div className="container nav-row">
           <Brand />
           <div className="reference-nav-wrap">
             <nav
               id="main-navigation"
-              aria-label="Main navigation"
+              aria-label={t("Main navigation")}
               className={`reference-main-nav ${menu ? "open" : ""}`}
             >
               {links.map(([to, label]) => (
@@ -105,7 +105,7 @@ export default function Layout() {
                   end={to === "/"}
                   onClick={() => setMenu(false)}
                 >
-                  {label}
+                  {t(label)}
                 </NavLink>
               ))}
             </nav>
@@ -119,31 +119,34 @@ export default function Layout() {
             }}
           >
             <label className="sr-only" htmlFor="header-query">
-              Search all products
+              {t("Search all products")}
             </label>
             <input
               id="header-query"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search products…"
+              placeholder={t("Search products…")}
             />
-            <button type="submit" aria-label="Search the shop">
+            <button type="submit" aria-label={t("Search the shop")}>
               <Search size={21} />
             </button>
           </form>
           <div className="nav-tools">
+            <LanguageSwitch />
             <button
               className="customer-account-link"
               onClick={() => setAccountOpen(true)}
               aria-haspopup="dialog"
-              aria-label={customer ? "My account" : "Customer login"}
+              aria-label={customer ? t("My account") : t("Customer login")}
             >
               <UserRound size={22} />
             </button>
             <Link
               to="/cart"
               className="bag-link"
-              aria-label={`Shopping bag, ${count} items`}
+              aria-label={t("Shopping cart, {{v0}} items", {
+                v0: String(count),
+              })}
             >
               <ShoppingBag size={20} />
               <span>{count}</span>
@@ -151,7 +154,7 @@ export default function Layout() {
             <button
               className="icon-button menu-button"
               onClick={() => setMenu(!menu)}
-              aria-label={menu ? "Close navigation" : "Open navigation"}
+              aria-label={menu ? t("Close navigation") : t("Open navigation")}
               aria-expanded={menu}
               aria-controls="main-navigation"
             >
@@ -168,55 +171,58 @@ export default function Layout() {
           <div>
             <Brand />
             <p>
-              Your local stop for mobiles,
-              <br /> accessories, and repairs.
+              {t("Your local stop for mobiles,")}
+              <br /> {t(" accessories, and repairs.")}
             </p>
             <small>
               © {new Date().getFullYear()} {shop.name}
             </small>
           </div>
           <div>
-            <h3>Explore the shop</h3>
+            <h3>{t("Explore the shop")}</h3>
             {links.slice(1).map(([to, label]) => (
               <Link key={to} to={to}>
-                {label}
+                {t(label)}
               </Link>
             ))}
           </div>
           <div>
-            <h3>Visit the shop</h3>
+            <h3>{t("Visit the shop")}</h3>
             <p>
-              {shop.location}
+              {t(shop.location)}
               <br />
-              Open {shop.hours}
+              {t("Open ")}
+              {t(shop.hours)}
               <br />
-              Shop pickup only
+              {t("Shop pickup only")}
             </p>
-            <Link to="/contact">
-              Contact & location <ArrowUpRight size={14} />
+            <Link to="/help">
+              {t("Contact & location ")}
+              <ArrowUpRight size={14} />
             </Link>
           </div>
           <div>
-            <h3>Let’s talk.</h3>
+            <h3>{t("Let’s talk.")}</h3>
             <a href={`tel:+${shop.internationalPhone}`}>
               <Phone size={14} />
               {shop.phone}
             </a>
             <a href={whatsapp()} target="_blank" rel="noreferrer">
-              Message on WhatsApp <ArrowUpRight size={14} />
+              {t("Message on WhatsApp ")}
+              <ArrowUpRight size={14} />
             </a>
             <p className="footer-note">
-              Facebook · Instagram · TikTok
+              {t("Facebook · Instagram · TikTok")}
               <br />
-              Links coming later
+              {t("Links coming later")}
             </p>
           </div>
         </div>
       </footer>
-      <nav className="mobile-dock" aria-label="Quick navigation">
+      <nav className="mobile-dock" aria-label={t("Quick navigation")}>
         <NavLink to="/" end>
           <HomeIcon size={21} />
-          <span>Home</span>
+          <span>{t("Home")}</span>
         </NavLink>
         <NavLink
           to="/mobiles"
@@ -227,7 +233,7 @@ export default function Layout() {
           }
         >
           <Smartphone size={21} />
-          <span>Shop</span>
+          <span>{t("Shop")}</span>
         </NavLink>
         <NavLink
           to="/cart"
@@ -240,7 +246,10 @@ export default function Layout() {
           }
         >
           <ShoppingBag size={21} />
-          <span>Bag{count > 0 ? ` (${count})` : ""}</span>
+          <span>
+            {t("Cart")}
+            {count > 0 ? ` (${count})` : ""}
+          </span>
         </NavLink>
         <button
           onClick={() => setAccountOpen(true)}
@@ -253,13 +262,13 @@ export default function Layout() {
           }
         >
           <UserRound size={21} />
-          <span>Account</span>
+          <span>{t("Account")}</span>
         </button>
         <a
           href={whatsapp()}
           target="_blank"
           rel="noreferrer"
-          aria-label="Chat with shop on WhatsApp"
+          aria-label={t("Chat with shop on WhatsApp")}
         >
           <WhatsAppIcon size={24} />
         </a>
@@ -269,14 +278,14 @@ export default function Layout() {
         href={whatsapp()}
         target="_blank"
         rel="noreferrer"
-        aria-label="Contact shop on WhatsApp"
+        aria-label={t("Contact shop on WhatsApp")}
       >
         <WhatsAppIcon size={25} />
       </a>
       {notice && (
         <div className="toast" role="status">
-          {notice}
-          <button onClick={dismiss} aria-label="Dismiss notification">
+          {t(notice)}
+          <button onClick={dismiss} aria-label={t("Dismiss notification")}>
             <X size={17} />
           </button>
         </div>

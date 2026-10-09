@@ -1,18 +1,21 @@
+import { currentLanguage, useT } from "../context/LanguageContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Package, ArrowRight, RefreshCw } from "lucide-react";
 import { useCustomer } from "../context/CustomerContext";
 import { api, ApiError } from "../utils/api";
-import { money } from "../data/shop";
+import { money, shopDirections } from "../data/shop";
 import type { Order } from "../types";
 
 export default function MyOrders() {
+  const t = useT();
   const { customer, checking, setCustomer } = useCustomer();
   const [result, setResult] = useState<{
     customerId: string;
     orders: Order[];
   } | null>(null);
   const [error, setError] = useState("");
+  const [updatedAt, setUpdatedAt] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "past">("all");
   const customerId = customer?.id;
@@ -30,6 +33,7 @@ export default function MyOrders() {
       const response = await api<{ orders: Order[] }>("/customer/orders");
       if (!isCurrent()) return;
       setResult({ customerId, orders: response.orders });
+      setUpdatedAt(new Date().toISOString());
       setError("");
     } catch (error) {
       if (!isCurrent()) return;
@@ -65,7 +69,7 @@ export default function MyOrders() {
   if (checking)
     return (
       <div className="container empty-state" role="status">
-        Opening your orders…
+        {t("Opening your orders…")}
       </div>
     );
   if (!customer)
@@ -75,19 +79,22 @@ export default function MyOrders() {
           <span className="shop-empty-icon">
             <Package size={36} aria-hidden="true" />
           </span>
-          <h1>Your orders, in one place.</h1>
+          <h1>{t("Your orders, in one place.")}</h1>
           <p>
-            Log in with your phone to follow orders placed through your account.
+            {t(
+              "Log in with your phone to follow orders placed through your account.",
+            )}
           </p>
           <div className="shop-empty-actions">
             <Link className="button dark" to="/login?next=/my-orders">
-              Log in to see orders
+              {t("Log in to see orders")}
               <ArrowRight size={18} />
             </Link>
           </div>
           <p className="summary-note">
-            Guest receipts stay available in the browser used to place the
-            order.
+            {t(
+              "Guest receipts stay available in the browser used to place the order.",
+            )}
           </p>
         </div>
       </div>
@@ -113,11 +120,12 @@ export default function MyOrders() {
     <div className="container account-page">
       <div className="my-orders-heading">
         <div>
-          <span className="eyebrow">Your shop account</span>
-          <h1>My orders.</h1>
+          <span className="eyebrow">{t("Your shop account")}</span>
+          <h1>{t("My orders.")}</h1>
           <p>
-            Follow your pickup orders and view their details. Updates refresh
-            automatically.
+            {t(
+              "Follow your pickup orders and view their details. Updates refresh automatically.",
+            )}
           </p>
         </div>
         <button
@@ -126,15 +134,24 @@ export default function MyOrders() {
           onClick={() => void refresh()}
         >
           <RefreshCw size={18} />
-          {busy ? "Refreshing…" : "Refresh orders"}
+          {busy ? t("Refreshing…") : t("Refresh orders")}
         </button>
       </div>
+      {updatedAt && (
+        <p className="summary-note">
+          {t("Last refreshed: ")}
+          {new Date(updatedAt).toLocaleTimeString(
+            currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+            { timeZone: "Asia/Kathmandu" },
+          )}
+        </p>
+      )}
       <Link className="text-link" to="/account">
-        Your profile
+        {t("Your profile")}
         <ArrowRight size={16} />
       </Link>
       {!!orders?.length && (
-        <div className="order-filter-bar" aria-label="Filter your orders">
+        <div className="order-filter-bar" aria-label={t("Filter your orders")}>
           {(
             [
               ["all", "All orders"],
@@ -147,17 +164,17 @@ export default function MyOrders() {
               aria-pressed={filter === value}
               onClick={() => setFilter(value)}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
       )}
       {error && (
         <p className="field-error" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
-      {!orders && !error && <p role="status">Loading your orders…</p>}
+      {!orders && !error && <p role="status">{t("Loading your orders…")}</p>}
       {orders && !shownOrders?.length && (
         <div className="empty-state shop-empty-state">
           <span className="shop-empty-icon">
@@ -165,30 +182,34 @@ export default function MyOrders() {
           </span>
           <h2>
             {!orders.length
-              ? "No orders yet."
+              ? t("No orders yet.")
               : filter === "active"
-                ? "You’re all caught up."
-                : "No past orders yet."}
+                ? t("You’re all caught up.")
+                : t("No past orders yet.")}
           </h2>
           <p>
             {!orders.length
-              ? "Place an order while signed in and follow its pickup progress here."
+              ? t(
+                  "Place an order while signed in and follow its pickup progress here.",
+                )
               : filter === "active"
-                ? "Your completed and cancelled orders are saved under Past orders."
-                : "Completed and cancelled orders will appear here."}
+                ? t(
+                    "Your completed and cancelled orders are saved under Past orders.",
+                  )
+                : t("Completed and cancelled orders will appear here.")}
           </p>
           <div className="shop-empty-actions">
             <Link className="button dark" to="/mobiles">
-              Explore phones
+              {t("Explore phones")}
               <ArrowRight size={18} />
             </Link>
             {orders.length > 0 ? (
               <button className="button white" onClick={() => setFilter("all")}>
-                View all orders
+                {t("View all orders")}
               </button>
             ) : (
               <Link className="button white" to="/accessories">
-                Browse accessories
+                {t("Browse accessories")}
               </Link>
             )}
           </div>
@@ -201,21 +222,26 @@ export default function MyOrders() {
               <div>
                 <h2>{order.id}</h2>
                 <p>
-                  {new Date(order.date).toLocaleDateString("en-GB", {
-                    timeZone: "Asia/Kathmandu",
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
+                  {new Date(order.date).toLocaleDateString(
+                    currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+                    {
+                      timeZone: "Asia/Kathmandu",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    },
+                  )}
                 </p>
               </div>
               <span
                 className={`order-status ${order.status === "Cancelled" ? "cancelled" : order.status === "Completed" ? "completed" : order.status === "Ready for pickup" ? "ready" : order.status === "Confirmed" ? "confirmed" : "pending"}`}
               >
-                {order.status}
+                {t(order.status)}
               </span>
             </div>
-            <p className="customer-order-guidance">{guidance[order.status]}</p>
+            <p className="customer-order-guidance">
+              {t(guidance[order.status])}
+            </p>
             <ul>
               {order.items.map(({ product, quantity }) => (
                 <li key={product.id}>
@@ -227,10 +253,18 @@ export default function MyOrders() {
             <div className="customer-order-bottom">
               <div>
                 <strong>{money(order.total)}</strong>
-                <p>Shop pickup</p>
+                <p>{t("Shop pickup")}</p>
+                <a
+                  className="text-link"
+                  href={shopDirections}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t("Directions to the shop")}
+                </a>
               </div>
               <Link className="button dark" to={`/order/${order.id}`}>
-                View order
+                {t("View order")}
                 <ArrowRight size={18} />
               </Link>
             </div>

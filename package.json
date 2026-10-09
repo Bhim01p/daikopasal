@@ -17,7 +17,12 @@
     "build": "npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
     "admin:setup": "node backend/setup-admin.mjs",
+    "sms:setup": "node backend/setup-sms.mjs",
+    "sms:check": "node backend/setup-sms.mjs --check",
     "test:backend": "node --test backend/test/*.test.mjs",
+    "deploy:check": "node scripts/check-deployment.mjs",
+    "deploy:test": "node scripts/verify-neon.mjs",
+    "deploy:configure": "node scripts/configure-vercel.mjs",
     "format": "prettier --write frontend/src frontend/vite.config.ts frontend/tsconfig.json frontend/index.html frontend/package.json backend/*.mjs backend/test/*.mjs scripts/*.cjs scripts/*.mjs package.json README.md"
   },
   "devDependencies": {

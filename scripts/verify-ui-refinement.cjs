@@ -42,7 +42,8 @@ async function run() {
       await page.getByText("Shop by budget", { exact: true }).count(),
       0,
     );
-    assert.equal(await page.locator(".reference-main-nav a").count(), 6);
+    assert.equal(await page.locator(".reference-main-nav a").count(), 7);
+    assert.equal(await page.locator(".top-bar").count(), 0);
     assert.equal(await page.locator(".floating-whatsapp").textContent(), "");
     for (const width of [1200, 1280, 1440, 1920]) {
       await page.setViewportSize({ width, height: 1000 });
@@ -97,7 +98,7 @@ async function run() {
         "Desktop catalogue button is too tall",
       );
       assert.equal(await page.locator(".page-intro").count(), 0);
-      assert.ok(await page.locator(".catalogue-photo-banner img").isVisible());
+      assert.equal(await page.locator(".catalogue-photo-banner").count(), 0);
       assert.ok(await page.locator("#product-filters").isHidden());
       const search = await page
         .locator(".catalogue-controls .search-input")
@@ -105,6 +106,10 @@ async function run() {
       const button = await page
         .getByRole("button", { name: "Filter", exact: true })
         .boundingBox();
+      assert.ok(
+        search.width <= 362 && search.height <= 40,
+        "Desktop catalogue search must stay compact",
+      );
       assert.ok(
         Math.abs(search.y - button.y) < 3 && button.x > search.x,
         "Filter must be beside search",
@@ -224,22 +229,24 @@ async function run() {
     await codeLogin();
     await page.locator(".account-dialog").waitFor({ state: "detached" });
     assert.equal(page.url(), beforeUrl);
-    await go("/contact");
-    for (const name of [
-      "Contact & Help",
-      "Phone repair",
-      "Digital meter repair",
-    ])
-      await page.getByRole("heading", { name, exact: true }).waitFor();
+    await go("/help");
+    await page.getByRole("heading", { name: "Help", exact: true }).waitFor();
+    assert.equal(await page.locator(".help-services").count(), 0);
     assert.ok(
       (await page.locator(".contact-layout").textContent()).includes(
         "8 AM–6 PM",
       ),
     );
+    await go("/contact");
+    await page.waitForURL("**/help");
+    await go("/repair");
+    for (const name of ["Repair", "Phone repair", "Digital meter repair"])
+      await page.getByRole("heading", { name, exact: true }).waitFor();
+    assert.equal(await page.locator(".contact-layout").count(), 0);
     await go("/mobile-repair");
-    await page.waitForURL("**/contact#phone-repairs");
+    await page.waitForURL("**/repair#phone-repairs");
     await go("/digital-meter-repair");
-    await page.waitForURL("**/contact#digital-meter-repairs");
+    await page.waitForURL("**/repair#digital-meter-repairs");
     for (const width of [320, 360, 390, 650, 768, 1024, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       for (const route of [
@@ -247,7 +254,8 @@ async function run() {
         "/mobiles",
         "/second-hand",
         "/accessories",
-        "/contact",
+        "/help",
+        "/repair",
       ]) {
         await go(route);
         await fits();
@@ -330,7 +338,7 @@ async function run() {
       compactDesktopControls: true,
       homepageBannersOnly: true,
       categoryFilterPanels: true,
-      combinedContactHelp: true,
+      separateHelpAndRepair: true,
       loginOverlayPreservesRouteAndFilters: true,
       modalFocusEscapeBackdropAndProfileFlow: true,
       responsiveWidths: [320, 360, 390, 650, 768, 1024, 1280, 1440, 1920],

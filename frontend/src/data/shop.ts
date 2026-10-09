@@ -1,3 +1,4 @@
+import { currentLanguage, translateCurrent } from "../context/LanguageContext";
 export const shop = {
   name: "Machhapuchhree Electronics",
   location: "Lekhnath, Pokhara, Nepal",
@@ -10,8 +11,12 @@ export const shop = {
 const mapQuery = encodeURIComponent(`${shop.mapName}, ${shop.address}`);
 export const shopMap = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 export const shopDirections = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(shop.address)}`;
-export const money = (value: number) => `Rs. ${value.toLocaleString("en-NP")}`;
+export const money = (value: number) =>
+  `${currentLanguage() === "ne" ? "रु." : "Rs."} ${value.toLocaleString(currentLanguage() === "ne" ? "ne-NP" : "en-NP")}`;
 export const whatsapp = (
-  message = `Hello ${shop.name}, I found your website and would like some information.`,
+  message = translateCurrent(
+    "Hello {{shop}}, I found your website and would like some information.",
+    { shop: shop.name },
+  ),
 ) =>
   `https://wa.me/${shop.internationalPhone}?text=${encodeURIComponent(message)}`;

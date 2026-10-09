@@ -9,6 +9,8 @@ The current local workspace still uses development codes. Real SMS is **not acti
 1. Obtain a Sparrow SMS account, the sender identity assigned to that account, its API token, and sufficient SMS credits. Confirm OTP sending and supported Nepal networks with the provider. No account, purchase or sender registration has been made by this project.
 2. Add these settings privately to the existing ignored `backend/.env`, preserving admin and email settings:
 
+   The interactive shortcut is `npm.cmd run sms:setup`. It asks for the assigned sender and hides the API token while you enter it. It preserves existing admin/email configuration and sends no SMS. `npm.cmd run sms:check` checks whether all required settings are present without sending or purchasing messages. These checks do not verify account approval, credits or handset delivery.
+
    ```dotenv
    CUSTOMER_AUTH_MODE=sms
    SMS_PROVIDER=sparrow
@@ -26,6 +28,6 @@ The current local workspace still uses development codes. Real SMS is **not acti
 
 Use HTTPS and `COOKIE_SECURE=true`, set `NODE_ENV=production`, and remove demonstration accounts/orders from production data if any were created. Development sessions cannot access SMS-mode accounts. Localhost preview URLs are not a deployment.
 
-The current JSON store and in-memory OTP/rate-limit state support one backend process. With a reverse proxy, limits currently see its socket address; configure trusted forwarding and verify limits per customer IP as part of the chosen hosting setup. Do not blindly trust public `X-Forwarded-For` headers. Running multiple instances requires shared sessions, challenges, rate limits and inventory storage.
+The local JSON store and in-memory OTP/rate-limit state support one backend process. The prepared database adapter shares challenges, attempts and sessions across hosted instances; two-instance verification tests pass with a simulated transactional store. Live Neon/Vercel testing and deployment remain paused and incomplete. Only the Vercel entrypoint uses its trusted ingress IP; the normal Node server continues to use the socket address. Do not blindly trust public `X-Forwarded-For` headers.
 
 Provider acceptance only means queued for delivery. A real handset test is required to confirm delivery. Email notifications are configured independently in [EMAIL-SETUP.md](EMAIL-SETUP.md).

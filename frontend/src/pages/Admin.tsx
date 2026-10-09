@@ -1,3 +1,5 @@
+import { currentLanguage, useT } from "../context/LanguageContext";
+import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -14,6 +16,9 @@ import {
   TriangleAlert,
   RefreshCw,
 } from "lucide-react";
+import QuickStock from "../components/QuickStock";
+import OrderCloseDialog from "../components/OrderCloseDialog";
+import { LanguageSwitch, translateCurrent } from "../context/LanguageContext";
 import { Brand } from "../components/Layout";
 import { useProducts } from "../context/ProductContext";
 import { api, ApiError } from "../utils/api";
@@ -21,13 +26,14 @@ import { accessoryCategories } from "../data/categories";
 import { money } from "../data/shop";
 import type { Product, Order, Category } from "../types";
 import { productImages } from "../utils/products";
-const statuses: Order["status"][] = [
-  "Awaiting shop confirmation",
-  "Confirmed",
-  "Ready for pickup",
-  "Completed",
-  "Cancelled",
-];
+const nextActions = {
+  "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
+  Confirmed: ["Ready for pickup", "Ready for pickup"],
+  "Ready for pickup": ["Completed", "Complete pickup"],
+} as const;
+const initialSpecs = [{ name: "Warranty", value: "Confirm with shop" }];
+const draftKey = (draft: Product, specs: { name: string; value: string }[]) =>
+  JSON.stringify([draft, specs]);
 const maxPhotoMB = import.meta.env.VITE_HOSTED === "true" ? 4 : 5;
 const freshProduct = (): Product => ({
   id: "",
@@ -52,6 +58,7 @@ const freshProduct = (): Product => ({
   accessoryCategory: "Mobile Covers",
 });
 export default function Admin() {
+  const t = useT();
   const { products, refresh } = useProducts();
   const [user, setUser] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
@@ -64,16 +71,29 @@ export default function Admin() {
   const [draft, setDraft] = useState<Product>(freshProduct);
   const [orders, setOrders] = useState<Order[]>([]);
   const [emailConfigured, setEmailConfigured] = useState(false);
+  const [smsMode, setSmsMode] = useState("disabled");
+  const [orderQuery, setOrderQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [closingOrder, setClosingOrder] = useState<{
+    order: Order;
+    status: "Completed" | "Cancelled";
+  } | null>(null);
   const [query, setQuery] = useState("");
   const [productFilter, setProductFilter] = useState<"all" | "low-stock">(
     "all",
   );
-  const [orderFilter, setOrderFilter] = useState<"all" | "pending" | "ready">(
-    "all",
-  );
+  const [orderFilter, setOrderFilter] = useState<
+    | "all"
+    | "pending"
+    | "confirmed"
+    | "ready"
+    | "completed"
+    | "cancelled"
+    | "attention"
+  >("all");
   const [ordersLoaded, setOrdersLoaded] = useState(false);
-  const pendingOrders = orders.filter((order) =>
-    ["Awaiting shop confirmation", "Confirmed"].includes(order.status),
+  const pendingOrders = orders.filter(
+    (order) => order.status === "Awaiting shop confirmation",
   );
   const readyOrders = orders.filter(
     (order) => order.status === "Ready for pickup",
@@ -91,13 +111,71 @@ export default function Admin() {
       .toLowerCase()
       .includes(query.toLowerCase()),
   );
-  const shownOrders =
-    orderFilter === "pending"
-      ? pendingOrders
-      : orderFilter === "ready"
-        ? readyOrders
-        : orders;
-  const [specsText, setSpecsText] = useState("Warranty: Confirm with shop");
+  const notificationFailures = orders.filter((order) =>
+    order.emailNotifications?.some((email) => email.state === "failed"),
+  );
+  const shownOrders = orders.filter((order) => {
+    const statusMatches =
+      orderFilter === "all" ||
+      (orderFilter === "attention"
+        ? notificationFailures.includes(order)
+        : order.status ===
+          {
+            pending: "Awaiting shop confirmation",
+            confirmed: "Confirmed",
+            ready: "Ready for pickup",
+            completed: "Completed",
+            cancelled: "Cancelled",
+          }[orderFilter]);
+    const queryMatches = `${order.id} ${order.name} ${order.phone}`
+      .toLowerCase()
+      .includes(normalizeDigits(orderQuery).toLowerCase().trim());
+    const dateMatches =
+      !dateFilter ||
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kathmandu",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(order.date)) === dateFilter;
+    return statusMatches && queryMatches && dateMatches;
+  });
+  const [specRows, setSpecRows] = useState(initialSpecs);
+  const [baseline, setBaseline] = useState(() =>
+    draftKey(freshProduct(), initialSpecs),
+  );
+  const dirty = draftKey(draft, specRows) !== baseline;
+  function mayDiscard() {
+    return (
+      !dirty ||
+      window.confirm(translateCurrent("Discard unsaved product changes?"))
+    );
+  }
+  useEffect(() => {
+    if (!dirty) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const onLink = (event: MouseEvent) => {
+      const link = (event.target as Element).closest("a[href]");
+      if (
+        link &&
+        !link.hasAttribute("download") &&
+        !link.hasAttribute("target") &&
+        !mayDiscard()
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", onLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", onLink, true);
+    };
+  }, [dirty]);
   const [importProducts, setImportProducts] = useState<unknown[]>([]);
   const [inventoryPreview, setInventoryPreview] = useState<{
     products: Pick<Product, "name" | "brand" | "price" | "stockQuantity">[];
@@ -134,7 +212,7 @@ export default function Admin() {
     }
   }
   async function importInventory() {
-    if (!inventoryPreview) return;
+    if (!inventoryPreview || !mayDiscard()) return;
     setBusy("import");
     setError("");
     setNotice("");
@@ -152,7 +230,7 @@ export default function Admin() {
       await refresh();
       setInventoryPreview(null);
       setImportProducts([]);
-      resetDraft();
+      resetDraft(true);
       setNotice(
         `Imported ${result.imported} real products and removed ${result.removedSamples} samples. A private backup was saved.`,
       );
@@ -164,9 +242,12 @@ export default function Admin() {
       setBusy("");
     }
   }
-  function resetDraft() {
-    setDraft(freshProduct());
-    setSpecsText("Warranty: Confirm with shop");
+  function resetDraft(force = false) {
+    if (!force && !mayDiscard()) return;
+    const next = freshProduct();
+    setDraft(next);
+    setSpecRows(initialSpecs);
+    setBaseline(draftKey(next, initialSpecs));
   }
   async function uploadPhotos(files?: FileList) {
     const selected = Array.from(files || []);
@@ -188,7 +269,9 @@ export default function Admin() {
           !["image/jpeg", "image/png", "image/webp"].includes(file.type),
       )
     ) {
-      setError(`Each photo must be JPG, PNG, or WebP and ${maxPhotoMB} MB or smaller.`);
+      setError(
+        `Each photo must be JPG, PNG, or WebP and ${maxPhotoMB} MB or smaller.`,
+      );
       return;
     }
     setBusy("photo");
@@ -229,12 +312,15 @@ export default function Admin() {
     if (error instanceof ApiError && error.status === 401) setUser(null);
   }
   async function loadOrders() {
-    const result = await api<{ orders: Order[]; emailConfigured: boolean }>(
-      "/admin/orders",
-    );
+    const result = await api<{
+      orders: Order[];
+      emailConfigured: boolean;
+      smsMode: string;
+    }>("/admin/orders");
     setOrders(result.orders);
     setOrdersLoaded(true);
     setEmailConfigured(result.emailConfigured);
+    setSmsMode(result.smsMode);
   }
   useEffect(() => {
     let active = true;
@@ -302,6 +388,7 @@ export default function Admin() {
     }
   }
   async function logout() {
+    if (!mayDiscard()) return;
     setBusy("logout");
     try {
       await api("/admin/logout", { method: "POST", body: "{}" });
@@ -312,7 +399,7 @@ export default function Admin() {
       setOrderFilter("all");
       setInventoryPreview(null);
       setImportProducts([]);
-      resetDraft();
+      resetDraft(true);
       setNotice("");
     } catch (error) {
       fail(error);
@@ -327,11 +414,13 @@ export default function Admin() {
     setBusy("save");
     try {
       const specs: Record<string, string> = {};
-      for (const line of specsText.split("\n").filter((line) => line.trim())) {
-        const split = line.indexOf(":");
-        if (split < 1 || !line.slice(split + 1).trim())
-          throw new Error("Enter each specification as Name: Value.");
-        specs[line.slice(0, split).trim()] = line.slice(split + 1).trim();
+      for (const row of specRows) {
+        if (!row.name.trim() && !row.value.trim()) continue;
+        if (!row.name.trim() || !row.value.trim())
+          throw new Error("Enter a name and value for each specification.");
+        if (specs[row.name.trim()])
+          throw new Error("Use different names for each specification.");
+        specs[row.name.trim()] = row.value.trim();
       }
       await api(
         draft.id
@@ -343,7 +432,7 @@ export default function Admin() {
         },
       );
       await refresh();
-      resetDraft();
+      resetDraft(true);
       setNotice("Product saved. The storefront catalogue has been updated.");
     } catch (error) {
       fail(error);
@@ -356,7 +445,10 @@ export default function Admin() {
   async function removeProduct(product: Product) {
     if (
       !window.confirm(
-        `Remove ${product.name} from the catalogue? Existing order receipts will keep their details.`,
+        t(
+          "Remove {{name}} from the catalogue? Existing order receipts will keep their details.",
+          { name: product.name },
+        ),
       )
     )
       return;
@@ -368,7 +460,7 @@ export default function Admin() {
         method: "DELETE",
       });
       await refresh();
-      if (draft.id === product.id) resetDraft();
+      if (draft.id === product.id) resetDraft(true);
       setNotice("Product removed from the catalogue.");
     } catch (error) {
       fail(error);
@@ -392,6 +484,7 @@ export default function Admin() {
       );
       await refresh();
       setNotice("Order status updated.");
+      return true;
     } catch (error) {
       fail(error);
     } finally {
@@ -399,17 +492,18 @@ export default function Admin() {
     }
   }
   function selectProduct(product: Product) {
-    setDraft({
+    if (!mayDiscard()) return;
+    const next = {
       ...product,
       isSample: product.isSample !== false,
       specs: { ...product.specs },
-    });
-    setSpecsText(
-      Object.entries(product.specs)
-        .filter(([key]) => !["RAM", "Storage", "Category"].includes(key))
-        .map(([key, value]) => `${key}: ${value}`)
-        .join("\n"),
-    );
+    };
+    const rows = Object.entries(product.specs)
+      .filter(([key]) => !["RAM", "Storage", "Category"].includes(key))
+      .map(([name, value]) => ({ name, value }));
+    setDraft(next);
+    setSpecRows(rows);
+    setBaseline(draftKey(next, rows));
     setError("");
     setNotice("");
     document
@@ -419,20 +513,21 @@ export default function Admin() {
   if (checking)
     return (
       <div className="container empty-state" role="status">
-        <p>Checking admin access…</p>
+        <p>{t("Checking admin access…")}</p>
       </div>
     );
   if (!user)
     return (
       <div className="admin-login-page">
+        <LanguageSwitch />
         <Brand />
         <form className="admin-login" onSubmit={login}>
           <span className="tile-icon">
             <LockKeyhole size={24} />
           </span>
-          <h1>Welcome back.</h1>
-          <p>Sign in to manage products and pickup orders.</p>
-          <label htmlFor="admin-username">Username</label>
+          <h1>{t("Welcome back.")}</h1>
+          <p>{t("Sign in to manage products and pickup orders.")}</p>
+          <label htmlFor="admin-username">{t("Username")}</label>
           <input
             id="admin-username"
             autoComplete="username"
@@ -441,7 +536,7 @@ export default function Admin() {
             maxLength={100}
             required
           />
-          <label htmlFor="admin-password">Password</label>
+          <label htmlFor="admin-password">{t("Password")}</label>
           <input
             id="admin-password"
             type="password"
@@ -453,14 +548,15 @@ export default function Admin() {
           />
           {error && (
             <p className="field-error" role="alert">
-              {error}
+              {t(error)}
             </p>
           )}
           <button className="button dark full" disabled={busy === "login"}>
-            {busy === "login" ? "Signing in…" : "Sign in"}
+            {busy === "login" ? t("Signing in…") : t("Sign in")}
           </button>
           <Link className="text-link" to="/">
-            Back to the shop <ArrowUpRight size={16} />
+            {t("Back to the shop ")}
+            <ArrowUpRight size={16} />
           </Link>
         </form>
       </div>
@@ -470,8 +566,10 @@ export default function Admin() {
       <header className="admin-header container">
         <Brand />
         <div>
+          <LanguageSwitch />
           <Link className="button white" to="/">
-            View shop <ArrowUpRight size={16} />
+            {t("View shop ")}
+            <ArrowUpRight size={16} />
           </Link>
           <button
             className="button white"
@@ -479,44 +577,46 @@ export default function Admin() {
             disabled={!!busy}
           >
             <LogOut size={16} />
-            Sign out
+            {t("Sign out")}
           </button>
         </div>
       </header>
       <main className="container admin-shell">
         <div className="admin-heading">
           <div>
-            <span className="eyebrow">Shop admin</span>
-            <h1>Keep your shop up to date.</h1>
-            <p>Manage the catalogue and follow up on pickup orders.</p>
+            <span className="eyebrow">{t("Shop admin")}</span>
+            <h1>{t("Keep your shop up to date.")}</h1>
+            <p>{t("Manage the catalogue and follow up on pickup orders.")}</p>
           </div>
           <div className="admin-counts">
             <span>
               <Package size={18} />
-              {products.length} products
+              {products.length} {t(" products")}
             </span>
             <span>
               <ShoppingBag size={18} />
-              {orders.length} orders
+              {orders.length} {t(" orders")}
             </span>
           </div>
         </div>
-        <section className="admin-overview" aria-label="Shop overview">
+        <section className="admin-overview" aria-label={t("Shop overview")}>
           <div className="admin-overview-heading">
-            <h2>At a glance</h2>
+            <h2>{t("At a glance")}</h2>
             <button
               className="button white"
               disabled={!!busy}
               onClick={() => void refreshOverview()}
             >
               <RefreshCw size={17} />
-              {busy === "overview" ? "Refreshing…" : "Refresh overview"}
+              {busy === "overview" ? t("Refreshing…") : t("Refresh overview")}
             </button>
           </div>
           <div className="admin-overview-cards">
             <button
               className="overview-card pending"
-              aria-label={`Pending orders: ${ordersLoaded ? pendingOrders.length : "loading"}`}
+              aria-label={t("Pending orders: {{v0}}", {
+                v0: String(ordersLoaded ? pendingOrders.length : "loading"),
+              })}
               disabled={!!busy}
               onClick={() => {
                 setTab("orders");
@@ -525,12 +625,14 @@ export default function Admin() {
             >
               <Clock3 size={23} />
               <strong>{ordersLoaded ? pendingOrders.length : "…"}</strong>
-              <span>Pending orders</span>
-              <small>Awaiting confirmation or confirmed</small>
+              <span>{t("New orders")}</span>
+              <small>{t("Awaiting your confirmation")}</small>
             </button>
             <button
               className="overview-card ready"
-              aria-label={`Ready for pickup: ${ordersLoaded ? readyOrders.length : "loading"}`}
+              aria-label={t("Ready for pickup: {{v0}}", {
+                v0: String(ordersLoaded ? readyOrders.length : "loading"),
+              })}
               disabled={!!busy}
               onClick={() => {
                 setTab("orders");
@@ -539,12 +641,14 @@ export default function Admin() {
             >
               <CheckCircle2 size={23} />
               <strong>{ordersLoaded ? readyOrders.length : "…"}</strong>
-              <span>Ready for pickup</span>
-              <small>Prepared for customers to collect</small>
+              <span>{t("Ready for pickup")}</span>
+              <small>{t("Prepared for customers to collect")}</small>
             </button>
             <button
               className="overview-card stock"
-              aria-label={`Low stock products: ${lowStock.length}`}
+              aria-label={t("Low stock products: {{v0}}", {
+                v0: String(lowStock.length),
+              })}
               disabled={!!busy}
               onClick={() => {
                 setTab("products");
@@ -554,12 +658,42 @@ export default function Admin() {
             >
               <TriangleAlert size={23} />
               <strong>{lowStock.length}</strong>
-              <span>Low stock</span>
-              <small>Real listings with 0–3 units left</small>
+              <span>{t("Low stock")}</span>
+              <small>{t("Real listings with 0–3 units left")}</small>
             </button>
           </div>
         </section>
-        <div className="admin-tabs" role="tablist" aria-label="Admin sections">
+        <section className="service-status" aria-label={t("Service status")}>
+          <span>
+            {t("Email: ")}
+            {emailConfigured ? t("Connected") : t("Setup needed")}
+          </span>
+          <span>
+            {t("SMS: ")}
+            {smsMode === "sms"
+              ? t("Connected")
+              : smsMode === "development"
+                ? t("Local test mode")
+                : t("Setup needed")}
+          </span>
+          <button
+            className="text-link"
+            onClick={() => {
+              setTab("orders");
+              setOrderFilter("attention");
+              setOrderQuery("");
+              setDateFilter("");
+            }}
+          >
+            {t("Notification failures: ")}
+            {notificationFailures.length}
+          </button>
+        </section>
+        <div
+          className="admin-tabs"
+          role="tablist"
+          aria-label={t("Admin sections")}
+        >
           <button
             role="tab"
             aria-selected={tab === "products"}
@@ -573,7 +707,7 @@ export default function Admin() {
             }}
           >
             <Package size={18} />
-            Products
+            {t("Products")}
           </button>
           <button
             role="tab"
@@ -589,17 +723,17 @@ export default function Admin() {
             }}
           >
             <ShoppingBag size={18} />
-            Orders
+            {t("Orders")}
           </button>
         </div>
         {error && (
           <div className="admin-error" role="alert">
-            {error}
+            {t(error)}
           </div>
         )}
         {notice && (
           <div className="admin-notice" role="status">
-            {notice}
+            {t(notice)}
           </div>
         )}
         {tab === "products" ? (
@@ -611,7 +745,7 @@ export default function Admin() {
           >
             <section className="admin-panel">
               <div className="admin-panel-title">
-                <h2>Your catalogue</h2>
+                <h2>{t("Your catalogue")}</h2>
                 <button
                   className="button teal"
                   disabled={!!busy}
@@ -623,27 +757,29 @@ export default function Admin() {
                   }}
                 >
                   <Plus size={17} />
-                  New product
+                  {t("New product")}
                 </button>
               </div>
               <label className="sr-only" htmlFor="admin-product-search">
-                Search catalogue
+                {t("Search catalogue")}
               </label>
               <details className="admin-import">
-                <summary>Replace sample listings</summary>
+                <summary>{t("Replace sample listings")}</summary>
                 <p>
-                  Import verified shop details. Existing real listings and all
-                  order receipts are kept. A private backup is saved before
-                  samples are removed.
+                  {t(
+                    "Import verified shop details. Existing real listings and all order receipts are kept. A private backup is saved before samples are removed.",
+                  )}
                 </p>
                 <a
                   className="text-link"
                   href="/inventory-template.json"
                   download
                 >
-                  Download inventory template
+                  {t("Download inventory template")}
                 </a>
-                <label htmlFor="inventory-file">Inventory JSON file</label>
+                <label htmlFor="inventory-file">
+                  {t("Inventory JSON file")}
+                </label>
                 <input
                   id="inventory-file"
                   type="file"
@@ -656,12 +792,13 @@ export default function Admin() {
                 />
                 {inventoryPreview && (
                   <div className="inventory-preview">
-                    <h3>Review inventory</h3>
+                    <h3>{t("Review inventory")}</h3>
                     <p>
-                      {inventoryPreview.products.length} real products to add ·{" "}
-                      {inventoryPreview.sampleCount} samples to remove ·{" "}
-                      {inventoryPreview.preservedCount} existing real listings
-                      to keep.
+                      {inventoryPreview.products.length}{" "}
+                      {t(" real products to add ·")}{" "}
+                      {inventoryPreview.sampleCount} {t(" samples to remove ·")}{" "}
+                      {inventoryPreview.preservedCount}{" "}
+                      {t(" existing real listings to keep.")}
                     </p>
                     <ul>
                       {inventoryPreview.products.map((product, index) => (
@@ -671,15 +808,15 @@ export default function Admin() {
                           </strong>
                           <span>
                             {money(product.price)} · {product.stockQuantity}{" "}
-                            available
+                            {t("available")}
                           </span>
                         </li>
                       ))}
                     </ul>
                     <p>
-                      Check prices and counts before importing. Placeholder
-                      images stay labelled until you upload actual product
-                      photos.
+                      {t(
+                        "Check prices and counts before importing. Placeholder images stay labelled until you upload actual product photos.",
+                      )}
                     </p>
                     <button
                       className="button dark"
@@ -687,8 +824,8 @@ export default function Admin() {
                       onClick={() => void importInventory()}
                     >
                       {busy === "import"
-                        ? "Importing…"
-                        : "Import real listings and remove samples"}
+                        ? t("Importing…")
+                        : t("Import real listings and remove samples")}
                     </button>
                   </div>
                 )}
@@ -698,26 +835,30 @@ export default function Admin() {
                 className="admin-product-search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search products or brands…"
+                placeholder={t("Search products or brands…")}
               />
-              <div className="admin-filter-bar" aria-label="Filter inventory">
+              <div
+                className="admin-filter-bar"
+                aria-label={t("Filter inventory")}
+              >
                 <button
                   aria-pressed={productFilter === "all"}
                   onClick={() => setProductFilter("all")}
                 >
-                  All products
+                  {t("All products")}
                 </button>
                 <button
                   aria-pressed={productFilter === "low-stock"}
                   onClick={() => setProductFilter("low-stock")}
                 >
-                  Low stock
+                  {t("Low stock")}
                 </button>
               </div>
               {productFilter === "low-stock" && (
                 <p className="admin-help">
-                  Real listings with 0–3 units available. Sample products are
-                  excluded.
+                  {t(
+                    "Real listings with 0–3 units available. Sample products are excluded.",
+                  )}
                 </p>
               )}
               <div className="admin-product-list">
@@ -729,10 +870,10 @@ export default function Admin() {
                       <span>
                         {p.brand} ·{" "}
                         {p.category === "used"
-                          ? "Second-hand"
+                          ? t("Second-hand")
                           : p.category === "new"
-                            ? "New mobile"
-                            : p.accessoryCategory}
+                            ? t("New mobile")
+                            : t(p.accessoryCategory)}
                       </span>
                       <b>{money(p.price)}</b>
                       <span
@@ -740,18 +881,26 @@ export default function Admin() {
                           p.available ? "admin-stock available" : "admin-stock"
                         }
                       >
-                        {p.isSample !== false ? "Sample · " : ""}
+                        {p.isSample !== false ? t("Sample · ") : ""}
                         {p.stockQuantity === null
-                          ? "Set stock quantity"
-                          : `${p.stockQuantity} available`}
+                          ? t("Set stock quantity")
+                          : t("{{v0}} available", {
+                              v0: String(p.stockQuantity),
+                            })}
                       </span>
                     </div>
+                    <QuickStock
+                      product={p}
+                      disabled={!!busy}
+                      onSaved={() => refresh()}
+                      onError={fail}
+                    />
                     <div className="admin-product-actions">
                       <button
                         className="icon-button"
                         disabled={!!busy}
                         onClick={() => selectProduct(p)}
-                        aria-label={`Edit ${p.name}`}
+                        aria-label={t("Edit {{v0}}", { v0: String(p.name) })}
                       >
                         <Pencil size={18} />
                       </button>
@@ -759,7 +908,7 @@ export default function Admin() {
                         className="icon-button admin-remove"
                         disabled={!!busy}
                         onClick={() => void removeProduct(p)}
-                        aria-label={`Delete ${p.name}`}
+                        aria-label={t("Delete {{v0}}", { v0: String(p.name) })}
                       >
                         <Trash2 size={18} />
                       </button>
@@ -770,8 +919,8 @@ export default function Admin() {
               {!shownProducts.length && (
                 <p className="admin-empty">
                   {productFilter === "low-stock" && !query
-                    ? "No real products have 3 or fewer units available."
-                    : "No products match this search."}
+                    ? t("No real products have 3 or fewer units available.")
+                    : t("No products match this search.")}
                 </p>
               )}
             </section>
@@ -780,64 +929,392 @@ export default function Admin() {
               id="product-editor"
               onSubmit={saveProduct}
             >
-              <h2>{draft.id ? "Edit product" : "Add a product"}</h2>
-              <label htmlFor="product-name">Product name *</label>
-              <input
-                id="product-name"
-                value={draft.name}
-                maxLength={100}
-                minLength={2}
-                required
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              />
-              <label htmlFor="product-brand">Brand *</label>
-              <input
-                id="product-brand"
-                value={draft.brand}
-                maxLength={60}
-                required
-                onChange={(e) => setDraft({ ...draft, brand: e.target.value })}
-              />
-              <div className="admin-form-row">
-                <div>
-                  <label htmlFor="product-category">Category</label>
-                  <select
-                    id="product-category"
-                    value={draft.category}
-                    disabled={busy === "photo"}
-                    onChange={(e) => {
-                      const category = e.target.value as Category;
-                      const image = draft.image.startsWith("/api/images/")
-                        ? draft.image
-                        : category === "accessory"
-                          ? "/assets/cover.svg"
-                          : "/assets/phone.svg";
-                      setDraft({
-                        ...draft,
-                        category,
-                        image,
-                        images: [
+              <h2>{draft.id ? t("Edit product") : t("Add a product")}</h2>
+              <fieldset className="editor-section">
+                <legend>{t("Basic details")}</legend>
+                <label htmlFor="product-name">{t("Product name *")}</label>
+                <input
+                  id="product-name"
+                  value={draft.name}
+                  maxLength={100}
+                  minLength={2}
+                  required
+                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                />
+                <label htmlFor="product-brand">{t("Brand *")}</label>
+                <input
+                  id="product-brand"
+                  value={draft.brand}
+                  maxLength={60}
+                  required
+                  onChange={(e) =>
+                    setDraft({ ...draft, brand: e.target.value })
+                  }
+                />
+                <div className="admin-form-row">
+                  <div>
+                    <label htmlFor="product-category">{t("Category")}</label>
+                    <select
+                      id="product-category"
+                      value={draft.category}
+                      disabled={busy === "photo"}
+                      onChange={(e) => {
+                        const category = e.target.value as Category;
+                        const image = draft.image.startsWith("/api/images/")
+                          ? draft.image
+                          : category === "accessory"
+                            ? "/assets/cover.svg"
+                            : "/assets/phone.svg";
+                        setDraft({
+                          ...draft,
+                          category,
                           image,
-                          ...productImages(draft).filter(
-                            (value) => value !== draft.image && value !== image,
-                          ),
-                        ],
-                        ram: draft.ram || 8,
-                        storage: draft.storage || 128,
-                        condition: draft.condition || "Good",
-                        battery: draft.battery ?? 90,
-                        accessoryCategory:
-                          draft.accessoryCategory || "Mobile Covers",
-                      });
-                    }}
-                  >
-                    <option value="new">New mobile</option>
-                    <option value="used">Second-hand set</option>
-                    <option value="accessory">Accessory</option>
-                  </select>
+                          images: [
+                            image,
+                            ...productImages(draft).filter(
+                              (value) =>
+                                value !== draft.image && value !== image,
+                            ),
+                          ],
+                          ram: draft.ram || 8,
+                          storage: draft.storage || 128,
+                          condition: draft.condition || "Good",
+                          battery: draft.battery ?? 90,
+                          accessoryCategory:
+                            draft.accessoryCategory || "Mobile Covers",
+                        });
+                      }}
+                    >
+                      <option value="new">{t("New mobile")}</option>
+                      <option value="used">{t("Second-hand set")}</option>
+                      <option value="accessory">{t("Accessory")}</option>
+                    </select>
+                  </div>
                 </div>
+                {draft.category !== "accessory" ? (
+                  <div className="admin-form-row">
+                    <div>
+                      <label htmlFor="product-ram">{t("RAM (GB)")}</label>
+                      <input
+                        id="product-ram"
+                        type="number"
+                        min={1}
+                        max={64}
+                        step={1}
+                        value={draft.ram ?? ""}
+                        required={draft.category === "new"}
+                        onChange={(e) =>
+                          setDraft({
+                            ...draft,
+                            ram: e.target.value
+                              ? e.target.valueAsNumber
+                              : undefined,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="product-storage">
+                        {t("Storage (GB) *")}
+                      </label>
+                      <input
+                        id="product-storage"
+                        type="number"
+                        min={16}
+                        max={2048}
+                        step={1}
+                        value={draft.storage ?? ""}
+                        required
+                        onChange={(e) =>
+                          setDraft({
+                            ...draft,
+                            storage: e.target.value
+                              ? e.target.valueAsNumber
+                              : undefined,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <label htmlFor="product-accessory-category">
+                      {t("Accessory category")}
+                    </label>
+                    <select
+                      id="product-accessory-category"
+                      value={draft.accessoryCategory || accessoryCategories[0]}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          accessoryCategory: e.target.value,
+                        })
+                      }
+                    >
+                      {accessoryCategories.map((category) => (
+                        <option key={category} value={category}>
+                          {t(category)}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+                {draft.category === "used" && (
+                  <div className="admin-form-row">
+                    <div>
+                      <label htmlFor="product-condition">
+                        {t("Condition")}
+                      </label>
+                      <select
+                        id="product-condition"
+                        value={draft.condition || "Good"}
+                        onChange={(e) =>
+                          setDraft({
+                            ...draft,
+                            condition: e.target.value as Product["condition"],
+                          })
+                        }
+                      >
+                        {["Like New", "Excellent", "Good", "Fair"].map(
+                          (condition) => (
+                            <option key={condition} value={condition}>
+                              {t(condition)}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="product-battery">
+                        {t("Battery health (%) *")}
+                      </label>
+                      <input
+                        id="product-battery"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={draft.battery ?? ""}
+                        required
+                        onChange={(e) =>
+                          setDraft({
+                            ...draft,
+                            battery: e.target.value
+                              ? e.target.valueAsNumber
+                              : undefined,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+              </fieldset>
+              <fieldset className="editor-section">
+                <legend>{t("Photos")}</legend>
+                <label htmlFor="product-image">{t("Illustration")}</label>
+                <select
+                  id="product-image"
+                  disabled={busy === "photo"}
+                  value={draft.image}
+                  onChange={(e) => {
+                    const image = e.target.value;
+                    setDraft({
+                      ...draft,
+                      image,
+                      images: [
+                        image,
+                        ...productImages(draft).filter(
+                          (value) => value !== draft.image && value !== image,
+                        ),
+                      ],
+                    });
+                  }}
+                >
+                  {draft.image.startsWith("/api/images/") && (
+                    <option value={draft.image}>
+                      {t("Uploaded product photo")}
+                    </option>
+                  )}
+                  {[
+                    ["phone", "Phone"],
+                    ["cover", "Cover / protector"],
+                    ["charger", "Charger"],
+                    ["earbuds", "Earbuds / earphones"],
+                    ["speaker", "Speaker"],
+                    ["bulb", "Bulb"],
+                  ].map(([key, label]) => (
+                    <option key={key} value={`/assets/${key}.svg`}>
+                      {t(label)}
+                    </option>
+                  ))}
+                </select>
+                <label htmlFor="product-photo">{t("Product photo")}</label>
+                <input
+                  id="product-photo"
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={!!busy}
+                  onChange={(e) => {
+                    void uploadPhotos(e.target.files || undefined);
+                    e.target.value = "";
+                  }}
+                />
+                <span className="admin-help">
+                  {t(
+                    "Add up to six photos. JPG, PNG, or WebP · up to 5 MB each. Choose the cover photo below.",
+                  )}
+                </span>
+                <div className="admin-photo-grid">
+                  {productImages(draft).map((image, index, photos) => (
+                    <div className="admin-photo-tile" key={image}>
+                      <img
+                        src={image}
+                        alt={t("Product photo {{v0}} preview", {
+                          v0: String(index + 1),
+                        })}
+                      />
+                      <strong>
+                        {index === 0
+                          ? t("Cover photo")
+                          : t("Photo {{v0}}", { v0: String(index + 1) })}
+                      </strong>
+                      <button
+                        type="button"
+                        disabled={!!busy || index === 0}
+                        aria-label={t("Make photo {{v0}} cover", {
+                          v0: String(index + 1),
+                        })}
+                        onClick={() => {
+                          const images = [
+                            image,
+                            ...photos.filter((value) => value !== image),
+                          ];
+                          setDraft({ ...draft, image, images });
+                        }}
+                      >
+                        {t("Use as cover")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!!busy || photos.length === 1}
+                        aria-label={t("Remove photo {{v0}}", {
+                          v0: String(index + 1),
+                        })}
+                        onClick={() => {
+                          const images = photos.filter(
+                            (value) => value !== image,
+                          );
+                          setDraft({ ...draft, image: images[0], images });
+                        }}
+                      >
+                        {t("Remove")}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset className="editor-section">
+                <legend>{t("Descriptions & specifications")}</legend>
+                <label htmlFor="product-description">
+                  {t("English description *")}
+                </label>
+                <textarea
+                  id="product-description"
+                  rows={4}
+                  value={draft.description}
+                  maxLength={2000}
+                  required
+                  onChange={(e) =>
+                    setDraft({ ...draft, description: e.target.value })
+                  }
+                />
+                <label htmlFor="product-description-ne">
+                  {t("Nepali description")}
+                </label>
+                <textarea
+                  id="product-description-ne"
+                  lang="ne"
+                  rows={4}
+                  maxLength={2000}
+                  value={draft.descriptionNe || ""}
+                  onChange={(e) =>
+                    setDraft({ ...draft, descriptionNe: e.target.value })
+                  }
+                />
+                <p className="summary-note">
+                  {t(
+                    "English is shown when a Nepali description is unavailable.",
+                  )}
+                </p>
+                <h3>{t("Specifications")}</h3>
+                <div className="specification-rows">
+                  {specRows.map((row, index) => (
+                    <div className="specification-row" key={index}>
+                      <input
+                        aria-label={t("Specification {{v0}} name", {
+                          v0: String(index + 1),
+                        })}
+                        placeholder={t("Name")}
+                        value={row.name}
+                        maxLength={50}
+                        onChange={(e) =>
+                          setSpecRows(
+                            specRows.map((item, i) =>
+                              i === index
+                                ? { ...item, name: e.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <input
+                        aria-label={t("Specification {{v0}} value", {
+                          v0: String(index + 1),
+                        })}
+                        placeholder={t("Value")}
+                        maxLength={200}
+                        value={row.value}
+                        onChange={(e) =>
+                          setSpecRows(
+                            specRows.map((item, i) =>
+                              i === index
+                                ? { ...item, value: e.target.value }
+                                : item,
+                            ),
+                          )
+                        }
+                      />
+                      <button
+                        type="button"
+                        className="icon-button"
+                        aria-label={t("Remove specification {{v0}}", {
+                          v0: String(index + 1),
+                        })}
+                        onClick={() =>
+                          setSpecRows(specRows.filter((_, i) => i !== index))
+                        }
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="button white"
+                  disabled={specRows.length >= 20}
+                  onClick={() =>
+                    setSpecRows([...specRows, { name: "", value: "" }])
+                  }
+                >
+                  {t("Add specification")}
+                </button>
+              </fieldset>
+              <fieldset className="editor-section">
+                <legend>{t("Price & stock")}</legend>
                 <div>
-                  <label htmlFor="product-price">Price (NPR) *</label>
+                  <label htmlFor="product-price">{t("Price (NPR) *")}</label>
                   <input
                     id="product-price"
                     type="number"
@@ -851,267 +1328,55 @@ export default function Admin() {
                     }
                   />
                 </div>
-              </div>
-              {draft.category !== "accessory" ? (
-                <div className="admin-form-row">
-                  <div>
-                    <label htmlFor="product-ram">RAM (GB)</label>
-                    <input
-                      id="product-ram"
-                      type="number"
-                      min={1}
-                      max={64}
-                      step={1}
-                      value={draft.ram ?? ""}
-                      required={draft.category === "new"}
-                      onChange={(e) =>
-                        setDraft({
-                          ...draft,
-                          ram: e.target.value
-                            ? e.target.valueAsNumber
-                            : undefined,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="product-storage">Storage (GB) *</label>
-                    <input
-                      id="product-storage"
-                      type="number"
-                      min={16}
-                      max={2048}
-                      step={1}
-                      value={draft.storage ?? ""}
-                      required
-                      onChange={(e) =>
-                        setDraft({
-                          ...draft,
-                          storage: e.target.value
-                            ? e.target.valueAsNumber
-                            : undefined,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <label htmlFor="product-accessory-category">
-                    Accessory category
-                  </label>
-                  <select
-                    id="product-accessory-category"
-                    value={draft.accessoryCategory || accessoryCategories[0]}
+                <label className="admin-check">
+                  <input
+                    type="checkbox"
+                    checked={draft.isSample !== false}
                     onChange={(e) =>
-                      setDraft({ ...draft, accessoryCategory: e.target.value })
+                      setDraft({ ...draft, isSample: e.target.checked })
                     }
-                  >
-                    {accessoryCategories.map((category) => (
-                      <option key={category}>{category}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-              {draft.category === "used" && (
-                <div className="admin-form-row">
-                  <div>
-                    <label htmlFor="product-condition">Condition</label>
-                    <select
-                      id="product-condition"
-                      value={draft.condition || "Good"}
-                      onChange={(e) =>
-                        setDraft({
-                          ...draft,
-                          condition: e.target.value as Product["condition"],
-                        })
-                      }
-                    >
-                      {["Like New", "Excellent", "Good", "Fair"].map(
-                        (condition) => (
-                          <option key={condition}>{condition}</option>
-                        ),
-                      )}
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="product-battery">
-                      Battery health (%) *
-                    </label>
-                    <input
-                      id="product-battery"
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={draft.battery ?? ""}
-                      required
-                      onChange={(e) =>
-                        setDraft({
-                          ...draft,
-                          battery: e.target.value
-                            ? e.target.valueAsNumber
-                            : undefined,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              )}
-              <label htmlFor="product-image">Illustration</label>
-              <select
-                id="product-image"
-                disabled={busy === "photo"}
-                value={draft.image}
-                onChange={(e) => {
-                  const image = e.target.value;
-                  setDraft({
-                    ...draft,
-                    image,
-                    images: [
-                      image,
-                      ...productImages(draft).filter(
-                        (value) => value !== draft.image && value !== image,
-                      ),
-                    ],
-                  });
-                }}
-              >
-                {draft.image.startsWith("/api/images/") && (
-                  <option value={draft.image}>Uploaded product photo</option>
-                )}
-                {[
-                  ["phone", "Phone"],
-                  ["cover", "Cover / protector"],
-                  ["charger", "Charger"],
-                  ["earbuds", "Earbuds / earphones"],
-                  ["speaker", "Speaker"],
-                  ["bulb", "Bulb"],
-                ].map(([key, label]) => (
-                  <option key={key} value={`/assets/${key}.svg`}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              <label htmlFor="product-photo">Product photo</label>
-              <input
-                id="product-photo"
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp"
-                disabled={!!busy}
-                onChange={(e) => {
-                  void uploadPhotos(e.target.files || undefined);
-                  e.target.value = "";
-                }}
-              />
-              <span className="admin-help">
-                Add up to six photos. JPG, PNG, or WebP · up to 5 MB each.
-                Choose the cover photo below.
-              </span>
-              <div className="admin-photo-grid">
-                {productImages(draft).map((image, index, photos) => (
-                  <div className="admin-photo-tile" key={image}>
-                    <img
-                      src={image}
-                      alt={`Product photo ${index + 1} preview`}
-                    />
-                    <strong>
-                      {index === 0 ? "Cover photo" : `Photo ${index + 1}`}
-                    </strong>
-                    <button
-                      type="button"
-                      disabled={!!busy || index === 0}
-                      aria-label={`Make photo ${index + 1} cover`}
-                      onClick={() => {
-                        const images = [
-                          image,
-                          ...photos.filter((value) => value !== image),
-                        ];
-                        setDraft({ ...draft, image, images });
-                      }}
-                    >
-                      Use as cover
-                    </button>
-                    <button
-                      type="button"
-                      disabled={!!busy || photos.length === 1}
-                      aria-label={`Remove photo ${index + 1}`}
-                      onClick={() => {
-                        const images = photos.filter(
-                          (value) => value !== image,
-                        );
-                        setDraft({ ...draft, image: images[0], images });
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <label htmlFor="product-description">Description *</label>
-              <textarea
-                id="product-description"
-                rows={4}
-                value={draft.description}
-                maxLength={2000}
-                required
-                onChange={(e) =>
-                  setDraft({ ...draft, description: e.target.value })
-                }
-              />
-              <label htmlFor="product-specs">Additional specifications</label>
-              <textarea
-                id="product-specs"
-                rows={3}
-                placeholder={"Display: 6.5 inch\nColour: Black"}
-                value={specsText}
-                onChange={(e) => setSpecsText(e.target.value)}
-              />
-              <label className="admin-check">
+                  />
+                  <span>{t("Sample listing (example price and stock)")}</span>
+                </label>
+                <label htmlFor="product-stock">{t("Stock quantity *")}</label>
                 <input
-                  type="checkbox"
-                  checked={draft.isSample !== false}
+                  id="product-stock"
+                  type="number"
+                  min={0}
+                  max={1000000}
+                  step={1}
+                  value={
+                    draft.stockQuantity !== null &&
+                    Number.isFinite(draft.stockQuantity)
+                      ? draft.stockQuantity
+                      : ""
+                  }
+                  required
                   onChange={(e) =>
-                    setDraft({ ...draft, isSample: e.target.checked })
+                    setDraft({
+                      ...draft,
+                      stockQuantity: e.target.valueAsNumber,
+                    })
                   }
                 />
-                <span>Sample listing (example price and stock)</span>
-              </label>
-              <label htmlFor="product-stock">Stock quantity *</label>
-              <input
-                id="product-stock"
-                type="number"
-                min={0}
-                max={1000000}
-                step={1}
-                value={
-                  draft.stockQuantity !== null &&
-                  Number.isFinite(draft.stockQuantity)
-                    ? draft.stockQuantity
-                    : ""
-                }
-                required
-                onChange={(e) =>
-                  setDraft({ ...draft, stockQuantity: e.target.valueAsNumber })
-                }
-              />
-              <p className="summary-note">
-                Enter units available for new orders. Existing orders already
-                reserve their units. Set 0 for out of stock.
-              </p>
-              <div className="button-row">
+                <p className="summary-note">
+                  {t(
+                    "Enter units available for new orders. Existing orders already reserve their units. Set 0 for out of stock.",
+                  )}
+                </p>
+              </fieldset>
+              <div className="button-row editor-save-bar">
                 <button className="button dark" type="submit" disabled={!!busy}>
-                  {busy === "save" ? "Saving…" : "Save product"}
+                  {busy === "save" ? t("Saving…") : t("Save product")}
                 </button>
-                {draft.id && (
+                {(draft.id || dirty) && (
                   <button
                     className="button white"
                     type="button"
                     disabled={!!busy}
-                    onClick={resetDraft}
+                    onClick={() => resetDraft()}
                   >
-                    Cancel editing
+                    {t("Cancel editing")}
                   </button>
                 )}
               </div>
@@ -1125,19 +1390,55 @@ export default function Admin() {
             className="admin-panel"
           >
             <div className="admin-panel-title">
-              <h2>Pickup orders</h2>
+              <h2>{t("Pickup orders")}</h2>
               <button
                 className="button white"
                 onClick={() => void loadOrders().catch(fail)}
               >
-                Refresh orders
+                {t("Refresh orders")}
               </button>
             </div>
-            <div className="admin-filter-bar" aria-label="Filter pickup orders">
+            <div className="order-search-controls">
+              <label>
+                <span>{t("Search orders")}</span>
+                <input
+                  placeholder={t("Reference, customer name or phone")}
+                  value={orderQuery}
+                  onChange={(e) => setOrderQuery(e.target.value)}
+                />
+              </label>
+              <label>
+                <span>{t("Order date")}</span>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
+              </label>
+              {(orderQuery || dateFilter) && (
+                <button
+                  className="button white"
+                  onClick={() => {
+                    setOrderQuery("");
+                    setDateFilter("");
+                  }}
+                >
+                  {t("Clear search")}
+                </button>
+              )}
+            </div>
+            <div
+              className="admin-filter-bar"
+              aria-label={t("Filter pickup orders")}
+            >
               {(
                 [
                   ["all", "All orders"],
-                  ["pending", "Pending"],
+                  ["pending", "New orders"],
+                  ["confirmed", "Confirmed"],
+                  ["completed", "Completed"],
+                  ["cancelled", "Cancelled"],
+                  ["attention", "Needs attention"],
                   ["ready", "Ready for pickup"],
                 ] as const
               ).map(([value, label]) => (
@@ -1146,36 +1447,35 @@ export default function Admin() {
                   aria-pressed={orderFilter === value}
                   onClick={() => setOrderFilter(value)}
                 >
-                  {label}
+                  {t(label)}
                 </button>
               ))}
             </div>
             {!ordersLoaded ? (
               <p className="admin-empty" role="status">
-                Loading pickup orders…
+                {t("Loading pickup orders…")}
               </p>
             ) : !shownOrders.length ? (
               <div className="admin-empty">
                 <ShoppingBag size={35} />
                 <h3>
-                  {orderFilter === "all"
-                    ? "No pickup orders yet."
-                    : orderFilter === "pending"
-                      ? "No pending orders."
-                      : "No orders ready for pickup."}
+                  {orders.length
+                    ? t("No orders match these filters.")
+                    : t("No pickup orders yet.")}
                 </h3>
                 <p>
-                  {orderFilter === "all"
-                    ? "Orders created on the storefront will appear here."
-                    : "Choose All orders to see your other orders."}
+                  {orders.length
+                    ? t("Clear the search or choose another filter.")
+                    : t("Orders created on the storefront will appear here.")}
                 </p>
               </div>
             ) : (
               <div className="admin-orders">
                 {!emailConfigured && (
                   <p className="admin-email-note" role="status">
-                    Email sending is not configured yet. Messages are saved in
-                    the queue and will send once the email service is connected.
+                    {t(
+                      "Email sending is not configured yet. Messages are saved in the queue and will send once the email service is connected.",
+                    )}
                   </p>
                 )}
                 {shownOrders.map((order) => (
@@ -1184,9 +1484,12 @@ export default function Admin() {
                       <div>
                         <strong>{order.id}</strong>
                         <span>
-                          {new Date(order.date).toLocaleString("en-GB", {
-                            timeZone: "Asia/Kathmandu",
-                          })}
+                          {new Date(order.date).toLocaleString(
+                            currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+                            {
+                              timeZone: "Asia/Kathmandu",
+                            },
+                          )}
                         </span>
                       </div>
                       <strong>{money(order.total)}</strong>
@@ -1197,7 +1500,7 @@ export default function Admin() {
                       {order.email && (
                         <a href={`mailto:${order.email}`}>{order.email}</a>
                       )}
-                      <span>Shop pickup</span>
+                      <span>{t("Shop pickup")}</span>
                     </div>
                     <ul>
                       {order.items.map((item) => (
@@ -1210,44 +1513,68 @@ export default function Admin() {
                       ))}
                     </ul>
                     {order.note && (
-                      <p className="admin-order-note">Note: {order.note}</p>
+                      <p className="admin-order-note">
+                        {t("Note: ")}
+                        {order.note}
+                      </p>
                     )}
-                    <label htmlFor={`status-${order.id}`}>Order status</label>
-                    <select
-                      id={`status-${order.id}`}
-                      aria-label={`Status for ${order.id}`}
-                      value={order.status}
-                      disabled={
-                        !!busy ||
-                        order.status === "Cancelled" ||
-                        order.status === "Completed"
-                      }
-                      onChange={(e) =>
-                        void updateStatus(
-                          order,
-                          e.target.value as Order["status"],
-                        )
-                      }
-                    >
-                      {statuses.map((status) => (
-                        <option key={status}>{status}</option>
-                      ))}
-                    </select>
+                    <div className="admin-order-actions">
+                      <strong className="order-status">
+                        {t(order.status)}
+                      </strong>
+                      {order.status !== "Completed" &&
+                        order.status !== "Cancelled" && (
+                          <>
+                            <button
+                              className="button dark"
+                              disabled={!!busy}
+                              onClick={() => {
+                                const next =
+                                  nextActions[
+                                    order.status as keyof typeof nextActions
+                                  ];
+                                if (next[0] === "Completed")
+                                  setClosingOrder({
+                                    order,
+                                    status: "Completed",
+                                  });
+                                else void updateStatus(order, next[0]);
+                              }}
+                            >
+                              {t(
+                                nextActions[
+                                  order.status as keyof typeof nextActions
+                                ][1],
+                              )}
+                            </button>
+                            <button
+                              className="button white"
+                              disabled={!!busy}
+                              onClick={() =>
+                                setClosingOrder({ order, status: "Cancelled" })
+                              }
+                            >
+                              {t("Cancel order")}
+                            </button>
+                          </>
+                        )}
+                    </div>
                     {order.status === "Cancelled" && (
                       <p className="summary-note">
-                        Order closed. New orders return reserved units to stock
-                        on cancellation.
+                        {t(
+                          "Order closed. New orders return reserved units to stock on cancellation.",
+                        )}
                       </p>
                     )}
                     {order.status === "Completed" && (
                       <p className="summary-note">
-                        Order closed. Pickup is complete.
+                        {t("Order closed. Pickup is complete.")}
                       </p>
                     )}
                     <div className="admin-email-updates">
-                      <strong>Email updates</strong>
+                      <strong>{t("Email updates")}</strong>
                       {!order.email ? (
-                        <p>This older order has no email address.</p>
+                        <p>{t("This older order has no email address.")}</p>
                       ) : (
                         <ul>
                           {order.emailNotifications?.map((email) => (
@@ -1255,18 +1582,18 @@ export default function Admin() {
                               <div>
                                 <span>
                                   {email.kind === "received"
-                                    ? "Order received"
+                                    ? t("Order received")
                                     : email.orderStatus}
                                 </span>
                                 <small>
                                   {email.state === "accepted"
-                                    ? "Accepted by email service"
+                                    ? t("Accepted by email service")
                                     : email.state === "failed"
-                                      ? "Needs attention"
-                                      : "Queued"}
+                                      ? t("Needs attention")
+                                      : t("Queued")}
                                 </small>
                                 {email.state === "failed" && (
-                                  <p>{email.error}</p>
+                                  <p>{t(email.error)}</p>
                                 )}
                               </div>
                               {email.state === "failed" && emailConfigured && (
@@ -1275,7 +1602,7 @@ export default function Admin() {
                                   disabled={!!busy}
                                   onClick={() => void retryEmail(email.id)}
                                 >
-                                  Retry email
+                                  {t("Retry email")}
                                 </button>
                               )}
                             </li>
@@ -1290,6 +1617,17 @@ export default function Admin() {
           </section>
         )}
       </main>
+      {closingOrder && (
+        <OrderCloseDialog
+          value={closingOrder}
+          busy={!!busy}
+          onCancel={() => setClosingOrder(null)}
+          onConfirm={async () => {
+            if (await updateStatus(closingOrder.order, closingOrder.status))
+              setClosingOrder(null);
+          }}
+        />
+      )}
     </div>
   );
 }

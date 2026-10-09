@@ -61,7 +61,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     ) {
       setItems(valid);
       setNotice(
-        "Stock changed. We updated your bag to the available quantities.",
+        "Stock changed. We updated your cart to the available quantities.",
       );
     }
   }, [products, items]);
@@ -85,7 +85,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const previous = items.find((item) => item.productId === id)?.quantity ?? 0;
     if (previous >= maximum) {
       setNotice(
-        `Your bag already has the available quantity of ${product.name}.`,
+        `Your cart already has the available quantity of ${product.name}.`,
       );
       return;
     }
@@ -104,8 +104,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
     setNotice(
       previous + quantity > maximum
-        ? `Only ${maximum} of ${product.name} are available. Your bag has been updated.`
-        : `${product.name} added to your bag`,
+        ? `Only ${maximum} of ${product.name} are available. Your cart has been updated.`
+        : `${product.name} added to your cart`,
     );
   };
   const setQuantity = (id: string, quantity: number) => {

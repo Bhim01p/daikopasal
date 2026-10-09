@@ -1,3 +1,5 @@
+import { useT } from "../context/LanguageContext";
+import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useId, useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, LogOut, UserRound, Package } from "lucide-react";
@@ -15,6 +17,7 @@ export function Login({
   embedded = false,
   onComplete,
 }: { embedded?: boolean; onComplete?: () => void } = {}) {
+  const t = useT();
   const formId = useId();
   const {
     customer,
@@ -32,8 +35,24 @@ export function Login({
   const [challenge, setChallenge] = useState<{
     challengeId: string;
     expiresAt: number;
+    resendAvailableAt?: number;
     developmentCode?: string;
   } | null>(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const resendSeconds = challenge
+    ? Math.max(
+        0,
+        Math.ceil(
+          ((challenge.resendAvailableAt ?? challenge.expiresAt - 240000) -
+            now) /
+            1000,
+        ),
+      )
+    : 0;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -46,7 +65,7 @@ export function Login({
   if (checking)
     return (
       <div className="container empty-state" role="status">
-        Checking your login…
+        {t("Checking your login…")}
       </div>
     );
   if (customer)
@@ -64,6 +83,22 @@ export function Login({
       );
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
+    if (
+      !challenge &&
+      !/^(?:\+977|977)?9[78]\d{8}$/.test(
+        normalizeDigits(phone).replace(/[\s()-]/g, ""),
+      )
+    ) {
+      setError("Enter a valid Nepal mobile number.");
+      document.getElementById(`${formId}-phone`)?.focus();
+      return;
+    }
+    if (challenge && !/^\d{6}$/.test(code)) {
+      setError("Enter the 6-digit verification code.");
+      document.getElementById(`${formId}-code`)?.focus();
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -74,9 +109,9 @@ export function Login({
           developmentCode?: string;
         }>("/customer/auth/start", {
           method: "POST",
-          body: JSON.stringify({ phone }),
+          body: JSON.stringify({ phone: normalizeDigits(phone) }),
         });
-        setChallenge(result);
+        setChallenge({ ...result, resendAvailableAt: Date.now() + 60000 });
         setCode("");
       } else {
         const result = await api<{ customer: Customer }>(
@@ -108,38 +143,49 @@ export function Login({
       className={`container account-page ${embedded ? "embedded-account" : ""}`}
     >
       <div className="account-heading">
-        <span className="eyebrow">Your shop account</span>
-        <h1>Welcome back.</h1>
-        <p>Save your details and follow your pickup orders.</p>
+        <span className="eyebrow">{t("Your shop account")}</span>
+        <h1>{t("Welcome back.")}</h1>
+        <p>{t("Save your details and follow your pickup orders.")}</p>
       </div>
-      <form className="account-form" onSubmit={submit}>
+      <form className="account-form" onSubmit={submit} noValidate>
         <UserRound size={32} />
-        <h2>{challenge ? "Enter your code" : "Log in with your phone"}</h2>
+        <h2>
+          {challenge ? t("Enter your code") : t("Log in with your phone")}
+        </h2>
         {mode === "development" && (
           <p className="account-demo-note">
-            Local test mode: no SMS is sent and phone ownership is not verified.
-            A test code will appear here.
+            {t(
+              "Local test mode: no SMS is sent and phone ownership is not verified. A test code will appear here.",
+            )}
           </p>
         )}
         {mode === "disabled" && (
           <p className="account-demo-note">
-            Phone login is being set up. You can still browse and use guest
-            checkout.
+            {t(
+              "Phone login is being set up. You can still browse and use guest checkout.",
+            )}
           </p>
         )}
         {challenge ? (
           <>
-            <p>For {phone}. Your code expires after five minutes.</p>
+            <p>
+              {t("For ")}
+              {phone}
+              {t(". Your code expires after five minutes.")}
+            </p>
             {challenge.developmentCode && (
               <p className="account-demo-code">
-                Local test code: <strong>{challenge.developmentCode}</strong>
+                {t("Local test code: ")}
+                <strong>{challenge.developmentCode}</strong>
               </p>
             )}
-            <label htmlFor={`${formId}-code`}>Verification code</label>
+            <label htmlFor={`${formId}-code`}>{t("Verification code")}</label>
             <input
               id={`${formId}-code`}
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) =>
+                setCode(normalizeDigits(e.target.value).replace(/\D/g, ""))
+              }
               autoComplete="one-time-code"
               inputMode="numeric"
               maxLength={6}
@@ -150,7 +196,9 @@ export function Login({
           </>
         ) : (
           <>
-            <label htmlFor={`${formId}-phone`}>Nepal mobile number</label>
+            <label htmlFor={`${formId}-phone`}>
+              {t("Nepal mobile number")}
+            </label>
             <input
               id={`${formId}-phone`}
               type="tel"
@@ -158,18 +206,18 @@ export function Login({
               autoComplete="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="98XXXXXXXX"
+              placeholder={t("98XXXXXXXX")}
               maxLength={20}
               required
             />
             <p className="summary-note">
-              Use your 10-digit number, with or without +977.
+              {t("Use your 10-digit number, with or without +977.")}
             </p>
           </>
         )}
         {(error || sessionError) && (
           <p className="field-error" role="alert">
-            {error || sessionError}
+            {t(error || sessionError)}
           </p>
         )}
         {sessionError && (
@@ -178,7 +226,7 @@ export function Login({
             className="button white"
             onClick={() => void refresh()}
           >
-            Check connection
+            {t("Check connection")}
           </button>
         )}
         <button
@@ -186,35 +234,73 @@ export function Login({
           disabled={busy || mode === "disabled"}
         >
           {busy
-            ? "Please wait…"
+            ? t("Please wait…")
             : challenge
-              ? "Verify and log in"
+              ? t("Verify and log in")
               : mode === "development"
-                ? "Get test code"
-                : "Send login code"}
+                ? t("Get test code")
+                : t("Send login code")}
           <ArrowRight size={18} />
         </button>
         {challenge && (
-          <button
-            className="button white full"
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setChallenge(null);
-              setCode("");
-              setError("");
-            }}
-          >
-            Change number / request new code
-          </button>
+          <div className="otp-actions">
+            <button
+              className="button white full"
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setChallenge(null);
+                setCode("");
+                setError("");
+              }}
+            >
+              {t("Change number")}
+            </button>
+            <button
+              type="button"
+              className="button white full"
+              disabled={busy || resendSeconds > 0}
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                try {
+                  const result = await api<NonNullable<typeof challenge>>(
+                    "/customer/auth/start",
+                    {
+                      method: "POST",
+                      body: JSON.stringify({ phone: normalizeDigits(phone) }),
+                    },
+                  );
+                  setChallenge({
+                    ...result,
+                    resendAvailableAt: Date.now() + 60000,
+                  });
+                  setCode("");
+                  setNow(Date.now());
+                } catch (error) {
+                  setError(
+                    error instanceof Error
+                      ? error.message
+                      : "Please try again.",
+                  );
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              {resendSeconds > 0
+                ? t("Resend in {{v0}}s", { v0: String(resendSeconds) })
+                : t("Resend code")}
+            </button>
+          </div>
         )}
         {embedded ? (
           <button type="button" className="text-link" onClick={onComplete}>
-            Continue browsing
+            {t("Continue browsing")}
           </button>
         ) : (
           <Link className="text-link" to="/mobiles">
-            Continue browsing
+            {t("Continue browsing")}
           </Link>
         )}
       </form>
@@ -226,6 +312,7 @@ export default function Account({
   embedded = false,
   onComplete,
 }: { embedded?: boolean; onComplete?: () => void } = {}) {
+  const t = useT();
   const formId = useId();
   const {
     customer,
@@ -248,23 +335,34 @@ export default function Account({
   if (checking)
     return (
       <div className="container empty-state" role="status">
-        Opening your account…
+        {t("Opening your account…")}
       </div>
     );
   if (!customer)
     return (
       <div className="container standard-page empty-state">
         <UserRound size={38} />
-        <h1>Your shop account.</h1>
-        <p>Log in to save your details and see your orders.</p>
-        {sessionError && <p role="alert">{sessionError}</p>}
+        <h1>{t("Your shop account.")}</h1>
+        <p>{t("Log in to save your details and see your orders.")}</p>
+        {sessionError && <p role="alert">{t(sessionError)}</p>}
         <Link className="button dark" to="/login?next=/account">
-          Log in with your phone
+          {t("Log in with your phone")}
         </Link>
       </div>
     );
   async function save(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
+    if (name.trim().length < 2) {
+      setError("Please enter your full name.");
+      document.getElementById(`${formId}-name`)?.focus();
+      return;
+    }
+    if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email.trim())) {
+      setError("Enter a valid email address for order updates.");
+      document.getElementById(`${formId}-email`)?.focus();
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -301,23 +399,23 @@ export default function Account({
       className={`container account-page ${embedded ? "embedded-account" : ""}`}
     >
       <div className="account-heading">
-        <span className="eyebrow">Your shop account</span>
+        <span className="eyebrow">{t("Your shop account")}</span>
         <h1>
           {customer.profileComplete
-            ? "Your profile."
-            : "A few details, just once."}
+            ? t("Your profile.")
+            : t("A few details, just once.")}
         </h1>
-        <p>We’ll use these details when you place an order.</p>
+        <p>{t("We’ll use these details when you place an order.")}</p>
       </div>
       <div className="account-layout">
-        <form className="account-form" onSubmit={save}>
-          <h2>Customer details</h2>
-          <label>Login number</label>
+        <form className="account-form" onSubmit={save} noValidate>
+          <h2>{t("Customer details")}</h2>
+          <label>{t("Login number")}</label>
           <p className="account-phone">{customer.phone}</p>
           <p className="summary-note">
-            To use another number, sign out and log in with that number.
+            {t("To use another number, sign out and log in with that number.")}
           </p>
-          <label htmlFor={`${formId}-name`}>Full name</label>
+          <label htmlFor={`${formId}-name`}>{t("Full name")}</label>
           <input
             id={`${formId}-name`}
             autoComplete="name"
@@ -327,7 +425,7 @@ export default function Account({
             maxLength={100}
             required
           />
-          <label htmlFor={`${formId}-email`}>Email address</label>
+          <label htmlFor={`${formId}-email`}>{t("Email address")}</label>
           <input
             id={`${formId}-email`}
             type="email"
@@ -339,35 +437,39 @@ export default function Account({
             required
           />
           <p className="summary-note">
-            Use the inbox where you want to receive order and pickup updates.
+            {t(
+              "Use the inbox where you want to receive order and pickup updates.",
+            )}
           </p>
           {error && (
             <p className="field-error" role="alert">
-              {error}
+              {t(error)}
             </p>
           )}
           {notice && (
             <p className="account-notice" role="status">
-              {notice}
+              {t(notice)}
             </p>
           )}
           <button className="button dark full" disabled={busy}>
             {busy
-              ? "Saving…"
+              ? t("Saving…")
               : !customer.profileComplete || (!embedded && params.get("next"))
-                ? "Save and continue"
-                : "Save details"}
+                ? t("Save and continue")
+                : t("Save details")}
             <ArrowRight size={18} />
           </button>
         </form>
         <aside className="account-form account-actions">
           <Package size={32} />
-          <h2>Follow your orders</h2>
+          <h2>{t("Follow your orders")}</h2>
           <p>
-            See orders placed while signed in, with their current pickup status.
+            {t(
+              "See orders placed while signed in, with their current pickup status.",
+            )}
           </p>
           <Link className="button white full" to="/my-orders">
-            My orders
+            {t("My orders")}
             <ArrowRight size={18} />
           </Link>
           <button
@@ -376,7 +478,7 @@ export default function Account({
             onClick={() => void signOut()}
           >
             <LogOut size={18} />
-            Log out
+            {t("Log out")}
           </button>
         </aside>
       </div>

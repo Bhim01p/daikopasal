@@ -1,3 +1,4 @@
+import { useT } from "./LanguageContext";
 import {
   createContext,
   useContext,
@@ -13,6 +14,7 @@ const ProductContext = createContext<{
   refresh: () => Promise<void>;
 } | null>(null);
 export function ProductProvider({ children }: { children: ReactNode }) {
+  const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,17 +46,17 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   if (loading)
     return (
       <div className="container empty-state" role="status">
-        <h1>Opening the shop…</h1>
-        <p>Loading the current catalogue.</p>
+        <h1>{t("Opening the shop…")}</h1>
+        <p>{t("Loading the current catalogue.")}</p>
       </div>
     );
   if (error)
     return (
       <div className="container empty-state">
-        <h1>Let’s reconnect.</h1>
-        <p role="alert">{error}</p>
+        <h1>{t("Let’s reconnect.")}</h1>
+        <p role="alert">{t(error)}</p>
         <button className="button dark" onClick={() => void load()}>
-          Try again
+          {t("Try again")}
         </button>
       </div>
     );

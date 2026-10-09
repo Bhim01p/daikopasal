@@ -1,3 +1,4 @@
+import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import { Plus, ArrowUpRight } from "lucide-react";
 import WhatsAppIcon from "./WhatsAppIcon";
@@ -16,6 +17,7 @@ export function ProductImage({
   product: Product;
   className?: string;
 }) {
+  const t = useT();
   return (
     <div
       className={`product-visual ${className}`}
@@ -27,12 +29,13 @@ export function ProductImage({
         loading="lazy"
       />
       {isIllustration(product) && (
-        <span className="image-caption">Illustrative image</span>
+        <span className="image-caption">{t("Illustrative image")}</span>
       )}
     </div>
   );
 }
 export default function ProductCard({ product }: { product: Product }) {
+  const t = useT();
   const { add } = useCart();
   return (
     <article className="product-card">
@@ -42,10 +45,10 @@ export default function ProductCard({ product }: { product: Product }) {
           className={`badge ${product.category === "used" ? "used-badge" : ""}`}
         >
           {product.category === "used"
-            ? product.condition
+            ? t(product.condition)
             : product.category === "new"
-              ? "New phone"
-              : product.accessoryCategory}
+              ? t("New phone")
+              : t(product.accessoryCategory)}
         </span>
       </Link>
       <div className="product-body">
@@ -55,17 +58,23 @@ export default function ProductCard({ product }: { product: Product }) {
         </Link>
         <p className="product-spec">
           {product.category === "accessory"
-            ? product.accessoryCategory
-            : `${product.ram ? `${product.ram} GB RAM · ` : ""}${product.storage} GB storage`}
+            ? t(product.accessoryCategory)
+            : t("{{v0}}{{v1}} GB storage", {
+                v0: String(product.ram ? `${product.ram} GB RAM · ` : ""),
+                v1: String(product.storage),
+              })}
         </p>
         {product.category === "used" && (
-          <p className="product-spec">Battery health: {product.battery}%</p>
+          <p className="product-spec">
+            {t("Battery health: ")}
+            {product.battery}%
+          </p>
         )}
         <div
           className={`availability ${!product.available ? "unavailable" : ""}`}
         >
-          {isSampleProduct(product) ? "Sample · " : ""}
-          {product.available ? "In stock" : "Out of stock"}
+          {isSampleProduct(product) ? t("Sample · ") : ""}
+          {product.available ? t("In stock") : t("Out of stock")}
         </div>
         <div className="price-row">
           <strong>{money(product.price)}</strong>
@@ -73,15 +82,16 @@ export default function ProductCard({ product }: { product: Product }) {
             className="add-button"
             disabled={!product.available}
             onClick={() => add(product.id)}
-            aria-label={`Add ${product.name} to bag`}
+            aria-label={t("Add {{v0}} to cart", { v0: String(product.name) })}
           >
             <Plus size={19} />
-            <span>Add to bag</span>
+            <span>{t("Add to cart")}</span>
           </button>
         </div>
         <div className="card-links">
           <Link to={`/product/${product.slug}`}>
-            View details <ArrowUpRight size={13} />
+            {t("View details ")}
+            <ArrowUpRight size={13} />
           </Link>
           <a
             className="whatsapp-icon-button card-whatsapp"
@@ -90,7 +100,9 @@ export default function ProductCard({ product }: { product: Product }) {
             )}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Ask about ${product.name} on WhatsApp`}
+            aria-label={t("Ask about {{v0}} on WhatsApp", {
+              v0: String(product.name),
+            })}
           >
             <WhatsAppIcon size={20} />
           </a>

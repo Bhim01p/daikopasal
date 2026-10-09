@@ -23,6 +23,7 @@ export interface Product {
   stockVersion: number;
   isSample?: boolean;
   description: string;
+  descriptionNe?: string;
   specs: Record<string, string>;
   condition?: "Like New" | "Excellent" | "Good" | "Fair";
   battery?: number;
@@ -49,6 +50,7 @@ export interface Order {
     | "Completed"
     | "Cancelled";
   fulfillment: "Shop pickup";
+  language?: "en" | "ne";
   receiptToken?: string;
   accountOrder?: boolean;
   history?: { status: Order["status"]; date: string }[];

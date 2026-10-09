@@ -10,3 +10,6 @@ backend/ADMIN-ACCESS.txt
 backend/*.tmp
 backend/deployment.env
 .vercel/
+
+.vercel
+.env*

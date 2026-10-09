@@ -344,6 +344,7 @@ export function createApp(options = {}) {
       if (route === "/api/admin/orders" && method === "GET")
         return json(response, 200, {
           emailConfigured: emailWorker.configured,
+          smsMode: customerAuth.mode(request),
           orders: store
             .read()
             .orders.map((order) => ({
@@ -440,6 +441,39 @@ export function createApp(options = {}) {
         store.commit({ ...current, products: [product, ...current.products] });
         return json(response, 201, { product });
       }
+      const stockRoute = route.match(
+        /^\/api\/admin\/products\/([^/]+)\/stock$/,
+      );
+      if (stockRoute && method === "PATCH") {
+        const input = await body(request);
+        const current = store.read();
+        const product = current.products.find((p) => p.id === stockRoute[1]);
+        if (!product) throw new HttpError(404, "Product not found.");
+        if (input.stockVersion !== product.stockVersion)
+          throw new HttpError(
+            409,
+            "Stock changed. Refresh the catalogue before updating quantity.",
+          );
+        if (
+          !Number.isSafeInteger(input.stockQuantity) ||
+          input.stockQuantity < 0 ||
+          input.stockQuantity > 1000000
+        )
+          throw new HttpError(400, "Enter a valid stock quantity.");
+        const updated = {
+          ...product,
+          stockQuantity: input.stockQuantity,
+          stockVersion: product.stockVersion + 1,
+          available: input.stockQuantity > 0,
+        };
+        store.commit({
+          ...current,
+          products: current.products.map((p) =>
+            p.id === product.id ? updated : p,
+          ),
+        });
+        return json(response, 200, { product: updated });
+      }
       const productRoute = route.match(/^\/api\/admin\/products\/([^/]+)$/);
       if (productRoute && ["PATCH", "DELETE"].includes(method)) {
         const input = method === "PATCH" ? await body(request) : null;
@@ -535,6 +569,7 @@ export function createApp(options = {}) {
           email: customer.email,
           ...(account ? { customerId: account.id } : {}),
           phone: customer.phone,
+          language: customer.language,
           note: customer.note,
           items,
           total,
@@ -653,7 +688,7 @@ export function createApp(options = {}) {
   }
   const server = http.createServer(handle);
   server.handle = handle;
-  server.drainEmails = () => emailWorker.drain();
+  server.drainEmails = (options) => emailWorker.drain(options);
   server.requestTimeout = 15000;
   server.on("listening", sendQueuedEmails);
   server.on("close", () => emailWorker.stop());

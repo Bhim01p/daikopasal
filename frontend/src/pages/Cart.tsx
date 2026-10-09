@@ -1,3 +1,4 @@
+import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   ShoppingBag,
@@ -16,39 +17,44 @@ import {
   purchaseLimit,
 } from "../utils/products";
 export function EmptyBag() {
+  const t = useT();
   return (
     <div className="empty-state shop-empty-state">
       <span className="shop-empty-icon">
         <ShoppingBag size={36} aria-hidden="true" />
       </span>
-      <h2>Your bag is waiting.</h2>
+      <h2>{t("Your cart is waiting.")}</h2>
       <p>
-        Choose a phone or accessory to get started. Your bag stays saved while
-        you browse.
+        {t(
+          "Choose a phone or accessory to get started. Your cart stays saved while you browse.",
+        )}
       </p>
       <div className="shop-empty-actions">
         <Link className="button dark" to="/mobiles">
-          Explore mobiles <ArrowRight size={17} />
+          {t("Explore mobiles ")}
+          <ArrowRight size={17} />
         </Link>
         <Link className="button white" to="/accessories">
-          Browse accessories
+          {t("Browse accessories")}
         </Link>
       </div>
     </div>
   );
 }
 export default function Cart() {
+  const t = useT();
   const { products } = useProducts();
   const { items, count, total, setQuantity } = useCart();
   return (
     <div className="container standard-page">
-      <span className="eyebrow">A little closer to your upgrade</span>
-      <h1>Your shopping bag.</h1>
+      <span className="eyebrow">{t("A little closer to your upgrade")}</span>
+      <h1>{t("Your shopping cart.")}</h1>
       {items.length ? (
         <div className="cart-layout">
           <div className="cart-items">
             <p className="muted">
-              {count} {count === 1 ? "item" : "items"} · Shop pickup
+              {count} {count === 1 ? t("item") : t("items")}{" "}
+              {t(" · Shop pickup")}
             </p>
             {items.map((item) => {
               const p = products.find((p) => p.id === item.productId)!;
@@ -60,22 +66,28 @@ export default function Cart() {
                   </Link>
                   <div className="cart-item-copy">
                     <span className="overline">
-                      {p.category === "used" ? "Second-hand" : p.brand}
+                      {p.category === "used" ? t("Second-hand") : p.brand}
                     </span>
                     <Link to={`/product/${p.slug}`}>
                       <h2>{p.name}</h2>
                     </Link>
-                    <p>{money(p.price)} each</p>
+                    <p>
+                      {money(p.price)} {t(" each")}
+                    </p>
                     <div className="quantity small">
                       <button
-                        aria-label={`Decrease ${p.name} quantity`}
+                        aria-label={t("Decrease {{v0}} quantity", {
+                          v0: String(p.name),
+                        })}
                         onClick={() => setQuantity(p.id, item.quantity - 1)}
                       >
                         <Minus size={14} />
                       </button>
                       <span>{item.quantity}</span>
                       <button
-                        aria-label={`Increase ${p.name} quantity`}
+                        aria-label={t("Increase {{v0}} quantity", {
+                          v0: String(p.name),
+                        })}
                         disabled={item.quantity >= purchaseLimit(p)}
                         onClick={() => setQuantity(p.id, item.quantity + 1)}
                       >
@@ -88,31 +100,35 @@ export default function Cart() {
                     <button
                       className="remove-button"
                       onClick={() => setQuantity(p.id, 0)}
-                      aria-label={`Remove ${p.name}`}
+                      aria-label={t("Remove {{v0}}", { v0: String(p.name) })}
                     >
                       <Trash2 size={15} />
-                      Remove
+                      {t("Remove")}
                     </button>
                   </div>
                 </article>
               );
             })}
             <Link className="text-link" to="/mobiles">
-              Keep exploring <ArrowRight size={16} />
+              {t("Keep exploring ")}
+              <ArrowRight size={16} />
             </Link>
           </div>
           <aside className="order-summary">
-            <h2>Your order summary</h2>
+            <h2>{t("Your order summary")}</h2>
             <div className="summary-line">
-              <span>Subtotal ({count} items)</span>
+              <span>
+                {t("Subtotal (")}
+                {count} {t(" items)")}
+              </span>
               <strong>{money(total)}</strong>
             </div>
             <div className="summary-line">
-              <span>Collection</span>
-              <span>Shop pickup</span>
+              <span>{t("Collection")}</span>
+              <span>{t("Shop pickup")}</span>
             </div>
             <div className="summary-line total">
-              <strong>Total</strong>
+              <strong>{t("Total")}</strong>
               <strong>{money(total)}</strong>
             </div>
             <p className="summary-note">
@@ -121,16 +137,17 @@ export default function Cart() {
                   (p) => p.id === item.productId && isSampleProduct(p),
                 ),
               )
-                ? "Includes sample prices. "
+                ? t("Includes sample prices. ")
                 : ""}
-              The shop will confirm your pickup before you visit.
+              {t("The shop will confirm your pickup before you visit.")}
             </p>
             <Link className="button dark full" to="/checkout">
-              Continue to checkout <ArrowRight size={17} />
+              {t("Continue to checkout ")}
+              <ArrowRight size={17} />
             </Link>
             <div className="pickup-note">
               <MapPin size={16} />
-              No delivery · Collect in Lekhnath
+              {t("No delivery · Collect in Lekhnath")}
             </div>
           </aside>
         </div>

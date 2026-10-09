@@ -1,3 +1,4 @@
+import { LanguageProvider, useLanguage, useT } from "./context/LanguageContext";
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import {
@@ -16,6 +17,7 @@ import Product from "./pages/Product";
 import Cart from "./pages/Cart";
 import Checkout, { OrderSuccess } from "./pages/Checkout";
 import Contact from "./pages/Contact";
+import Repair from "./pages/Repair";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Account, { Login } from "./pages/Account";
@@ -34,6 +36,8 @@ import "./product-gallery.css";
 import "./shopping.css";
 import "./refinement.css";
 function Meta() {
+  const t = useT();
+  const { language } = useLanguage();
   const { products } = useProducts();
   const { pathname } = useLocation();
   useEffect(() => {
@@ -46,7 +50,8 @@ function Meta() {
       "/mobile-repair": "Mobile Repair Services",
       "/cart": "Your Shopping Bag",
       "/checkout": "Shop Pickup Checkout",
-      "/contact": "Contact & Help",
+      "/help": "Help",
+      "/repair": "Repair",
       "/search": "Search Products",
       "/admin": "Shop Admin",
       "/login": "Customer Login",
@@ -59,14 +64,18 @@ function Meta() {
       : pathname.startsWith("/order/")
         ? "Pickup Order"
         : titles[pathname] || "Page Not Found";
-    document.title = `${title} | ${shop.name}`;
+    document.title = `${t(title)} | ${shop.name}`;
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute(
         "content",
         p
-          ? p.description
-          : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand sets, accessories and repair enquiries. Open ${shop.hours}. Shop pickup only.`,
+          ? language === "ne" && p.descriptionNe
+            ? p.descriptionNe
+            : p.description
+          : language === "ne"
+            ? `${t(title)}। लेखनाथको माछापुच्छ्रे इलेक्ट्रोनिक्स। नयाँ र पुराना फोन, एक्सेसरिज र मर्मत सेवा। खुल्ने समय ${shop.hours}। पसलबाट मात्र लिनुहोस्।`
+            : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand sets, accessories and repair enquiries. Open ${shop.hours}. Shop pickup only.`,
       );
     let robots = document.querySelector('meta[name="robots"]');
     if (!robots) {
@@ -82,7 +91,7 @@ function Meta() {
         ? "noindex, nofollow"
         : "index, follow",
     );
-  }, [pathname, products]);
+  }, [pathname, products, language, t]);
   return null;
 }
 function OrderPage() {
@@ -97,51 +106,58 @@ function ProductPage() {
 function App() {
   return (
     <BrowserRouter>
-      <CustomerProvider>
-        <ProductProvider>
-          <CartProvider>
-            <Meta />
-            <Routes>
-              <Route path="admin" element={<Admin />} />
-              <Route element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route
-                  path="mobiles"
-                  element={<Catalogue key="new" category="new" />}
-                />
-                <Route
-                  path="second-hand"
-                  element={<Catalogue key="used" category="used" />}
-                />
-                <Route
-                  path="accessories"
-                  element={<Catalogue key="accessory" category="accessory" />}
-                />
-                <Route path="search" element={<Catalogue key="search" />} />
-                <Route path="product/:slug" element={<ProductPage />} />
-                <Route path="cart" element={<Cart />} />
-                <Route path="checkout" element={<Checkout />} />
-                <Route path="login" element={<Login />} />
-                <Route path="account" element={<Account />} />
-                <Route path="my-orders" element={<MyOrders />} />
-                <Route path="order/:id" element={<OrderPage />} />
-                <Route path="contact" element={<Contact />} />
-                <Route
-                  path="digital-meter-repair"
-                  element={
-                    <Navigate to="/contact#digital-meter-repairs" replace />
-                  }
-                />
-                <Route
-                  path="mobile-repair"
-                  element={<Navigate to="/contact#phone-repairs" replace />}
-                />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </CartProvider>
-        </ProductProvider>
-      </CustomerProvider>
+      <LanguageProvider>
+        <CustomerProvider>
+          <ProductProvider>
+            <CartProvider>
+              <Meta />
+              <Routes>
+                <Route path="admin" element={<Admin />} />
+                <Route element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route
+                    path="mobiles"
+                    element={<Catalogue key="new" category="new" />}
+                  />
+                  <Route
+                    path="second-hand"
+                    element={<Catalogue key="used" category="used" />}
+                  />
+                  <Route
+                    path="accessories"
+                    element={<Catalogue key="accessory" category="accessory" />}
+                  />
+                  <Route path="search" element={<Catalogue key="search" />} />
+                  <Route path="product/:slug" element={<ProductPage />} />
+                  <Route path="cart" element={<Cart />} />
+                  <Route path="checkout" element={<Checkout />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="account" element={<Account />} />
+                  <Route path="my-orders" element={<MyOrders />} />
+                  <Route path="order/:id" element={<OrderPage />} />
+                  <Route path="help" element={<Contact />} />
+                  <Route
+                    path="contact"
+                    element={<Navigate to="/help" replace />}
+                  />
+                  <Route path="repair" element={<Repair />} />
+                  <Route
+                    path="digital-meter-repair"
+                    element={
+                      <Navigate to="/repair#digital-meter-repairs" replace />
+                    }
+                  />
+                  <Route
+                    path="mobile-repair"
+                    element={<Navigate to="/repair#phone-repairs" replace />}
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </CartProvider>
+          </ProductProvider>
+        </CustomerProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

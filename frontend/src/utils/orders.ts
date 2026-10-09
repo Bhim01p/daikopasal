@@ -1,9 +1,29 @@
+import { translateCurrent } from "../context/LanguageContext";
 import type { Order } from "../types";
 import { money, shop } from "../data/shop";
 import { api } from "./api";
 export function orderMessage(order: Order) {
+  const t = translateCurrent;
   const sample = order.items.some(({ product }) => product.isSample !== false);
-  return `Hello ${shop.name},\nI have a question about my pickup order.\n\nReference: ${order.id}\nStatus: ${order.status}\nCustomer: ${order.name}\nPhone: ${order.phone}\n\nItems:\n${order.items.map((i) => `${i.product.brand} ${i.product.name} × ${i.quantity} — ${money(i.product.price * i.quantity)}`).join("\n")}\n\n${sample ? "Sample total" : "Total"}: ${money(order.total)}\nCollection: Shop pickup in Lekhnath\n${order.note ? `Note: ${order.note}\n` : ""}`;
+  return [
+    t("Hello {{name}},", { name: shop.name }),
+    t("I have a question about my pickup order."),
+    "",
+    `${t("Reference")}: ${order.id}`,
+    `${t("Status")}: ${t(order.status)}`,
+    `${t("Customer")}: ${order.name}`,
+    `${t("Phone number")}: ${order.phone}`,
+    "",
+    t("Items"),
+    ...order.items.map(
+      (i) =>
+        `${i.product.brand} ${i.product.name} × ${i.quantity} — ${money(i.product.price * i.quantity)}`,
+    ),
+    "",
+    `${t(sample ? "Sample total" : "Total")}: ${money(order.total)}`,
+    `${t("Collection")}: ${t("Shop pickup in Lekhnath")}`,
+    ...(order.note ? [`${t("Note")}: ${order.note}`] : []),
+  ].join("\n");
 }
 export function readOrders(): Order[] {
   try {
@@ -74,6 +94,7 @@ export function saveOrder(order: Order) {
   }
 }
 export async function createOrder(input: {
+  language?: "en" | "ne";
   name: string;
   accountOrder?: boolean;
   email: string;

@@ -5,9 +5,15 @@
   "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
   "functions": {
-    "api/handler.mjs": { "maxDuration": 60, "includeFiles": "backend/seed/**" }
+    "api/handler.mjs": {
+      "maxDuration": 300,
+      "includeFiles": "backend/seed/**"
+    },
+    "api/cron.mjs": { "maxDuration": 300, "includeFiles": "backend/seed/**" }
   },
+  "crons": [{ "path": "/api/cron", "schedule": "0 2 * * *" }],
   "rewrites": [
+    { "source": "/api/cron", "destination": "/api/cron" },
     { "source": "/api/:path*", "destination": "/api/handler?route=:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
