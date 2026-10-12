@@ -8,7 +8,7 @@ export const shop = {
   internationalPhone: "9779806600444",
   hours: "8 AM–6 PM",
 };
-const mapQuery = encodeURIComponent(`${shop.mapName}, ${shop.address}`);
+const mapQuery = encodeURIComponent(shop.address);
 export const shopMap = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 export const shopDirections = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(shop.address)}`;
 export const money = (value: number) =>

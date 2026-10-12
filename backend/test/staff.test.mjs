@@ -94,6 +94,47 @@ test("staff permissions, private credentials, revocation and restart persistence
       (await request("orders", "GET", undefined, staff.cookie)).status,
       200,
     );
+    const catalogue = await (await fetch(base + "/api/products")).json();
+    const source = catalogue.products.find(
+      (product) => product.category === "accessory",
+    );
+    const staffProduct = await request(
+      "products",
+      "POST",
+      {
+        ...source,
+        name: "Staff permission test accessory",
+        stockQuantity: 2,
+        isSample: false,
+      },
+      staff.cookie,
+    );
+    assert.equal(staffProduct.status, 201);
+    assert.equal(
+      (
+        await request(
+          `products/${staffProduct.data.product.id}`,
+          "PATCH",
+          {
+            ...staffProduct.data.product,
+            price: source.price + 1,
+          },
+          staff.cookie,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await request(
+          `products/${staffProduct.data.product.id}`,
+          "DELETE",
+          undefined,
+          staff.cookie,
+        )
+      ).status,
+      200,
+    );
     for (const [route, method, body] of [
       ["staff", "GET"],
       ["staff", "POST", { role: "owner" }],

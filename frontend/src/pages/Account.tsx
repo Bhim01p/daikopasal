@@ -31,6 +31,10 @@ export function Login({
   const navigate = useNavigate();
   const next = destination(params.get("next"));
   const [phone, setPhone] = useState("");
+  const localPhone = normalizeDigits(phone)
+    .replace(/[\s()-]/g, "")
+    .replace(/^(?:\+977|977)(?=9[78]\d{8}$)/, "");
+  const phoneValid = /^9[78]\d{8}$/.test(localPhone);
   const [code, setCode] = useState("");
   const [challenge, setChallenge] = useState<{
     challengeId: string;
@@ -83,13 +87,8 @@ export function Login({
       );
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
-    if (
-      !challenge &&
-      !/^(?:\+977|977)?9[78]\d{8}$/.test(
-        normalizeDigits(phone).replace(/[\s()-]/g, ""),
-      )
-    ) {
+    if (busy || mode === "disabled") return;
+    if (!challenge && !phoneValid) {
       setError("Enter a valid Nepal mobile number.");
       document.getElementById(`${formId}-phone`)?.focus();
       return;
@@ -109,7 +108,7 @@ export function Login({
           developmentCode?: string;
         }>("/customer/auth/start", {
           method: "POST",
-          body: JSON.stringify({ phone: normalizeDigits(phone) }),
+          body: JSON.stringify({ phone: `+977${localPhone}` }),
         });
         setChallenge({ ...result, resendAvailableAt: Date.now() + 60000 });
         setCode("");
@@ -199,19 +198,30 @@ export function Login({
             <label htmlFor={`${formId}-phone`}>
               {t("Nepal mobile number")}
             </label>
-            <input
-              id={`${formId}-phone`}
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={t("98XXXXXXXX")}
-              maxLength={20}
-              required
-            />
+            <div className="nepal-phone-input">
+              <span aria-hidden="true">+977</span>
+              <input
+                id={`${formId}-phone`}
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) =>
+                  setPhone(
+                    normalizeDigits(e.target.value)
+                      .replace(/[\s()-]/g, "")
+                      .replace(/^(?:\+977|977)(?=9[78]\d{8}$)/, ""),
+                  )
+                }
+                placeholder={t("98XXXXXXXX")}
+                maxLength={20}
+                required
+              />
+            </div>
             <p className="summary-note">
-              {t("Use your 10-digit number, with or without +977.")}
+              {t(
+                "Enter your 10-digit mobile number. We add +977 automatically.",
+              )}
             </p>
           </>
         )}
@@ -231,15 +241,17 @@ export function Login({
         )}
         <button
           className="button dark full"
-          disabled={busy || mode === "disabled"}
+          disabled={busy || mode === "disabled" || (!challenge && !phoneValid)}
         >
-          {busy
-            ? t("Please wait…")
-            : challenge
-              ? t("Verify and log in")
-              : mode === "development"
-                ? t("Get test code")
-                : t("Send login code")}
+          {mode === "disabled"
+            ? t("SMS login unavailable")
+            : busy
+              ? t("Please wait…")
+              : challenge
+                ? t("Verify and log in")
+                : mode === "development"
+                  ? t("Get test code")
+                  : t("Send login code")}
           <ArrowRight size={18} />
         </button>
         {challenge && (
@@ -268,7 +280,7 @@ export function Login({
                     "/customer/auth/start",
                     {
                       method: "POST",
-                      body: JSON.stringify({ phone: normalizeDigits(phone) }),
+                      body: JSON.stringify({ phone: `+977${localPhone}` }),
                     },
                   );
                   setChallenge({

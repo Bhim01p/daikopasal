@@ -1,88 +1,114 @@
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { useProducts } from "../context/ProductContext";
+import { useEffect, useRef, useState } from "react";
 
 export default function ReferenceHome() {
   const t = useT();
-  const { products } = useProducts();
+  const slides = [
+    {
+      title: "New phones",
+      description: "Find your next phone.",
+      to: "/mobiles",
+      image: "/assets/shop-banner-v1.png",
+    },
+    {
+      title: "Used phones",
+      description: "More options for your budget",
+      to: "/second-hand",
+      image: "/assets/sample-phone-v1.png",
+    },
+    {
+      title: "Accessories",
+      description: "Everyday essentials",
+      to: "/accessories",
+      image: "/assets/accessories-banner-v1.png",
+    },
+  ];
+  const [index, setIndex] = useState(0);
+  const drag = useRef<{ x: number; y: number } | null>(null);
+  const suppress = useRef(0);
+  const move = (n: number) => setIndex((i) => (i + n + 3) % 3);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible" && !drag.current)
+        setIndex((i) => (i + 1) % 3);
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const slide = slides[index];
   return (
-    <>
-      <div className="container reference-promos">
-        <section className="hero reference-banner-main">
-          <img
-            className="reference-banner-photo"
-            src="/assets/shop-banner-v1.png"
-            alt={t("Phones and earbuds in a studio setting")}
-            fetchPriority="high"
-          />
-          <div className="hero-copy">
-            <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
-            <h1>
-              {t("Find your")}
-              <br />
-              <span>{t("next phone.")}</span>
-            </h1>
-            <p>
-              {t(
-                "New and second-hand phones, accessories and friendly help. Visit us in Lekhnath.",
-              )}
-            </p>
-            <Link className="button dark" to="/mobiles">
-              {t("Shop new phones ")}
-              <ArrowRight size={17} />
-            </Link>
-          </div>
-        </section>
-        <div className="reference-side-promos">
-          <Link className="reference-promo accessory-promo" to="/accessories">
-            <img
-              src="/assets/accessories-banner-v1.png"
-              alt={t("Headphones, earbuds and a charger")}
-            />
-            <div>
-              <span>{t("Everyday essentials")}</span>
-              <h2>{t("Accessories")}</h2>
-              <strong>
-                {t("Shop now ")}
-                <ArrowRight size={16} />
-              </strong>
-            </div>
-          </Link>
-          <Link className="reference-promo used-phone-promo" to="/second-hand">
-            <img
-              src="/assets/shop-banner-v1.png"
-              alt={t("Phones and earbuds")}
-            />
-            <div>
-              <span>{t("More options for your budget")}</span>
-              <h2>{t("Used phones")}</h2>
-              <strong>
-                {t("Explore phones ")}
-                <ArrowRight size={16} />
-              </strong>
-            </div>
+    <section
+      className="home-carousel"
+      aria-roledescription="carousel"
+      aria-label={t("Shop categories")}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          move(e.key === "ArrowRight" ? 1 : -1);
+        }
+      }}
+      onPointerDown={(e) => {
+        if (e.button === 0) drag.current = { x: e.clientX, y: e.clientY };
+      }}
+      onPointerMove={(e) => {
+        const d = drag.current;
+        if (
+          d &&
+          Math.abs(e.clientX - d.x) > 12 &&
+          Math.abs(e.clientX - d.x) > Math.abs(e.clientY - d.y)
+        ) {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          suppress.current = Date.now() + 500;
+        }
+      }}
+      onPointerUp={(e) => {
+        const d = drag.current;
+        drag.current = null;
+        if (
+          d &&
+          Math.abs(e.clientX - d.x) > 50 &&
+          Math.abs(e.clientX - d.x) > Math.abs(e.clientY - d.y)
+        )
+          move(e.clientX < d.x ? 1 : -1);
+      }}
+      onPointerCancel={() => {
+        drag.current = null;
+      }}
+      onLostPointerCapture={() => {
+        drag.current = null;
+      }}
+      onClickCapture={(e) => {
+        if (Date.now() < suppress.current) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+    >
+      <div
+        className={`hero reference-banner-main ${index === 1 ? "used-slide" : ""}`}
+        role="group"
+        aria-roledescription="slide"
+        aria-label={`${index + 1} / 3: ${t(slide.title)}`}
+      >
+        <img
+          className="reference-banner-photo"
+          src={slide.image}
+          alt=""
+          fetchPriority="high"
+          draggable={false}
+        />
+        <div className="hero-copy">
+          <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
+          <h1>{t(slide.title)}</h1>
+          <p>{t(slide.description)}</p>
+          <Link className="button dark" to={slide.to}>
+            {t("Explore category")} <ArrowRight size={17} />
           </Link>
         </div>
       </div>
-      <div
-        className="container reference-budget-row"
-        aria-label={t("Browse phones by budget")}
-      >
-        {[20000, 35000, 50000, 70000]
-          .filter((price) =>
-            products.some(
-              (product) => product.category === "new" && product.price <= price,
-            ),
-          )
-          .slice(0, 3)
-          .map((price) => (
-            <Link key={price} to={`/mobiles?budget=${price}`}>
-              {t("Under Rs. ")}
-              {price.toLocaleString("en-IN")} <ArrowRight size={15} />
-            </Link>
-          ))}
-      </div>
-    </>
+    </section>
   );
 }

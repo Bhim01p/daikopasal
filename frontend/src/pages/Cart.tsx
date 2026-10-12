@@ -1,3 +1,4 @@
+import SafeImage from "../components/SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import {
@@ -62,7 +63,7 @@ export default function Cart() {
               return (
                 <article className="cart-item" key={p.id}>
                   <Link to={`/product/${p.slug}`} className="cart-image">
-                    <img src={productImageSource(p)} alt={p.name} />
+                    <SafeImage src={productImageSource(p)} alt={p.name} />
                   </Link>
                   <div className="cart-item-copy">
                     <span className="overline">

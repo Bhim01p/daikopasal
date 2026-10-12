@@ -1,5 +1,26 @@
 # Pending project tasks
 
+## Approved workflow batch — 12 October 2026
+
+Scope: owner authorized queue items 1–13. Items 14 (backup/recovery guidance) and 15 (mobile improvements/testing) are explicitly deferred. Do not start either without new instructions. The owner reported order emails working and had pushed the previous build to main; the changes in this batch are local and await the owner's review/commit. No deployment or credential changes belong to this batch.
+
+- [x] 1. Separate admin sidebar entries for New phones, Used phones and Accessories, with category-specific product lists and matching defaults for New product.
+- [x] 2. Dedicated URL-backed staff/product creation and editing pages, with list/back navigation, direct reload support and unsaved-change guards. Order detail pages now have URLs too. Compact order lists remain.
+- [x] 3. Verify owner-only staff administration, staff order/product access, disabled-session revocation and private credentials. Backend permission tests also cover staff product creation/edit/deletion.
+- [x] 4. Homepage category carousel, one slide every three seconds, category links, pause/play and manual controls. Pause on hover/focus and respect reduced-motion preference. Footer immediately follows; budget prices and other homepage sections removed.
+- [x] 5. Help redesign: order/WhatsApp/call actions, compact location/hours, FAQs and expandable enquiry form with saved profile autofill. Guest tracking opens receipts stored in the original browser.
+- [x] 6. Side-by-side desktop phone/digital meter repair cards with compact descriptions and contact actions.
+- [x] 7. Header search gives the input and button separate space so the English placeholder fits.
+- [x] 8. Login shows a fixed +977 prefix, accepts a local 10-digit number or a pasted full number, supports Nepali digits, and sends a normalized number. Disabled mode explicitly says SMS login unavailable. Live SMS activation still requires the separate provider setup/handset test below.
+- [x] 9. Native cart dialog from header/dock, with quantities/removal/total/checkout, Escape/outside close, focus restoration and scroll locking. Standalone cart URL remains available.
+- [x] 10. Checkout shows pickup-only, supplied full address, hours, wait-for-ready/bring-reference guidance and cancellation information. Cancellation fees depend on product/timing/preparation/labour; the shop must explain and agree a specific fee before confirmation. Website does not calculate or charge fees. Warranty terms remain pending.
+- [x] 11. Receipt shows reference/items/total and a Track order action leading to live-refreshed progress. Guest receipts are accessible from My orders in the original browser.
+- [x] 12. Failed product photos show a deliberate placeholder in cards/gallery/thumbnails/cart/admin, recovering when the image source changes.
+- [x] 13. Location and directions links use the supplied plus code/address (43MM+778, Lekhnath, Gandaki Province 33700), with the supplied Google Maps listing name displayed. Link destination/encoding checked. Independent verification of the business's exact Google place pin remains pending: Google Maps was not accessible through the lookup tool. No unverified place ID or coordinates were invented.
+
+Validation: production build and 543-message translation coverage pass. All 24 backend tests pass. Isolated desktop workflow checks cover carousel timing/pause/category navigation, Help/form/links, side-by-side repair visibility, search fit, cart/checkout/guest receipt tracking, 10-digit test login, photo fallback, category defaults, page reloads, staff creation/sign-in and owner-only access. No live SMS/email, shop orders or inventory were used. Dedicated mobile testing remains deferred.
+
+
 ## Compact admin lists and white-theme accents — 9 October 2026
 
 Completed: Orders shows compact reference/date/customer/item-count/total/status rows. Open order displays full contacts, items, notes, email history and status controls in a separate detail view; Back to orders retains the list filters. Inventory lists products without a side editor. Edit and New product open a dedicated editing view, with Back to inventory, save/cancel and existing unsaved-change protection. Successful saves return to the filtered inventory list.
@@ -123,3 +144,39 @@ Status: Awaiting setup — the complete order lifecycle passes in an isolated QA
 - [x] Improve mobile cart/My orders empty states and add active/past order filters.
 
 Progress and implementation limits: [PROJECT-REVIEW.md](PROJECT-REVIEW.md).
+
+## Desktop bug batch — 12 October 2026
+- [x] Remove slider buttons; support swipe/drag and arrow keys.
+- [x] Full-width slider fills the viewport below the header.
+- [x] Autoplay continues when hovered or focused; reduced-motion preference respected.
+- [x] Separate temporary images for all three categories.
+- [x] Shop category dropdown and Account/My orders menu simplify the header.
+- [x] Compact desktop cart window, item images and summary.
+- Mobile overhaul and backups remain paused. No deployment or push in this batch.
+- Validation: production build, Nepali translation coverage, desktop browser slider/menu/cart/checkout checks and diff whitespace checks passed.
+
+## Mobile layout — 12 October 2026
+- [x] Compact phone header with full-width search; Shop submenu and language/theme settings in the menu.
+- [x] Viewport slider sized above the bottom navigation with readable copy and phone-friendly images.
+- [x] Stack Help, repair, filters, cart and summary layouts; readable form inputs and touch controls.
+- [x] Theme-aware phone header and bottom navigation contrast.
+- [x] Checked widths 320, 390, 430 and 768; mobile pickup test order, guest tracking, login input and authenticated admin inventory/staff/editor screens passed using isolated QA data.
+- No deployment, commit or push. Backups remain deferred.
+
+## Owner priorities — 12 October 2026
+- Owner will handle commit/push, production settings, real inventory and remaining shop details.
+- Hosted order/email verification removed from active queue: owner reports repeated successful checks.
+- Live SMS provider setup remains pending; discuss account/sender/token/credits and real handset verification.
+- Backups deferred for budget; payments deferred for future work. Mobile improvements completed above.
+
+## Deferred together: owner approval for SMS and SQL backups
+
+- [ ] Present SMS login running costs and provider options to the shop owner; wait for approval before purchasing credits, creating a paid plan or enabling live SMS.
+- [ ] Confirm quote: OTP/API access, sender approval/setup fees, tax, minimum top-up/monthly billing, credit expiry, NTC/Ncell coverage, resend/failed-send billing and delivery support.
+- [ ] After approval, configure provider credentials privately and verify real handset delivery; current Sparrow adapter is prepared, but another provider requires an adapter change.
+- [ ] Plan and set up Neon/PostgreSQL backups and restore procedure later; confirm retention, frequency, off-site export, access and restore test. Product photo backup must be considered separately from SQL data.
+
+Owner briefing (pricing checked 12 October 2026): Sparrow requires a volume-based quote; some sender-ID packages have minimum monthly usage. EK SMS publishes NPR 0.90 per SMS credit plus 13% VAT for up to 10,000 monthly credits, with no monthly/setup fees. This is a pricing comparison, not a tested integration or endorsement. One segment per OTP gives approximately NPR 102/100, NPR 509/500 or NPR 1,017/1,000 messages including VAT; resends and longer messages can increase usage. NTC consumer SIM packs do not connect directly to the current website. NTC's separate web bulk portal lists NPR 0.50/SMS excluding tax at 2,000 messages/3 months but automatic OTP API suitability is unconfirmed. Private-company SMS Alert lists minimum 3,000 monthly billed messages at NPR 0.50 each before tax and minimum NPR 500,000 deposit/bank guarantee plus NPR 100,000 per Alert ID. Confirm all terms directly before payment.
+
+Sources: https://sparrowsms.com/faqs/ ; https://sms.ekrasunya.com/pricing ; https://www.ntc.net.np/services/sms-based-vas-services
+No purchase, SMS activation or SQL backup setup performed. Guest checkout remains available while SMS login is disabled.

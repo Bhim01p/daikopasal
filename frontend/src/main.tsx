@@ -37,6 +37,7 @@ import "./shopping.css";
 import "./refinement.css";
 import "./sky-theme.css";
 import "./ice-cobalt.css";
+import "./workflow.css";
 import { ThemeProvider } from "./context/ThemeContext";
 function Meta() {
   const t = useT();
@@ -66,7 +67,9 @@ function Meta() {
       ? `${p.brand} ${p.name}`
       : pathname.startsWith("/order/")
         ? "Pickup Order"
-        : titles[pathname] || "Page Not Found";
+        : pathname.startsWith("/not-admin/")
+          ? "Shop Admin"
+          : titles[pathname] || "Page Not Found";
     document.title = `${t(title)} | ${shop.name}`;
     document
       .querySelector('meta[name="description"]')
@@ -115,7 +118,7 @@ function App() {
             <CartProvider>
               <Meta />
               <Routes>
-                <Route path="not-admin" caseSensitive element={<Admin />} />
+                <Route path="not-admin/*" caseSensitive element={<Admin />} />
                 <Route element={<Layout />}>
                   <Route index element={<Home />} />
                   <Route

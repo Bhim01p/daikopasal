@@ -1,3 +1,4 @@
+import SafeImage from "./SafeImage";
 import { useT } from "../context/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -105,7 +106,7 @@ export default function ProductGallery({ product }: { product: Product }) {
                 aria-pressed={selected === index}
                 onClick={() => show(index)}
               >
-                <img
+                <SafeImage
                   src={productImageSource({ ...product, image })}
                   alt=""
                   loading="lazy"

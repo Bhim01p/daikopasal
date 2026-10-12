@@ -1,7 +1,13 @@
 import { currentLanguage, useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
-import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LogOut,
   Plus,
@@ -36,10 +42,27 @@ const adminSections = [
   },
   {
     value: "products",
-    label: "Inventory",
+    category: "new",
+    label: "New phones",
     Icon: Package,
     panel: "admin-products",
-    id: "products-tab",
+    id: "products-new-tab",
+  },
+  {
+    value: "products",
+    category: "used",
+    label: "Used phones",
+    Icon: Package,
+    panel: "admin-products",
+    id: "products-used-tab",
+  },
+  {
+    value: "products",
+    category: "accessory",
+    label: "Accessories",
+    Icon: Package,
+    panel: "admin-products",
+    id: "products-accessory-tab",
   },
   {
     value: "staff",
@@ -61,6 +84,7 @@ import { accessoryCategories } from "../data/categories";
 import { money } from "../data/shop";
 import type { Product, Order, Category } from "../types";
 import { productImages } from "../utils/products";
+import SafeImage from "../components/SafeImage";
 const nextActions = {
   "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
   Confirmed: ["Ready for pickup", "Ready for pickup"],
@@ -103,22 +127,71 @@ export default function Admin() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
-  const [tab, setTab] = useState<AdminTab>("dashboard");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const parts = location.pathname
+    .replace(/^\/not-admin\/?/, "")
+    .split("/")
+    .filter(Boolean);
+  const categoryRoutes: Partial<Record<string, Category>> = {
+    "new-phones": "new",
+    "used-phones": "used",
+    accessories: "accessory",
+  };
+  const categoryPaths = {
+    new: "new-phones",
+    used: "used-phones",
+    accessory: "accessories",
+  };
+  const inventoryCategory: "all" | Category = categoryRoutes[parts[0]] || "all";
+  const tab: AdminTab =
+    parts[0] === "orders"
+      ? "orders"
+      : parts[0] === "staff"
+        ? "staff"
+        : inventoryCategory !== "all" || parts[0] === "inventory"
+          ? "products"
+          : "dashboard";
+  const listPath =
+    inventoryCategory === "all"
+      ? "/not-admin/inventory"
+      : `/not-admin/${categoryPaths[inventoryCategory]}`;
+  function setTab(value: AdminTab) {
+    navigate(
+      value === "dashboard"
+        ? "/not-admin"
+        : value === "products"
+          ? "/not-admin/inventory"
+          : `/not-admin/${value}`,
+    );
+  }
+  function setInventoryCategory(value: "all" | Category) {
+    navigate(
+      value === "all"
+        ? "/not-admin/inventory"
+        : `/not-admin/${categoryPaths[value]}`,
+    );
+  }
+  const productEditorOpen = tab === "products" && !!parts[1];
+  function setProductEditorOpen(open: boolean) {
+    if (open) navigate(listPath + "/create");
+    else if (productEditorOpen) navigate(listPath);
+  }
+  const selectedOrderId = tab === "orders" ? parts[1] || null : null;
+  function setSelectedOrderId(id: string | null) {
+    navigate(
+      id ? `/not-admin/orders/${encodeURIComponent(id)}` : "/not-admin/orders",
+    );
+  }
+  const previousPath = useRef(location.pathname);
+  const restoringPath = useRef(false);
   const [draft, setDraft] = useState<Product>(freshProduct);
-  const [productEditorOpen, setProductEditorOpen] = useState(false);
-  useEffect(() => {
-    if (tab !== "products" || !user) setProductEditorOpen(false);
-  }, [tab, user]);
   useEffect(() => {
     if (productEditorOpen)
       document.getElementById("product-editor-title")?.focus();
   }, [productEditorOpen]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const selectedOrder = orders.find((order) => order.id === selectedOrderId);
-  useEffect(() => {
-    if (tab !== "orders" || !user) setSelectedOrderId(null);
-  }, [tab, user]);
   useEffect(() => {
     if (selectedOrderId) document.getElementById("back-to-orders")?.focus();
   }, [selectedOrderId]);
@@ -131,9 +204,6 @@ export default function Admin() {
     status: "Completed" | "Cancelled";
   } | null>(null);
   const [query, setQuery] = useState("");
-  const [inventoryCategory, setInventoryCategory] = useState<
-    "all" | Product["category"]
-  >("all");
   const [productFilter, setProductFilter] = useState<"all" | "low-stock">(
     "all",
   );
@@ -233,6 +303,64 @@ export default function Admin() {
       document.removeEventListener("click", onLink, true);
     };
   }, [dirty]);
+  useLayoutEffect(() => {
+    if (restoringPath.current && previousPath.current === location.pathname) {
+      restoringPath.current = false;
+      return;
+    }
+    if (
+      previousPath.current !== location.pathname &&
+      dirty &&
+      !window.confirm(t("Discard unsaved product changes?"))
+    ) {
+      restoringPath.current = true;
+      navigate(previousPath.current, { replace: true });
+      return;
+    }
+    previousPath.current = location.pathname;
+    if (!productEditorOpen) {
+      const next = freshProduct();
+      setDraft(next);
+      setSpecRows(initialSpecs);
+      setBaseline(draftKey(next, initialSpecs));
+      return;
+    }
+    const product =
+      parts[1] === "create"
+        ? null
+        : products.find((item) => item.id === parts[1]);
+    if (parts[1] !== "create" && !product) {
+      setError("Product not found.");
+      navigate(listPath, { replace: true });
+      return;
+    }
+    const next = product
+      ? { ...product, specs: { ...product.specs } }
+      : {
+          ...freshProduct(),
+          category:
+            inventoryCategory === "all"
+              ? ("new" as Category)
+              : inventoryCategory,
+          image:
+            inventoryCategory === "accessory"
+              ? "/assets/cover.svg"
+              : "/assets/phone.svg",
+        };
+    const rows = product
+      ? Object.entries(product.specs)
+          .filter(([key]) => !["RAM", "Storage", "Category"].includes(key))
+          .map(([name, value]) => ({ name, value }))
+      : initialSpecs;
+    setDraft(next);
+    setSpecRows(rows);
+    setBaseline(draftKey(next, rows));
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+  useEffect(() => {
+    if (user && role !== "owner" && tab === "staff")
+      navigate("/not-admin", { replace: true });
+  }, [user, role, tab]);
   const [importProducts, setImportProducts] = useState<unknown[]>([]);
   const [inventoryPreview, setInventoryPreview] = useState<{
     products: Pick<Product, "name" | "brand" | "price" | "stockQuantity">[];
@@ -302,6 +430,7 @@ export default function Admin() {
   function resetDraft(force = false) {
     if (!force && !mayDiscard()) return;
     const next = freshProduct();
+    setBaseline(draftKey(next, initialSpecs));
     setProductEditorOpen(false);
     setDraft(next);
     setSpecRows(initialSpecs);
@@ -428,7 +557,6 @@ export default function Admin() {
       });
       setUser(result.user.username);
       setRole(result.user.role);
-      setTab("dashboard");
       setPassword("");
     } catch (error) {
       fail(error);
@@ -560,23 +688,9 @@ export default function Admin() {
   }
   function selectProduct(product: Product) {
     if (!mayDiscard()) return;
-    const next = {
-      ...product,
-      isSample: product.isSample !== false,
-      specs: { ...product.specs },
-    };
-    const rows = Object.entries(product.specs)
-      .filter(([key]) => !["RAM", "Storage", "Category"].includes(key))
-      .map(([name, value]) => ({ name, value }));
-    setProductEditorOpen(true);
-    setDraft(next);
-    setSpecRows(rows);
-    setBaseline(draftKey(next, rows));
+    navigate(listPath + "/" + encodeURIComponent(product.id));
     setError("");
     setNotice("");
-    document
-      .getElementById("product-editor")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   if (checking)
     return (
@@ -669,26 +783,35 @@ export default function Admin() {
               .filter(
                 (section) => section.value !== "staff" || role === "owner",
               )
-              .map(({ value, label, Icon, panel, id }) => (
-                <button
-                  key={value}
-                  role="tab"
-                  id={id}
-                  aria-controls={panel}
-                  aria-selected={tab === value}
-                  className={tab === value ? "selected" : ""}
-                  onClick={() => {
-                    if (!mayDiscard()) return;
-                    if (dirty) resetDraft(true);
-                    setTab(value);
-                    setError("");
-                    setNotice("");
-                    if (value === "orders") void loadOrders().catch(fail);
-                  }}
-                >
-                  <Icon size={18} /> {t(label)}
-                </button>
-              ))}
+              .map((section) => {
+                const { value, label, Icon, panel, id } = section;
+                const category =
+                  "category" in section ? section.category : undefined;
+                const selected =
+                  tab === value &&
+                  (!category || inventoryCategory === category);
+                return (
+                  <button
+                    key={id}
+                    role="tab"
+                    id={id}
+                    aria-controls={panel}
+                    aria-selected={selected}
+                    className={selected ? "selected" : ""}
+                    onClick={() => {
+                      if (!mayDiscard()) return;
+                      if (dirty) resetDraft(true);
+                      if (category) setInventoryCategory(category);
+                      else setTab(value);
+                      setError("");
+                      setNotice("");
+                      if (value === "orders") void loadOrders().catch(fail);
+                    }}
+                  >
+                    <Icon size={18} /> {t(label)}
+                  </button>
+                );
+              })}
           </div>
         </aside>
         <div className="admin-shell">
@@ -699,7 +822,14 @@ export default function Admin() {
                 {t(
                   {
                     dashboard: "Dashboard",
-                    products: "Inventory",
+                    products:
+                      inventoryCategory === "new"
+                        ? "New phones"
+                        : inventoryCategory === "used"
+                          ? "Used phones"
+                          : inventoryCategory === "accessory"
+                            ? "Accessories"
+                            : "Inventory",
                     orders: "Orders",
                     staff: "Staff logins",
                   }[tab],
@@ -845,7 +975,11 @@ export default function Admin() {
             <div
               id="admin-products"
               role="tabpanel"
-              aria-labelledby="products-tab"
+              aria-labelledby={
+                inventoryCategory === "all"
+                  ? undefined
+                  : `products-${inventoryCategory}-tab`
+              }
               className="admin-products-layout"
             >
               {!productEditorOpen && (
@@ -944,37 +1078,6 @@ export default function Admin() {
                     placeholder={t("Search products or brands…")}
                   />
                   <div
-                    className="admin-filter-bar inventory-category-filter"
-                    role="group"
-                    aria-label={t("Inventory categories")}
-                  >
-                    {(
-                      [
-                        ["all", "All categories"],
-                        ["new", "New phones"],
-                        ["used", "Used phones"],
-                        ["accessory", "Accessories"],
-                      ] as const
-                    ).map(([value, label]) => (
-                      <button
-                        key={value}
-                        type="button"
-                        aria-pressed={inventoryCategory === value}
-                        onClick={() => setInventoryCategory(value)}
-                      >
-                        {t(label)}{" "}
-                        <span className="inventory-category-count">
-                          {
-                            products.filter(
-                              (product) =>
-                                value === "all" || product.category === value,
-                            ).length
-                          }
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  <div
                     className="admin-filter-bar"
                     aria-label={t("Filter inventory")}
                   >
@@ -1001,7 +1104,7 @@ export default function Admin() {
                   <div className="admin-product-list">
                     {shownProducts.map((p) => (
                       <article className="admin-product" key={p.id}>
-                        <img src={p.image} alt="" />
+                        <SafeImage src={p.image} alt="" />
                         <div>
                           <strong>{p.name}</strong>
                           <span>
@@ -1333,7 +1436,7 @@ export default function Admin() {
                     <div className="admin-photo-grid">
                       {productImages(draft).map((image, index, photos) => (
                         <div className="admin-photo-tile" key={image}>
-                          <img
+                          <SafeImage
                             src={image}
                             alt={t("Product photo {{v0}} preview", {
                               v0: String(index + 1),

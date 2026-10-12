@@ -1,3 +1,4 @@
+import SafeImage from "./SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import { Plus, ArrowUpRight } from "lucide-react";
@@ -23,7 +24,7 @@ export function ProductImage({
       className={`product-visual ${className}`}
       style={{ backgroundColor: product.color + "24" }}
     >
-      <img
+      <SafeImage
         src={productImageSource(product)}
         alt={`${product.brand} ${product.name}${isIllustration(product) ? " — illustrative placeholder" : ""}`}
         loading="lazy"

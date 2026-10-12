@@ -1,3 +1,4 @@
+import CancellationPolicy from "../components/CancellationPolicy";
 import { currentLanguage, useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useLanguage } from "../context/LanguageContext";
@@ -217,13 +218,15 @@ export default function Checkout() {
               <div>
                 <strong>{t("Shop pickup only")}</strong>
                 <p>
-                  {t(shop.location)}
+                  {shop.address}
                   <br />
                   {t("Open ")}
                   {t(shop.hours)}
                   {t(". Confirm a pickup time with the shop.")}
                   <br />
-                  {t("No delivery address is needed.")}
+                  {t(
+                    "Wait for your ready-for-pickup notification before visiting. Bring your order reference when collecting.",
+                  )}
                 </p>
               </div>
             </div>
@@ -241,6 +244,7 @@ export default function Checkout() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
+            <CancellationPolicy />
             <div className="payment-panel">
               <strong>{t("Pay at pickup")}</strong>
               <p>
@@ -293,7 +297,7 @@ export default function Checkout() {
             </div>
             <div className="summary-line">
               <span>{t("Collection")}</span>
-              <span>{t("Shop pickup")}</span>
+              <strong>{t("Shop pickup only")}</strong>
             </div>
             <div className="summary-line total">
               <strong>
@@ -464,23 +468,29 @@ export function OrderSuccess({ id }: { id?: string }) {
           )}
         </p>
       )}
-      {order.history && (
-        <ol className="order-history" aria-label={t("Order progress")}>
-          {order.history.map((event, index) => (
-            <li key={index}>
-              <strong>{t(event.status)}</strong>
-              <time dateTime={event.date}>
-                {new Date(event.date).toLocaleString(
-                  currentLanguage() === "ne" ? "ne-NP" : "en-GB",
-                  {
-                    timeZone: "Asia/Kathmandu",
-                  },
-                )}
-              </time>
-            </li>
-          ))}
-        </ol>
-      )}
+      <a className="button dark full track-order-button" href="#order-progress">
+        {t("Track order")} <ArrowRight size={17} />
+      </a>
+      <section id="order-progress" className="receipt-progress">
+        <h2>{t("Order progress")}</h2>
+        {order.history && (
+          <ol className="order-history" aria-label={t("Order progress")}>
+            {order.history.map((event, index) => (
+              <li key={index}>
+                <strong>{t(event.status)}</strong>
+                <time dateTime={event.date}>
+                  {new Date(event.date).toLocaleString(
+                    currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+                    {
+                      timeZone: "Asia/Kathmandu",
+                    },
+                  )}
+                </time>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
       {order.email && (
         <p className="summary-note">
           {t("Email for order updates: ")}
@@ -532,6 +542,9 @@ export function OrderSuccess({ id }: { id?: string }) {
           {t("Directions to the shop ")}
           <ArrowUpRight size={16} />
         </a>
+        <p className="summary-note">
+          {t("Opening hours")}: {t(shop.hours)}
+        </p>
         <div className="pickup-note">
           <MapPin size={17} />
           {t("Shop pickup · ")}

@@ -27,7 +27,7 @@ function readLanguage(key: string): Language {
 }
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
-  const admin = pathname === "/not-admin" || pathname === "/not-admin/";
+  const admin = pathname === "/not-admin" || pathname.startsWith("/not-admin/");
   const [customerLanguage, setCustomerLanguage] = useState<Language>(() =>
     readLanguage("me-language"),
   );

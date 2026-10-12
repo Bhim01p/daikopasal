@@ -6,6 +6,7 @@ import { useCustomer } from "../context/CustomerContext";
 import { api, ApiError } from "../utils/api";
 import { money, shopDirections } from "../data/shop";
 import type { Order } from "../types";
+import { readOrders } from "../utils/orders";
 
 export default function MyOrders() {
   const t = useT();
@@ -18,6 +19,9 @@ export default function MyOrders() {
   const [updatedAt, setUpdatedAt] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "past">("all");
+  const guestOrders = readOrders().filter(
+    (order) => !order.accountOrder && order.receiptToken,
+  );
   const customerId = customer?.id;
   const activeCustomerId = useRef(customerId);
   activeCustomerId.current = customerId;
@@ -70,6 +74,40 @@ export default function MyOrders() {
     return (
       <div className="container empty-state" role="status">
         {t("Opening your orders…")}
+      </div>
+    );
+  if (!customer && guestOrders.length)
+    return (
+      <div className="container standard-page guest-receipts">
+        <span className="eyebrow">{t("Shop pickup only")}</span>
+        <h1>{t("My orders")}</h1>
+        <p>
+          {t(
+            "Guest orders saved in this browser. Open an order to check its latest status.",
+          )}
+        </p>
+        {guestOrders
+          .slice()
+          .reverse()
+          .map((order) => (
+            <article className="guest-receipt" key={order.id}>
+              <div>
+                <strong>{order.id}</strong>
+                <p>
+                  {order.items
+                    .map((item) => `${item.product.name} × ${item.quantity}`)
+                    .join(" · ")}
+                </p>
+                <span>{money(order.total)}</span>
+              </div>
+              <Link className="button dark" to={`/order/${order.id}`}>
+                {t("Track order")} <ArrowRight size={16} />
+              </Link>
+            </article>
+          ))}
+        <Link className="text-link" to="/login?next=/my-orders">
+          {t("Log in to view account orders")}
+        </Link>
       </div>
     );
   if (!customer)

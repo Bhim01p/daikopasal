@@ -22,12 +22,12 @@ export default function Services() {
           <h2>{t("Phone repair")}</h2>
           <p>
             {t(
-              "A cracked screen, battery trouble, or charging issues can interrupt your day. Tell us your phone brand, model, and the problem. We’ll discuss diagnosis and repair options with you.",
+              "Tell us your phone brand, model and the issue. We can help with screens, batteries, charging and more.",
             )}
           </p>
           <p>
             {t(
-              "We accept repair enquiries for all major brands. Availability, parts, cost and timing are confirmed after inspection.",
+              "All major brands welcome. Parts, cost and timing are confirmed after inspection.",
             )}
           </p>
           <h3>{t("Common repair enquiries")}</h3>
@@ -48,7 +48,7 @@ export default function Services() {
             ))}
           </div>
           <a
-            className="whatsapp-icon-button"
+            className="button white repair-contact"
             aria-label={t("Ask about phone repair on WhatsApp")}
             href={whatsapp(
               `Hello ${shop.name}, I would like help with a mobile phone repair. My model is: __. The issue is: __.`,
@@ -56,7 +56,7 @@ export default function Services() {
             target="_blank"
             rel="noreferrer"
           >
-            <WhatsAppIcon />
+            <WhatsAppIcon /> {t("Ask about repair")}
           </a>
         </div>
       </section>
@@ -66,7 +66,7 @@ export default function Services() {
           <h2>{t("Digital meter repair")}</h2>
           <p>
             {t(
-              "We accept diagnosis and repair enquiries for digital meters, mainly for bikes and vehicles. Tell us the vehicle model, the issue, and when it started. The shop will discuss inspection and possible next steps.",
+              "Bike or vehicle meter trouble? Tell us the vehicle model, the issue and when it started. Contact us to arrange diagnosis.",
             )}
           </p>
           <p>
@@ -75,7 +75,7 @@ export default function Services() {
             )}
           </p>
           <a
-            className="whatsapp-icon-button"
+            className="button white repair-contact"
             aria-label={t("Ask about digital meter repair on WhatsApp")}
             href={whatsapp(
               `Hello ${shop.name}, I would like help with a bike / vehicle digital meter repair. My model is: __. The issue is: __.`,
@@ -83,7 +83,7 @@ export default function Services() {
             target="_blank"
             rel="noreferrer"
           >
-            <WhatsAppIcon />
+            <WhatsAppIcon /> {t("Ask about repair")}
           </a>
         </div>
       </section>

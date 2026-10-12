@@ -1,6 +1,6 @@
 import { useT } from "../context/LanguageContext";
 import { LanguageSwitch } from "../context/LanguageContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Link,
   NavLink,
@@ -9,6 +9,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import {
+  ChevronDown,
   Menu,
   X,
   Search,
@@ -22,6 +23,8 @@ import {
 import { shop, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
 import { useCustomer } from "../context/CustomerContext";
+import HeaderDropdown from "./HeaderDropdown";
+import CartDialog from "./CartDialog";
 import AccountDialog from "./AccountDialog";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { ThemeSwitch } from "../context/ThemeContext";
@@ -58,10 +61,22 @@ export function Brand() {
 }
 export default function Layout() {
   const t = useT();
+  const header = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const observer = new ResizeObserver(() =>
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        (header.current?.getBoundingClientRect().height || 84) + "px",
+      ),
+    );
+    if (header.current) observer.observe(header.current);
+    return () => observer.disconnect();
+  }, []);
   const { customer } = useCustomer();
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -72,6 +87,7 @@ export default function Layout() {
   useEffect(() => {
     setMenu(false);
     setAccountOpen(false);
+    setCartOpen(false);
     const section = location.hash
       ? document.getElementById(location.hash.slice(1))
       : null;
@@ -94,6 +110,7 @@ export default function Layout() {
         {t("Skip to content")}
       </a>
       <header
+        ref={header}
         className={`site-header ${["/mobiles", "/second-hand", "/accessories", "/search"].includes(location.pathname) ? "catalogue-header" : ""}`}
       >
         <div className="container nav-row">
@@ -104,16 +121,34 @@ export default function Layout() {
               aria-label={t("Main navigation")}
               className={`reference-main-nav ${menu ? "open" : ""}`}
             >
-              {links.map(([to, label]) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  end={to === "/"}
-                  onClick={() => setMenu(false)}
-                >
-                  {t(label)}
-                </NavLink>
-              ))}
+              <NavLink to="/" end>
+                {t("Home")}
+              </NavLink>
+              <HeaderDropdown
+                label={t("Shop")}
+                trigger={
+                  <>
+                    {t("Shop")} <ChevronDown size={15} />
+                  </>
+                }
+                triggerClass={
+                  shoppingPage && location.pathname !== "/"
+                    ? "shop-menu active"
+                    : "shop-menu"
+                }
+              >
+                {links.slice(1, 4).map(([to, label]) => (
+                  <NavLink key={to} to={to}>
+                    {t(label)}
+                  </NavLink>
+                ))}
+              </HeaderDropdown>
+              <NavLink to="/help">{t("Help")}</NavLink>
+              <NavLink to="/repair">{t("Repair")}</NavLink>
+              <div className="mobile-menu-preferences">
+                <LanguageSwitch />
+                <ThemeSwitch />
+              </div>
             </nav>
           </div>
           <form
@@ -140,16 +175,28 @@ export default function Layout() {
           <div className="nav-tools">
             <LanguageSwitch />
             <ThemeSwitch />
-            <button
-              className="customer-account-link"
-              onClick={() => setAccountOpen(true)}
-              aria-haspopup="dialog"
-              aria-label={customer ? t("My account") : t("Customer login")}
+            <HeaderDropdown
+              label={t("Account")}
+              trigger={<UserRound size={22} />}
+              triggerClass="customer-account-link"
+              className="account-dropdown"
             >
-              <UserRound size={22} />
-            </button>
-            <Link
-              to="/cart"
+              <button
+                onClick={() => {
+                  setCartOpen(false);
+                  setAccountOpen(true);
+                }}
+              >
+                {customer ? t("My account") : t("Customer login")}
+              </button>
+              <Link to="/my-orders">{t("My orders")}</Link>
+            </HeaderDropdown>
+            <button
+              onClick={() => {
+                setAccountOpen(false);
+                setCartOpen(true);
+              }}
+              aria-haspopup="dialog"
               className="bag-link"
               aria-label={t("Shopping cart, {{v0}} items", {
                 v0: String(count),
@@ -157,7 +204,7 @@ export default function Layout() {
             >
               <ShoppingBag size={20} />
               <span>{count}</span>
-            </Link>
+            </button>
             <button
               className="icon-button menu-button"
               onClick={() => setMenu(!menu)}
@@ -244,6 +291,12 @@ export default function Layout() {
         </NavLink>
         <NavLink
           to="/cart"
+          onClick={(event) => {
+            event.preventDefault();
+            setAccountOpen(false);
+            setCartOpen(true);
+          }}
+          aria-haspopup="dialog"
           className={({ isActive }) =>
             isActive ||
             location.pathname === "/checkout" ||
@@ -297,6 +350,7 @@ export default function Layout() {
           </button>
         </div>
       )}
+      {cartOpen && <CartDialog onClose={() => setCartOpen(false)} />}
       {accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}
     </>
   );
