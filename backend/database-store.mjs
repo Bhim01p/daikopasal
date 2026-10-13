@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import postgres from "postgres";
+import { upgradePhoneCatalogue } from "./phone-reference.mjs";
 import {
   normalizeStore,
   seedStore,
@@ -77,7 +78,7 @@ export function createDatabaseStore(
         const [row] =
           await tx`select data from ${tx(schema)}.store where id = 1 for update`;
         const normalized = normalizeStore(row.data);
-        const upgraded = upgradeStarterCatalogue(normalized);
+        const upgraded = upgradePhoneCatalogue(upgradeStarterCatalogue(normalized));
         const current = { data: upgraded, dirty: upgraded !== normalized, tx };
         const result = await context.run(current, callback);
         if (current.dirty)

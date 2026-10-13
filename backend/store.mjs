@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { upgradePhoneCatalogue } from "./phone-reference.mjs";
 export function seedStore(initialProducts) {
   const products =
     initialProducts ||
@@ -103,6 +104,7 @@ export function createStore(
     : seedStore(initialProducts);
   const previous = current;
   if (migrateStarter) current = upgradeStarterCatalogue(current);
+  current = upgradePhoneCatalogue(current);
   function commit(next) {
     mkdirSync(path.dirname(file), { recursive: true });
     const temporary = file + ".tmp";

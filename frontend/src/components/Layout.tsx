@@ -9,6 +9,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 import {
+  Clock,
+  MapPin,
   Heart,
   ChevronDown,
   Menu,
@@ -21,7 +23,7 @@ import {
   Smartphone,
   UserRound,
 } from "lucide-react";
-import { shop, whatsapp } from "../data/shop";
+import { shop, shopDirections, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
 import { useCustomer } from "../context/CustomerContext";
 import { useFavourites } from "../context/FavouritesContext";
@@ -286,6 +288,80 @@ export default function Layout() {
               {t("Links coming later")}
             </p>
           </div>
+        </div>
+        <div className="container mobile-compact-footer">
+          <div className="mobile-footer-brand">
+            <Brand />
+            <a
+              className="mobile-footer-whatsapp"
+              href={whatsapp()}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={t("Contact shop on WhatsApp")}
+            >
+              <WhatsAppIcon size={22} />
+            </a>
+          </div>
+          <div className="mobile-footer-facts">
+            <a href={`tel:+${shop.internationalPhone}`}>
+              <Phone size={17} />
+              <span>
+                <small>{t("Call the shop")}</small>
+                <strong>{shop.phone}</strong>
+              </span>
+            </a>
+            <div>
+              <Clock size={17} />
+              <span>
+                <small>{t("Opening hours")}</small>
+                <strong>{t(shop.hours)}</strong>
+              </span>
+            </div>
+          </div>
+          <a
+            className="mobile-footer-directions"
+            href={shopDirections}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MapPin size={17} />
+            {t("Get directions")}
+            <ArrowUpRight size={16} />
+          </a>
+          <details className="mobile-footer-section">
+            <summary>
+              {t("Explore the shop")}
+              <ChevronDown size={17} />
+            </summary>
+            <div className="mobile-footer-links">
+              {links.slice(1, 4).map(([to, label]) => (
+                <Link key={to} to={to}>
+                  {t(label)}
+                </Link>
+              ))}
+              <Link to="/compare">{t("Compare")}</Link>
+              <Link to="/favourites">{t("Favourites")}</Link>
+              <Link to="/my-orders">{t("My orders")}</Link>
+            </div>
+          </details>
+          <details className="mobile-footer-section">
+            <summary>
+              {t("Help & store information")}
+              <ChevronDown size={17} />
+            </summary>
+            <p>
+              {shop.address}
+              <br />
+              {t("Shop pickup only")}
+            </p>
+            <div className="mobile-footer-links">
+              <Link to="/help">{t("Help")}</Link>
+              <Link to="/repair">{t("Repair")}</Link>
+            </div>
+          </details>
+          <small className="mobile-footer-copyright">
+            © {new Date().getFullYear()} {shop.name}
+          </small>
         </div>
       </footer>
       <nav className="mobile-dock" aria-label={t("Quick navigation")}>

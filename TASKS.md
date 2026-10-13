@@ -204,3 +204,45 @@ No purchase, SMS activation or SQL backup setup performed. Guest checkout remain
 - Reference: C:/Users/USER/AppData/Local/Temp/codex-clipboard-80c85bce-34be-40d3-8dba-6329ba9cc293.png (user attached 12 October 2026).
 - This request is for the colour palette only; preserve the current approved layout and flows. Clarify dark-theme treatment when implementation resumes.
 - Deferred at the owner's request due to credit limits. No UI changes, commit or deployment performed for this item.
+
+## Whole-flow audit — 13 October 2026
+- Re-ran production build, 803-message translation coverage and all 30 backend tests successfully.
+- Fresh isolated browser store: email login/profile, signed-in checkout, favourites, comparison, EMI/admin settings, themes/languages and phone/tablet/desktop layouts passed.
+- Separate guest mobile checkout: invalid submission, quantity/total, stock reservation, receipt reload, guest tracking, admin Confirmed/Ready/Completed and four notification records passed. Mock mail only.
+- Staff UI creation/reload/login, order access, owner-only administration and disabled-session revocation passed.
+- Neon integration passed in its own temporary schema: cross-instance sessions, last-unit concurrency, private receipts, image/order persistence, pickup lifecycle and persistent notification queue. Temporary schema removed; no shop test orders or live emails.
+- Read-only live check: production deployment Ready, public API/routes healthy, customer auth mode already email. Nine live catalogue entries, one currently orderable, eight with estimated prices. No production settings changed.
+- Found and fixed locally: used-phone editor displayed Good while its condition was unset. It now shows Inspection pending and requires an explicit selection. Browser verification passed; regression added to the current UI harness.
+- The audit's small editor correction and test update are not committed/pushed. Real Gmail OTP inbox delivery remains untested by the agent; SQL backups and payments remain deferred.
+
+## Mobile homepage preview — 13 October 2026
+- Local review preview: phone-only 374–390px slide cards with clear text above a contained product image; diagonal gradient removed on phones.
+- Phone footer replaced by compact contact/hours/directions, WhatsApp shortcut and expandable Shop/Help sections. Unfinished social labels and excess footer spacing hidden on phones.
+- Desktop footer and slider remain unchanged: light/dark full-page screenshots match pixel-for-pixel before and after.
+- Build and translations pass; browser checks cover all slides at 320/390/430, both themes, image/text bounds, no horizontal scrolling, accordion links and directions.
+- Screenshots saved under ignored qa-results/mobile-home-compact-* and mobile-footer-compact-*. Awaiting owner review. No commit, push or deployment performed for this preview.
+
+Mobile homepage follow-up: slider fills initial phone viewport between header/tabs and bottom dock; footer revealed on scroll. Desktop rules unchanged. Build passed; checked 390px width at 667/844/932px heights, footer begins behind dock with no horizontal overflow. Local only, not published.
+
+## CSV phone comparison catalogue — 13 October 2026
+
+- [x] Preserve original owner-supplied CSV and import dictionary/report in the repository.
+- [x] Validate all 31 columns, unique IDs, numeric/boolean/date fields, HTTPS sources and RFC CSV quoting before import.
+- [x] Prepare 83 configurations / 50 models, preserving the two existing manufacturer references (85 total reference configurations).
+- [x] Keep references separate from stock/products/orders; revision-based idempotent migration supports local files and existing Neon JSONB architecture.
+- [x] Add public reference catalogue endpoint; search second phone by brand/model/configuration and filter brand, while first dropdown remains shop phones. Preserve legacy reference comparison URLs.
+- [x] Show exact variants, all sources/check dates, absent fields and source-linked reference labels; no invented prices or purchasable reference products.
+- [x] Phone/desktop light/dark, Nepali, no-result state, API failure/retry, URL reloads and table swipe hint.
+- [x] Backend regression: 34/34 pass, including isolated database migration/API coverage. Browser checks passed at 320/390/1440 widths, both themes and Nepali.
+- [ ] Publish through the normal deployment when requested. No live database connection, Git push or deployment performed for this task. Next deployment activates the catalogue migration; no new environment variables are needed.
+
+Data accuracy note: the supplied report and CSV source-check dates are retained; source specifications have not all been independently researched again. Future CSV updates use scripts/import-phone-csv.mjs; see docs/phone-reference-import.md.
+
+### Pre-push flow check — 13 October 2026
+
+- Build and 815 interface translation checks pass; backend tests 34/34 pass.
+- Fresh isolated browser checks pass: admin phone editing and used condition validation, EMI setup/calculation, rotating homepage, favourites, comparison, email OTP/profile with mock delivery, signed-in checkout and order tracking.
+- CSV comparison passes search/variant/source/no-data/retry/reload/legacy link flows at 320/390/1440 widths, both themes and Nepali. Broader shop smoke checks cover 320/390/768/1024/1440.
+- Bundled seed exactly matches all 83 CSV rows plus 2 existing manufacturer references; Vercel function packaging includes the seed.
+- Git whitespace check passes. Private environment/admin credential files and QA artifacts remain ignored.
+- Ready for commit/push. No Git commit, push, deployment, real Gmail delivery or live Neon migration performed during this check.

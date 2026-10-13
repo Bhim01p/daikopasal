@@ -28,6 +28,25 @@ export default function ReferenceHome() {
     },
   ];
   const [index, setIndex] = useState(0);
+  const carousel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const section = carousel.current;
+    if (!section) return;
+    const measure = () => {
+      const header = document.querySelector('.site-header');
+      const tabs = document.querySelector('.home-tabs');
+      const dock = document.querySelector('.mobile-dock');
+      section.style.setProperty('--home-top-height', `${(header?.getBoundingClientRect().height || 0) + (tabs?.getBoundingClientRect().height || 0)}px`);
+      section.style.setProperty('--home-dock-height', `${dock?.getBoundingClientRect().height || 64}px`);
+    };
+    const observer = new ResizeObserver(measure);
+    for (const selector of ['.site-header', '.home-tabs', '.mobile-dock']) {
+      const element = document.querySelector(selector);
+      if (element) observer.observe(element);
+    }
+    measure();
+    return () => observer.disconnect();
+  }, []);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const suppress = useRef(0);
   const move = (n: number) => setIndex((i) => (i + n + 3) % 3);
@@ -45,6 +64,7 @@ export default function ReferenceHome() {
       {" "}
       <HomeTabs />{" "}
       <section
+        ref={carousel}
         className="home-carousel"
         aria-roledescription="carousel"
         aria-label={t("Shop categories")}

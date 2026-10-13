@@ -1328,7 +1328,8 @@ export default function Admin() {
                           </label>
                           <select
                             id="product-condition"
-                            value={draft.condition || "Good"}
+                            value={draft.condition || ""}
+                            required
                             onChange={(e) =>
                               setDraft({
                                 ...draft,
@@ -1337,6 +1338,9 @@ export default function Admin() {
                               })
                             }
                           >
+                            <option value="" disabled>
+                              {t("Inspection pending")}
+                            </option>
                             {["Like New", "Excellent", "Good", "Fair"].map(
                               (condition) => (
                                 <option key={condition} value={condition}>

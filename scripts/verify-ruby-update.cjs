@@ -39,6 +39,28 @@ const { readFileSync } = require("node:fs");
       .click();
     await page.waitForURL("**/not-admin/new-phones");
     await page.screenshot({ path: "qa-results/ruby-admin-desktop.png" });
+    // Uninspected used stock must not silently appear to have a saved condition.
+    await page.goto(base + "/not-admin/used-phones");
+    await page
+      .getByRole("button", { name: "Edit Redmi 9 (used)", exact: true })
+      .click();
+    assert.equal(await page.locator("#product-condition").inputValue(), "");
+    await page.locator("#product-battery").fill("90");
+    await page
+      .getByRole("button", { name: "Save product", exact: true })
+      .click();
+    assert.equal(
+      await page
+        .locator("#product-condition")
+        .evaluate((select) => select.validity.valueMissing),
+      true,
+    );
+    await page.locator("#product-condition").selectOption("Good");
+    await page
+      .getByRole("button", { name: "Save product", exact: true })
+      .click();
+    await page.waitForURL("**/not-admin/used-phones");
+
     await page.goto(base + "/");
     await page.screenshot({ path: "qa-results/ruby-home-light.png" });
     const initial = await page.locator(".home-carousel h1").textContent();

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useProducts } from "../context/ProductContext";
 import { useT } from "../context/LanguageContext";
-import { referencePhones } from "../data/referencePhones";
+import type { ReferencePhone } from "../data/referencePhones";
+import { api } from "../utils/api";
 import { money } from "../data/shop";
 export default function Compare() {
   const t = useT();
@@ -10,6 +11,29 @@ export default function Compare() {
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
   const [differences, setDifferences] = useState(false);
+  const [referencePhones, setReferencePhones] = useState<ReferencePhone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [brand, setBrand] = useState("");
+  const [reload, setReload] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(false);
+    api<{ phones: ReferencePhone[] }>("/reference-phones")
+      .then(({ phones }) => {
+        if (active) setReferencePhones(phones);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [reload]);
   const models = [
     ...referencePhones.map((p) => ({
       ...p,
@@ -17,17 +41,22 @@ export default function Compare() {
       slug: "",
       available: false,
       estimated: false,
-      origin: "Manufacturer reference",
+      origin:
+        p.provenance === "Manufacturer reference"
+          ? "Manufacturer reference"
+          : "Reference specifications",
     })),
     ...products
       .filter((p) => p.category !== "accessory")
       .map((p) => ({
         id: p.id,
+        brand: p.brand,
         name: p.name,
         variant:
           p.specVariant ||
           `${p.brand} · ${p.ram || "?"} GB / ${p.storage || "?"} GB · ${p.category === "used" ? "Used" : "New"}`,
         sourceUrl: p.specSourceUrl || "",
+        sourceUrls: p.specSourceUrl ? [p.specSourceUrl] : [],
         checkedAt: "",
         specs: p.specs,
         price: p.price,
@@ -39,8 +68,18 @@ export default function Compare() {
   ];
   const first = models.find((p) => p.id === params.get("first"));
   const second = models.find((p) => p.id === params.get("second"));
-  const filtered = models.filter((p) =>
-    (p.name + " " + p.variant).toLowerCase().includes(query.toLowerCase()),
+  const filtered = models.filter(
+    (p) =>
+      (!brand || p.brand === brand) &&
+      query
+        .toLowerCase()
+        .trim()
+        .split(/\s+/)
+        .every((word) =>
+          (p.brand + " " + p.name + " " + p.variant)
+            .toLowerCase()
+            .includes(word),
+        ),
   );
   const keys = [
     ...new Set([
@@ -63,27 +102,74 @@ export default function Compare() {
           "Compare exact variants using saved specifications and linked sources. Reference models are not shop stock.",
         )}
       </p>
-      <label className="comparison-search">
-        {t("Find a model")}
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("Search models, for example Redmi 9")}
-        />
-      </label>
+      <div className="comparison-search-tools">
+        <label className="comparison-search">
+          {t("Find your second phone")}
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("Search models, for example Redmi 9")}
+          />
+        </label>
+        <label>
+          {t("Brand")}
+          <select
+            aria-label={t("Brand")}
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+          >
+            <option value="">{t("All brands")}</option>
+            {[...new Set(models.map((p) => p.brand).filter(Boolean))]
+              .sort()
+              .map((value) => (
+                <option key={value}>{value}</option>
+              ))}
+          </select>
+        </label>
+      </div>
+      {loading && <p role="status">{t("Loading reference phones…")}</p>}
+      {error && (
+        <div role="alert">
+          <p>{t("Reference phones could not be loaded. Please try again.")}</p>
+          <button
+            className="button secondary"
+            onClick={() => setReload((n) => n + 1)}
+          >
+            {t("Try again")}
+          </button>
+        </div>
+      )}
+      {!loading && !error && (
+        <p className="muted">
+          {t("Reference catalogue")}: {referencePhones.length}{" "}
+          {t("configurations")}.{" "}
+          {t("Choose the exact region and RAM/storage variant.")}
+        </p>
+      )}
       <div className="comparison-selectors">
         {["first", "second"].map((slot, i) => (
           <label key={slot}>
             {t(i === 0 ? "First phone" : "Second phone")}
             <select
+              aria-label={t(i === 0 ? "First phone" : "Second phone")}
               value={params.get(slot) || ""}
               onChange={(e) => pick(slot, e.target.value)}
             >
               <option value="">{t("Select a phone")}</option>
-              {models
+              {(slot === "first"
+                ? models.filter(
+                    (p) =>
+                      p.origin === "Shop specifications" ||
+                      p.id === params.get(slot),
+                  )
+                : models
+              )
                 .filter(
-                  (p) => filtered.includes(p) || p.id === params.get(slot),
+                  (p) =>
+                    slot === "first" ||
+                    filtered.includes(p) ||
+                    p.id === params.get(slot),
                 )
                 .map((p) => (
                   <option
@@ -93,14 +179,15 @@ export default function Compare() {
                       p.id === params.get(slot === "first" ? "second" : "first")
                     }
                   >
-                    {p.name} — {p.variant}
+                    {p.brand} {p.name} — {p.variant}
+                    {p.slug ? ` · ${t("Shop specifications")}` : ""}
                   </option>
                 ))}
             </select>
           </label>
         ))}
       </div>
-      {!filtered.length && (
+      {!loading && !error && !filtered.length && (
         <p role="status">
           {t(
             "No saved model matches. More verified models can be added later.",
@@ -117,6 +204,9 @@ export default function Compare() {
             />
             {t("Show differences only")}
           </label>
+          <p className="comparison-swipe-hint muted">
+            {t("Swipe the table sideways to see both phones.")}
+          </p>
           <div
             className="comparison-scroll"
             tabIndex={0}
@@ -133,15 +223,25 @@ export default function Compare() {
                       <small>{p.variant}</small>
                       <small>{t(p.origin)}</small>
                       {p.sourceUrl ? (
-                        <a href={p.sourceUrl} target="_blank" rel="noreferrer">
-                          {t("Specification source")} ↗
-                        </a>
+                        (p.sourceUrls?.length
+                          ? p.sourceUrls
+                          : [p.sourceUrl]
+                        ).map((url, i) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {t("Specification source")} {i + 1} ↗
+                          </a>
+                        ))
                       ) : (
                         <small>{t("Source not supplied by shop")}</small>
                       )}
                       {p.checkedAt && (
                         <small>
-                          {t("Verified on")} {p.checkedAt}
+                          {t("Source checked on")} {p.checkedAt}
                         </small>
                       )}
                       {p.price !== undefined ? (
@@ -156,7 +256,7 @@ export default function Compare() {
                         </>
                       ) : (
                         <small>
-                          {t("Reference only — availability not confirmed")}
+                          {t("For comparison only — not shop inventory")}
                         </small>
                       )}
                     </th>
@@ -180,8 +280,16 @@ export default function Compare() {
                       }
                     >
                       <th scope="row">{t(k)}</th>
-                      <td>{first.specs[k] || t("Not provided")}</td>
-                      <td>{second.specs[k] || t("Not provided")}</td>
+                      <td>
+                        {["Yes", "No"].includes(first.specs[k])
+                          ? t(first.specs[k])
+                          : first.specs[k] || t("Not available")}
+                      </td>
+                      <td>
+                        {["Yes", "No"].includes(second.specs[k])
+                          ? t(second.specs[k])
+                          : second.specs[k] || t("Not available")}
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -198,7 +306,7 @@ export default function Compare() {
           <h2>{t("Choose two phones to compare")}</h2>
           <p>
             {t(
-              "Try Redmi 9 and Redmi 10 from the manufacturer reference library.",
+              "Choose a shop phone first, then search the reference catalogue for your second phone.",
             )}
           </p>
         </div>

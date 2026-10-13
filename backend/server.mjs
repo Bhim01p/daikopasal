@@ -16,6 +16,7 @@ import { bufferedResponse } from "./buffered-response.mjs";
 import { saveProductImage } from "./images.mjs";
 import { publicStaff, saveStaff } from "./staff.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
+import { publicReferencePhones } from "./phone-reference.mjs";
 import {
   createCustomerAuth,
   publicCustomer,
@@ -197,6 +198,8 @@ export function createApp(options = {}) {
         return json(response, 200, { ok: true });
       if (route === "/api/products" && method === "GET")
         return json(response, 200, { products: store.read().products });
+      if (route === "/api/reference-phones" && method === "GET")
+        return json(response, 200, { phones: publicReferencePhones(store.read()) });
       if (route === "/api/customer/session" && method === "GET")
         return json(response, 200, {
           customer: publicCustomer(customerAuth.session(request)?.customer),
