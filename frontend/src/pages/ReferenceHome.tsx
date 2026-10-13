@@ -1,5 +1,4 @@
 import SafeImage from "../components/SafeImage";
-import HomeTabs from "../components/HomeTabs";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
@@ -33,14 +32,20 @@ export default function ReferenceHome() {
     const section = carousel.current;
     if (!section) return;
     const measure = () => {
-      const header = document.querySelector('.site-header');
-      const tabs = document.querySelector('.home-tabs');
-      const dock = document.querySelector('.mobile-dock');
-      section.style.setProperty('--home-top-height', `${(header?.getBoundingClientRect().height || 0) + (tabs?.getBoundingClientRect().height || 0)}px`);
-      section.style.setProperty('--home-dock-height', `${dock?.getBoundingClientRect().height || 64}px`);
+      const header = document.querySelector(".site-header");
+      const tabs = document.querySelector(".home-tabs");
+      const dock = document.querySelector(".mobile-dock");
+      section.style.setProperty(
+        "--home-top-height",
+        `${(header?.getBoundingClientRect().height || 0) + (tabs?.getBoundingClientRect().height || 0)}px`,
+      );
+      section.style.setProperty(
+        "--home-dock-height",
+        `${dock?.getBoundingClientRect().height || 64}px`,
+      );
     };
     const observer = new ResizeObserver(measure);
-    for (const selector of ['.site-header', '.home-tabs', '.mobile-dock']) {
+    for (const selector of [".site-header", ".home-tabs", ".mobile-dock"]) {
       const element = document.querySelector(selector);
       if (element) observer.observe(element);
     }
@@ -62,7 +67,6 @@ export default function ReferenceHome() {
   return (
     <>
       {" "}
-      <HomeTabs />{" "}
       <section
         ref={carousel}
         className="home-carousel"

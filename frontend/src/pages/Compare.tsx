@@ -17,6 +17,18 @@ export default function Compare() {
   const [brand, setBrand] = useState("");
   const [reload, setReload] = useState(0);
   useEffect(() => {
+    const viewport = document.querySelector<HTMLMetaElement>(
+      'meta[name="viewport"]',
+    );
+    if (!viewport) return;
+    const previous = viewport.content;
+    viewport.content =
+      "width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no";
+    return () => {
+      viewport.content = previous;
+    };
+  }, []);
+  useEffect(() => {
     let active = true;
     setLoading(true);
     setError(false);

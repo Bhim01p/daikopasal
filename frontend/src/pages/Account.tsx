@@ -1,11 +1,24 @@
 import { useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
-import { useEffect, useId, useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, LogOut, UserRound, Package } from "lucide-react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  ArrowRight,
+  ArrowLeft,
+  ChevronRight,
+  LogOut,
+  UserRound,
+  Package,
+  LockKeyhole,
+  Heart,
+  CircleHelp,
+  X,
+} from "lucide-react";
 import { useCustomer } from "../context/CustomerContext";
 import { api } from "../utils/api";
 import type { Customer } from "../types";
+import AccountSettings from "../components/AccountSettings";
+import { whatsapp } from "../data/shop";
 
 function destination(value: string | null) {
   return value &&
@@ -30,7 +43,17 @@ export function Login({
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const next = destination(params.get("next"));
-  const [loginEmail, setLoginEmail] = useState("");
+  const [loginEmail, setLoginEmail] = useState(() => {
+    try {
+      return localStorage.getItem("me-login-email") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [passwordMode, setPasswordMode] = useState(false);
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [recovering, setRecovering] = useState(params.get("recovery") === "1");
   const emailValid = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(loginEmail.trim());
   const [code, setCode] = useState("");
   const [challenge, setChallenge] = useState<{
@@ -69,19 +92,7 @@ export function Login({
         {t("Checking your login…")}
       </div>
     );
-  if (customer)
-    if (embedded) return <Account embedded onComplete={onComplete} />;
-    else
-      return (
-        <Navigate
-          replace
-          to={
-            customer.profileComplete
-              ? next
-              : `/account?next=${encodeURIComponent(next)}`
-          }
-        />
-      );
+  if (customer) return <Account embedded={embedded} onComplete={onComplete} />;
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || mode === "disabled") return;
@@ -95,10 +106,34 @@ export function Login({
       document.getElementById(`${formId}-code`)?.focus();
       return;
     }
+    if (passwordMode && !challenge && !password) {
+      setError("Enter your password.");
+      return;
+    }
+    const finish = (user: Customer) => {
+      setCustomer(user);
+      if (embedded && !recovering) onComplete?.();
+      else
+        navigate(recovering ? "/account?security=1" : next, { replace: true });
+    };
     setBusy(true);
     setError("");
     try {
-      if (!challenge) {
+      if (passwordMode && !challenge) {
+        const result = await api<{ customer: Customer }>(
+          "/customer/auth/password",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: loginEmail.trim().toLowerCase(),
+              password,
+              rememberMe,
+            }),
+          },
+        );
+        setPassword("");
+        finish(result.customer);
+      } else if (!challenge) {
         const result = await api<{
           challengeId: string;
           expiresAt: number;
@@ -114,19 +149,26 @@ export function Login({
           "/customer/auth/verify",
           {
             method: "POST",
-            body: JSON.stringify({ challengeId: challenge.challengeId, code }),
+            body: JSON.stringify({
+              challengeId: challenge.challengeId,
+              code,
+              rememberMe,
+            }),
           },
         );
-        setCustomer(result.customer);
-        if (embedded) {
-          if (result.customer.profileComplete) onComplete?.();
-        } else
-          navigate(
-            result.customer.profileComplete
-              ? next
-              : `/account?next=${encodeURIComponent(next)}`,
-            { replace: true },
-          );
+        finish(result.customer);
+      }
+      if (passwordMode || challenge) {
+        try {
+          if (rememberMe)
+            localStorage.setItem(
+              "me-login-email",
+              loginEmail.trim().toLowerCase(),
+            );
+          else localStorage.removeItem("me-login-email");
+        } catch {
+          /* Browser storage can be disabled. */
+        }
       }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Please try again.");
@@ -148,6 +190,35 @@ export function Login({
         <h2>
           {challenge ? t("Enter your code") : t("Log in with your email")}
         </h2>
+        {!challenge && (
+          <div className="login-methods">
+            <button
+              type="button"
+              disabled={busy}
+              className={passwordMode ? "button secondary" : "button dark"}
+              onClick={() => {
+                setPasswordMode(false);
+                setPassword("");
+                setError("");
+                setRecovering(false);
+              }}
+            >
+              {t("Email code")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              className={passwordMode ? "button dark" : "button secondary"}
+              onClick={() => {
+                setPasswordMode(true);
+                setRecovering(false);
+                setError("");
+              }}
+            >
+              {t("Password login")}
+            </button>
+          </div>
+        )}
         {mode === "disabled" && (
           <p className="account-demo-note">
             {t(
@@ -165,6 +236,7 @@ export function Login({
             <label htmlFor={`${formId}-code`}>{t("Verification code")}</label>
             <input
               id={`${formId}-code`}
+              disabled={busy}
               value={code}
               onChange={(e) =>
                 setCode(normalizeDigits(e.target.value).replace(/\D/g, ""))
@@ -184,19 +256,65 @@ export function Login({
             </label>
             <input
               id={`${formId}-login-email`}
+              disabled={busy}
               type="email"
               inputMode="email"
-              autoComplete="email"
+              autoComplete="username"
+              name="username"
               value={loginEmail}
               onChange={(e) => setLoginEmail(e.target.value)}
               maxLength={254}
               required
             />
+            {passwordMode && (
+              <>
+                <label htmlFor={`${formId}-password`}>{t("Password")}</label>
+                <input
+                  id={`${formId}-password`}
+                  disabled={busy}
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  maxLength={128}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  className="text-link"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    setPasswordMode(false);
+                    setRecovering(true);
+                    setPassword("");
+                    setError("");
+                  }}
+                >
+                  {t("Forgot password or first time here?")}
+                </button>
+              </>
+            )}
             <p className="summary-note">
-              {t("We will email you a six-digit login code.")}
+              {t(
+                passwordMode
+                  ? "Use your saved password, or sign in with an email code to create one."
+                  : recovering
+                    ? "Sign in with an email code, then set a new password in your profile."
+                    : "We will email you a six-digit login code.",
+              )}
             </p>
           </>
         )}
+        <label className="remember-login">
+          <input
+            type="checkbox"
+            disabled={busy}
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          {t("Remember me for 30 days")}
+        </label>
         {(error || sessionError) && (
           <p className="field-error" role="alert">
             {t(error || sessionError)}
@@ -213,7 +331,12 @@ export function Login({
         )}
         <button
           className="button dark full"
-          disabled={busy || mode === "disabled" || (!challenge && !emailValid)}
+          disabled={
+            busy ||
+            mode === "disabled" ||
+            (!challenge && (!emailValid || (passwordMode && !password))) ||
+            (!!challenge && now >= challenge.expiresAt)
+          }
         >
           {mode === "disabled"
             ? t("Email login unavailable")
@@ -221,9 +344,16 @@ export function Login({
               ? t("Please wait…")
               : challenge
                 ? t("Verify and log in")
-                : t("Send login code")}
+                : passwordMode
+                  ? t("Sign in")
+                  : t("Send login code")}
           <ArrowRight size={18} />
         </button>
+        {challenge && now >= challenge.expiresAt && (
+          <p role="alert" className="field-error">
+            {t("Your code has expired. Request a new code.")}
+          </p>
+        )}
         {challenge && (
           <div className="otp-actions">
             <button
@@ -313,6 +443,22 @@ export default function Account({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const editing = params.get("edit") === "1";
+  const security = params.get("security") === "1";
+  const sheet = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!security || checking || !customer || !sheet.current) return;
+    const dialog = sheet.current,
+      previous = document.activeElement as HTMLElement | null,
+      overflow = document.body.style.overflow;
+    dialog.showModal();
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = overflow;
+      previous?.focus();
+    };
+  }, [security, checking, customer?.id]);
   useEffect(() => {
     setName(customer?.name || "");
     setEmail(customer?.email || "");
@@ -362,6 +508,7 @@ export default function Account({
       if (embedded) onComplete?.();
       else if (params.get("next"))
         navigate(destination(params.get("next")), { replace: true });
+      else navigate("/account", { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : "Please try again.");
     } finally {
@@ -380,36 +527,151 @@ export default function Account({
       setBusy(false);
     }
   }
+  if (!editing)
+    return (
+      <section className="container account-page account-overview">
+        <div className="account-heading">
+          <h1>{t("My account")}</h1>
+        </div>
+        <div className="account-menu-card">
+          <div className="account-welcome">
+            {customer.photo ? (
+              <img
+                className="profile-photo-preview"
+                src={customer.photo}
+                alt={t("Profile photo")}
+              />
+            ) : (
+              <span className="profile-photo-placeholder">
+                <UserRound size={30} />
+              </span>
+            )}
+            <div>
+              <small>{t("Welcome back.")}</small>
+              <h2>{customer.name || customer.email}</h2>
+              <p>{customer.email}</p>
+            </div>
+            <button
+              className="icon-button account-signout"
+              disabled={busy}
+              onClick={() => void signOut()}
+              aria-label={t("Log out")}
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+          {!customer.profileComplete && (
+            <p className="summary-note">
+              {t(
+                "Add your name and phone before placing an account order. You can keep browsing now.",
+              )}
+            </p>
+          )}
+          <Link
+            className="account-menu-row"
+            onClick={onComplete}
+            to={`/account?edit=1${params.get("next") ? `&next=${encodeURIComponent(destination(params.get("next")))}` : ""}`}
+          >
+            <UserRound size={21} />
+            <span>
+              {t(
+                customer.profileComplete ? "Edit details" : "Complete profile",
+              )}
+            </span>
+            <ChevronRight size={18} />
+          </Link>
+          <Link
+            className="account-menu-row"
+            onClick={onComplete}
+            to="/account?security=1"
+          >
+            <LockKeyhole size={21} />
+            <span>{t("Change password")}</span>
+            <ChevronRight size={18} />
+          </Link>
+          <Link
+            className="account-menu-row"
+            onClick={onComplete}
+            to="/my-orders"
+          >
+            <Package size={21} />
+            <span>{t("My orders")}</span>
+            <ChevronRight size={18} />
+          </Link>
+          <Link
+            className="account-menu-row"
+            onClick={onComplete}
+            to="/favourites"
+          >
+            <Heart size={21} />
+            <span>{t("Favourites")}</span>
+            <ChevronRight size={18} />
+          </Link>
+          <Link className="account-menu-row" onClick={onComplete} to="/help">
+            <CircleHelp size={21} />
+            <span>{t("Help")}</span>
+            <ChevronRight size={18} />
+          </Link>
+          <Link className="text-link" onClick={onComplete} to="/shop">
+            {t("Continue shopping")}
+          </Link>
+          {error && <p role="alert">{t(error)}</p>}
+          <div className="account-support">
+            <p>{t("Need help with your account or order?")}</p>
+            <a href={whatsapp()} target="_blank" rel="noreferrer">
+              {t("Message on WhatsApp")}
+            </a>
+          </div>
+        </div>
+        {security && (
+          <dialog
+            ref={sheet}
+            className="password-sheet"
+            aria-label={t("Change password")}
+            onCancel={(e) => {
+              e.preventDefault();
+              navigate("/account");
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                const r = e.currentTarget.getBoundingClientRect();
+                if (
+                  e.clientX < r.left ||
+                  e.clientX > r.right ||
+                  e.clientY < r.top ||
+                  e.clientY > r.bottom
+                )
+                  navigate("/account");
+              }
+            }}
+          >
+            <div className="sheet-handle" />
+            <button
+              className="icon-button sheet-close"
+              aria-label={t("Back to account")}
+              onClick={() => navigate("/account")}
+            >
+              <X size={20} />
+            </button>
+            <AccountSettings section="password" />
+          </dialog>
+        )}
+      </section>
+    );
   return (
     <div
-      className={`container account-page ${embedded ? "embedded-account" : ""}`}
+      className={`container account-page profile-editor ${embedded ? "embedded-account" : ""}`}
     >
       <div className="account-heading">
-        <span className="eyebrow">{t("Your shop account")}</span>
-        <h1>
-          {customer.profileComplete
-            ? t("Your profile.")
-            : t("A few details, just once.")}
-        </h1>
-        <p>{t("We’ll use these details when you place an order.")}</p>
+        <Link className="text-link" to="/account">
+          <ArrowLeft size={20} />
+          <span className="sr-only">{t("Back to account")}</span>
+        </Link>
+        <h1>{t("Your profile.")}</h1>
       </div>
       <div className="account-layout">
         <form className="account-form" onSubmit={save} noValidate>
-          <h2>{t("Customer details")}</h2>
-          <label>{t("Login email")}</label>
-          <p className="account-phone">{customer.email}</p>
-          <p className="summary-note">
-            {t("To use another email, sign out and verify that email.")}
-          </p>
-          <label htmlFor={`${formId}-phone`}>{t("Nepal mobile number")}</label>
-          <input
-            id={`${formId}-phone`}
-            type="tel"
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(normalizeDigits(e.target.value))}
-            required
-          />
+          <AccountSettings section="photo" />
           <label htmlFor={`${formId}-name`}>{t("Full name")}</label>
           <input
             id={`${formId}-name`}
@@ -433,10 +695,17 @@ export default function Account({
             required
           />
           <p className="summary-note">
-            {t(
-              "Use the inbox where you want to receive order and pickup updates.",
-            )}
+            {t("To use another email, sign out and verify that email.")}
           </p>
+          <label htmlFor={`${formId}-phone`}>{t("Nepal mobile number")}</label>
+          <input
+            id={`${formId}-phone`}
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(normalizeDigits(e.target.value))}
+            required
+          />
           {error && (
             <p className="field-error" role="alert">
               {t(error)}
@@ -456,7 +725,7 @@ export default function Account({
             <ArrowRight size={18} />
           </button>
         </form>
-        <aside className="account-form account-actions">
+        <aside className="account-form account-actions profile-editor-aside">
           <Package size={32} />
           <h2>{t("Follow your orders")}</h2>
           <p>

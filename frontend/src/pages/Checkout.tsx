@@ -124,7 +124,7 @@ export default function Checkout() {
                     )}
                   </p>
                 )}
-                <Link className="text-link" to="/account?next=/checkout">
+                <Link className="text-link" to="/account?edit=1&next=/checkout">
                   {customer.profileComplete
                     ? t("Edit saved details")
                     : t("Complete your profile")}

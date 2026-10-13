@@ -5,6 +5,7 @@ import {
   randomInt,
   randomUUID,
   timingSafeEqual,
+  scryptSync,
 } from "node:crypto";
 import { HttpError, text } from "./validation.mjs";
 import { stateMap } from "./state-map.mjs";
@@ -30,6 +31,10 @@ export function publicCustomer(customer) {
         phone: customer.phone,
         name: customer.name,
         email: customer.email,
+        hasPassword: !!customer.passwordHash,
+        photo: customer.photo
+          ? `/api/customer/photo?v=${encodeURIComponent(customer.photo)}`
+          : "",
         profileComplete: profileComplete(customer),
       }
     : null;
@@ -45,7 +50,7 @@ export function createCustomerAuth(store, options = {}) {
   const sms = options.smsTransport;
   const emailTransport = options.emailTransport;
   const now = options.now || Date.now;
-  const lifetime = 7 * 24 * 60 * 60 * 1000;
+  const lifetime = 30 * 24 * 60 * 60 * 1000;
   const challenges = stateMap(store, "customerChallenges");
   const limits = stateMap(store, "customerLimits");
   function mode(request) {
@@ -65,10 +70,10 @@ export function createCustomerAuth(store, options = {}) {
       ? "development"
       : "disabled";
   }
-  function cookie(response, token, maxAge = lifetime / 1000) {
+  function cookie(response, token, maxAge = lifetime / 1000, request) {
     response.setHeader(
       "Set-Cookie",
-      `me_customer=${token}; HttpOnly; SameSite=Strict; Path=/api; Max-Age=${maxAge}${process.env.COOKIE_SECURE === "true" ? "; Secure" : ""}`,
+      `me_customer=${token}; HttpOnly; SameSite=Lax; Path=/api; Max-Age=${maxAge}${process.env.COOKIE_SECURE === "true" || request?.headers["x-forwarded-proto"] === "https" ? "; Secure" : ""}`,
     );
   }
   function session(request) {
@@ -93,7 +98,12 @@ export function createCustomerAuth(store, options = {}) {
       (entry.mode === "development" && mode(request) !== "development")
     )
       return null;
-    return { customer, tokenHash: entry.tokenHash };
+    return {
+      customer,
+      tokenHash: entry.tokenHash,
+      emailVerifiedAt: entry.emailVerifiedAt,
+      expiresAt: entry.expiresAt,
+    };
   }
   function requireSession(request) {
     const result = session(request);
@@ -288,11 +298,18 @@ export function createCustomerAuth(store, options = {}) {
           tokenHash: hash(token),
           customerId: customer.id,
           mode: challenge.mode,
-          expiresAt: now() + lifetime,
+          expiresAt:
+            now() + (input?.rememberMe === false ? 86400000 : lifetime),
+          emailVerifiedAt: challenge.mode === "email" ? now() : 0,
         },
       ],
     });
-    cookie(response, token);
+    cookie(
+      response,
+      token,
+      input?.rememberMe === false ? 86400 : lifetime / 1000,
+      request,
+    );
     return publicCustomer(customer);
   }
   function updateProfile(request, input) {
@@ -344,6 +361,140 @@ export function createCustomerAuth(store, options = {}) {
     }
     cookie(response, "", 0);
   }
+  function passwordValue(value) {
+    if (typeof value !== "string" || value.length < 10 || value.length > 128)
+      throw new HttpError(400, "Use a password of 10 to 128 characters.");
+    return value;
+  }
+  const dummySalt = "customer-password-timing-check";
+  const dummyHash = scryptSync("unusable-password", dummySalt, 64);
+  function passwordLogin(request, response, input) {
+    if (mode(request) !== "email")
+      throw new HttpError(503, "Email login unavailable");
+    const email = text(input?.email, "Email address", 3, 254).toLowerCase();
+    const password =
+      typeof input?.password === "string" && input.password.length <= 128
+        ? input.password
+        : "";
+    const keys = [
+      [`password-email:${email}`, 10],
+      [`password-ip:${request.clientIp || request.socket.remoteAddress}`, 20],
+      ["password-global", 200],
+    ];
+    for (const [key, limit] of limits)
+      if (limit.until <= now()) limits.delete(key);
+    for (const [key, maximum] of keys) {
+      const limit = limits.get(key);
+      if (limit && limit.until > now() && limit.count >= maximum)
+        throw new HttpError(
+          429,
+          "Too many login attempts. Try again in 15 minutes.",
+        );
+    }
+    for (const [key] of keys) {
+      const limit = limits.get(key);
+      limits.set(key, {
+        count: limit && limit.until > now() ? limit.count + 1 : 1,
+        until: limit && limit.until > now() ? limit.until : now() + 900000,
+      });
+    }
+    const matches = store
+      .read()
+      .customers.filter((c) => c.email?.toLowerCase() === email);
+    const customer =
+      matches.length === 1 && matches[0].verifiedVia === "email"
+        ? matches[0]
+        : null;
+    const [salt, encoded] = (customer?.passwordHash || "").split(":");
+    const expected =
+      encoded && /^[a-f0-9]{128}$/.test(encoded)
+        ? Buffer.from(encoded, "hex")
+        : dummyHash;
+    const actual = scryptSync(password, salt || dummySalt, 64);
+    if (!timingSafeEqual(actual, expected) || !customer?.passwordHash)
+      throw new HttpError(
+        401,
+        "Email or password is incorrect. Use an email code to sign in or reset your password.",
+      );
+    // Keep per-IP limiting even on success to prevent account enumeration/brute force.
+    const token = randomBytes(32).toString("hex");
+    const current = store.read();
+    const oldToken = session(request)?.tokenHash;
+    const duration = input?.rememberMe === false ? 86400000 : lifetime;
+    store.commit({
+      ...current,
+      customerSessions: [
+        ...current.customerSessions.filter(
+          (s) => s.expiresAt > now() && s.tokenHash !== oldToken,
+        ),
+        {
+          tokenHash: hash(token),
+          customerId: customer.id,
+          mode: "email",
+          expiresAt: now() + duration,
+        },
+      ],
+    });
+    cookie(response, token, duration / 1000, request);
+    return publicCustomer(customer);
+  }
+  function setPassword(request, response, input) {
+    const active = requireSession(request);
+    if (
+      active.customer.verifiedVia !== "email" ||
+      !active.emailVerifiedAt ||
+      active.emailVerifiedAt + 600000 < now()
+    )
+      throw new HttpError(
+        403,
+        "Verify your email with a fresh login code before setting or resetting your password.",
+      );
+    const password = passwordValue(input?.password);
+    const salt = randomBytes(16).toString("hex");
+    const updated = {
+      ...active.customer,
+      passwordHash: `${salt}:${scryptSync(password, salt, 64).toString("hex")}`,
+    };
+    const current = store.read();
+    const token = randomBytes(32).toString("hex");
+    store.commit({
+      ...current,
+      customers: current.customers.map((c) =>
+        c.id === updated.id ? updated : c,
+      ),
+      customerSessions: [
+        ...current.customerSessions.filter(
+          (s) => s.customerId !== updated.id && s.expiresAt > now(),
+        ),
+        {
+          tokenHash: hash(token),
+          customerId: updated.id,
+          mode: "email",
+          expiresAt: active.expiresAt,
+          emailVerifiedAt: 0,
+        },
+      ],
+    });
+    cookie(
+      response,
+      token,
+      Math.ceil((active.expiresAt - now()) / 1000),
+      request,
+    );
+    return publicCustomer(updated);
+  }
+  function updatePhoto(request, photo) {
+    const { customer } = requireSession(request);
+    const current = store.read();
+    const updated = { ...customer, photo };
+    store.commit({
+      ...current,
+      customers: current.customers.map((c) =>
+        c.id === customer.id ? updated : c,
+      ),
+    });
+    return publicCustomer(updated);
+  }
   return {
     mode,
     session,
@@ -352,5 +503,8 @@ export function createCustomerAuth(store, options = {}) {
     verify,
     updateProfile,
     logout,
+    passwordLogin,
+    setPassword,
+    updatePhoto,
   };
 }

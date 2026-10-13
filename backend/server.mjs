@@ -7,7 +7,7 @@ import {
   createHash,
 } from "node:crypto";
 import { loadEnvFile } from "node:process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createStore, defaultStorePath } from "./store.mjs";
@@ -199,7 +199,9 @@ export function createApp(options = {}) {
       if (route === "/api/products" && method === "GET")
         return json(response, 200, { products: store.read().products });
       if (route === "/api/reference-phones" && method === "GET")
-        return json(response, 200, { phones: publicReferencePhones(store.read()) });
+        return json(response, 200, {
+          phones: publicReferencePhones(store.read()),
+        });
       if (route === "/api/customer/session" && method === "GET")
         return json(response, 200, {
           customer: publicCustomer(customerAuth.session(request)?.customer),
@@ -218,6 +220,81 @@ export function createApp(options = {}) {
       if (route === "/api/customer/logout" && method === "POST") {
         customerAuth.logout(request, response);
         return json(response, 200, { ok: true });
+      }
+      if (route === "/api/customer/auth/password" && method === "POST")
+        return json(response, 200, {
+          customer: customerAuth.passwordLogin(
+            request,
+            response,
+            await body(request),
+          ),
+        });
+      if (route === "/api/customer/password" && method === "POST")
+        return json(response, 200, {
+          customer: customerAuth.setPassword(
+            request,
+            response,
+            await body(request),
+          ),
+        });
+      if (
+        route === "/api/customer/photo" &&
+        ["GET", "POST", "DELETE"].includes(method)
+      ) {
+        const { customer } = customerAuth.requireSession(request);
+        const validName = (name) =>
+          /^avatar-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(name || "");
+        if (method === "GET") {
+          if (!validName(customer.photo))
+            throw new HttpError(404, "Photo not found.");
+          const stored = store.readImage
+            ? await store.readImage(customer.photo)
+            : null;
+          const file = path.join(imageDirectory, customer.photo);
+          if (!stored && (store.readImage || !existsSync(file)))
+            throw new HttpError(404, "Photo not found.");
+          response.writeHead(200, {
+            "Content-Type":
+              stored?.content_type ||
+              { png: "image/png", jpg: "image/jpeg", webp: "image/webp" }[
+                customer.photo.split(".").pop()
+              ],
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+          });
+          return response.end(stored?.data || readFileSync(file));
+        }
+        let photo = "";
+        if (method === "POST") {
+          const now = Date.now();
+          const limits = stateMap(store, "customerPhotoLimits");
+          const limit = limits.get(customer.id);
+          if (limit && limit.until > now && limit.count >= 10)
+            throw new HttpError(
+              429,
+              "Too many photo uploads. Please try again tomorrow.",
+            );
+          const uploaded = await saveProductImage(
+            request,
+            imageDirectory,
+            store.saveImage ? store : undefined,
+            { avatar: true },
+          );
+          photo = uploaded.image.split("/").pop();
+          limits.set(customer.id, {
+            count: limit && limit.until > now ? limit.count + 1 : 1,
+            until: limit && limit.until > now ? limit.until : now + 86400000,
+          });
+        }
+        const updated = customerAuth.updatePhoto(request, photo);
+        if (validName(customer.photo)) {
+          if (store.deleteImage) await store.deleteImage(customer.photo);
+          else {
+            const file = path.join(imageDirectory, customer.photo);
+            if (existsSync(file)) unlinkSync(file);
+          }
+        }
+        return json(response, 200, { customer: updated });
       }
       if (route === "/api/customer/profile" && method === "PATCH")
         return json(response, 200, {

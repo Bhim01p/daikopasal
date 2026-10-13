@@ -5,6 +5,7 @@ import {
   normalizeStore,
   seedStore,
   upgradeStarterCatalogue,
+  upgradeStarterStock,
 } from "./store.mjs";
 
 // A database row lock serializes stock/order changes across Vercel instances.
@@ -78,7 +79,9 @@ export function createDatabaseStore(
         const [row] =
           await tx`select data from ${tx(schema)}.store where id = 1 for update`;
         const normalized = normalizeStore(row.data);
-        const upgraded = upgradePhoneCatalogue(upgradeStarterCatalogue(normalized));
+        const upgraded = upgradePhoneCatalogue(
+          upgradeStarterStock(upgradeStarterCatalogue(normalized)),
+        );
         const current = { data: upgraded, dirty: upgraded !== normalized, tx };
         const result = await context.run(current, callback);
         if (current.dirty)
@@ -98,6 +101,10 @@ export function createDatabaseStore(
       const [image] = await tx`select content_type, data
         from ${tx(schema)}.images where name = ${name}`;
       return image;
+    },
+    async deleteImage(name) {
+      const tx = snapshot().tx;
+      await tx`delete from ${tx(schema)}.images where name = ${name}`;
     },
     async backupCatalogue(name, data) {
       const tx = snapshot().tx;

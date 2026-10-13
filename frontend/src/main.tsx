@@ -13,6 +13,7 @@ import { CartProvider } from "./context/CartContext";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import Favourites from "./pages/Favourites";
 import Compare from "./pages/Compare";
+import Shop from "./pages/Shop";
 import Layout from "./components/Layout";
 import Home from "./pages/ReferenceHome";
 import Catalogue from "./pages/Catalogue";
@@ -69,6 +70,7 @@ function Meta() {
       "/repair": "Repair",
       "/search": "Search Products",
       "/compare": "Compare phones",
+      "/shop": "Shop",
       "/favourites": "Your favourites",
       "/not-admin": "Shop Admin",
       "/login": "Customer Login",
@@ -156,6 +158,7 @@ function App() {
                       />
                       <Route path="favourites" element={<Favourites />} />
                       <Route path="compare" element={<Compare />} />
+                      <Route path="shop" element={<Shop />} />
                       <Route
                         path="search"
                         element={<Catalogue key="search" />}

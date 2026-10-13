@@ -77,6 +77,7 @@ const { readFileSync } = require("node:fs");
       .click();
     await page.goto(base + "/favourites");
     await page.reload();
+    await page.locator(".product-card").first().waitFor();
     assert.equal(await page.locator(".product-card").count(), 1);
     await page
       .getByRole("button", {
@@ -121,13 +122,19 @@ const { readFileSync } = require("node:fs");
     assert.equal(otp.email, "ruby-browser@example.com");
     await page.getByLabel("Verification code").fill(otp.code);
     await page.getByRole("button", { name: "Verify and log in" }).click();
-    await page.waitForURL("**/account?**");
+    await page.waitForURL("**/my-orders");
+    await page
+      .getByRole("link", { name: "Your profile", exact: false })
+      .click();
+    await page
+      .getByRole("link", { name: "Complete profile", exact: true })
+      .click();
     await page.getByLabel("Full name", { exact: true }).fill("Ruby QA");
     await page
       .getByLabel("Nepal mobile number", { exact: true })
       .fill("9846692687");
     await page.getByRole("button", { name: "Save and continue" }).click();
-    await page.waitForURL("**/my-orders");
+    await page.waitForURL("**/account");
     await page.goto(base + "/product/redmi-9");
     await page
       .getByRole("button", { name: "Add to cart", exact: true })

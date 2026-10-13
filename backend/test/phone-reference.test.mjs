@@ -7,7 +7,7 @@ import {
   upgradePhoneCatalogue,
   publicReferencePhones,
 } from "../phone-reference.mjs";
-import { seedStore } from "../store.mjs";
+import { seedStore, upgradeStarterStock } from "../store.mjs";
 import { createDatabaseStore } from "../database-store.mjs";
 import { createApp } from "../server.mjs";
 
@@ -137,7 +137,7 @@ test("Neon transaction persists reference migration once and public API serves i
     assert.equal(phones.length, 85);
     assert.ok(phones.every((p) => !("raw" in p)));
     const { products } = await (await fetch(base + "/api/products")).json();
-    assert.deepEqual(products, seedStore().products);
+    assert.deepEqual(products, upgradeStarterStock(seedStore()).products);
   } finally {
     await new Promise((resolve) => app.close(resolve));
   }

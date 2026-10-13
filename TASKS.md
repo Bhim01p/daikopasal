@@ -246,3 +246,68 @@ Data accuracy note: the supplied report and CSV source-check dates are retained;
 - Bundled seed exactly matches all 83 CSV rows plus 2 existing manufacturer references; Vercel function packaging includes the seed.
 - Git whitespace check passes. Private environment/admin credential files and QA artifacts remain ignored.
 - Ready for commit/push. No Git commit, push, deployment, real Gmail delivery or live Neon migration performed during this check.
+
+## Pending mobile/shop fixes — queued 13 October 2026
+
+User explicitly requested listing only. Do not implement until the user says to start.
+
+1. Compare page: fix the zoomed-out mobile layout shown in the supplied screenshots (content shrinks to the left with a large blank area on the right). User requests preventing zoom; assess the actual overflow/viewport cause and explain browser/accessibility implications before choosing a zoom restriction.
+2. Add to cart: check the reported unavailable behaviour. User clarified that starter shop products currently have no stock; make each existing starter SHOP inventory product available with stock quantity 1 when implementation is authorized. Preserve admin-created/edited stock and existing orders. This does not authorize turning the 83 CSV comparison references into saleable inventory.
+3. Category navigation: on catalogue pages reached via homepage Explore category, provide clear switching between New phones, Used phones and Accessories. Replace the current Show all products/categories route as the primary switching control; show each chosen category separately.
+4. Shop navigation: expose New phones, Used phones and Accessories as distinct choices rather than sending users directly to a combined all-products page. Cover the Shop menu and mobile Shop bottom navigation entry.
+5. Mobile bottom dock: remove Cart and WhatsApp; add Favourites. Intended remaining items: Home, Shop, Favourites, Account.
+6. Mobile floating actions: place WhatsApp at the right edge with a cart icon directly above it, accessible while shopping. Hide these floating actions on login/account authentication and cart pages; avoid obstructing page content or the bottom dock. Confirm exact account-page handling from context when implementing.
+7. Recheck the changed mobile flows, compare viewport behaviour, category switching, cart quantities and both themes before publishing. Desktop should retain its existing design unless a shared functional fix is needed.
+
+Status: queue saved only; no implementation, stock changes, commit, push or deployment performed for this request.
+
+## Mobile shopping update — implemented 13 October 2026
+
+This supersedes the queued-only status above. Owner authorized implementation, including removing the homepage Explore/Favourites row.
+
+- [x] Homepage now opens directly on the slider below the header; compact footer is below the initial phone viewport.
+- [x] Category switch links on catalogue pages; dedicated /shop chooser with New phones, Used phones and Accessories. Bottom Shop opens the chooser rather than all products.
+- [x] Four-item mobile dock: Home, Shop, Favourites, Account. Cart and WhatsApp moved to a right-side stack, cart above WhatsApp, hidden on login/account/cart/checkout/order pages and while either dialog is open.
+- [x] Comparison table now fits all three columns within phone width. Comparison-only fixed-zoom viewport request restores on leaving. Browser accessibility overrides, notably iPhone Safari, can still allow zoom.
+- [x] One-time opening quantity of 1 for untouched starter shop products, excluding references, owner-edited/custom inventory and any product already used in an order. Revision and stock versions prevent refill after sales or repeated deployment. Local and Neon migration paths included.
+- [x] Build and 816-message translation checks pass; backend regression 36/36 pass. Browser checks at 320/390/430/1440 cover category switching, dock, actions, cart, both comparison columns and both themes. Broader email-login/profile, EMI/admin edits, favourites, checkout/tracking and 320/390/768/1024/1440 checks pass with mock email delivery.
+- [x] Fixed a QA timing issue by waiting for favourites to finish loading after reload before counting cards.
+- [ ] Commit/push/deploy when requested. No production stock changes or live emails during these checks; the opening stock migration runs after deploying the update.
+
+## New phone issue queue — account improvements
+
+Collect reports only; wait for the user to say start before implementing this batch.
+
+1. Optional customer profile photo: allow customers to upload/change/remove a photo from their account/profile screen after login; show it in the account avatar. Do not require a photo to log in. Validate actual image type/size and protect uploads with customer authentication.
+2. Investigate customer login not persisting between visits on the phone. Check session cookie lifetime, secure/same-site settings, session restoration and browser behaviour before changing authentication.
+3. Requested email + password sign-in alongside existing email verification. Design verified-email password setup/reset, hashed password storage, rate limits and a Remember me session option. Preserve existing accounts/orders and email-code recovery.
+4. User asks to remember passwords locally: use browser/password-manager autofill via appropriate autocomplete fields. Never store raw passwords in localStorage, cookies or application files; persist login with a secure HttpOnly session cookie instead.
+
+Status: saved only. No profile uploads, credential/session changes or implementation performed for this new queue.
+
+## Customer accounts and search visibility — implemented 13 October 2026
+
+Owner authorized the account queue and search cleanup.
+
+- [x] Optional private profile photo upload/change/remove, browser resizing and avatar display; authenticated backend format/size/quantity checks and old image deletion in local/Neon storage.
+- [x] Email/password login in addition to email codes, scrypt password hashes, generic failures and identity/IP/global attempt limits.
+- [x] Password setup/reset requires an email-code session verified within ten minutes; reset rotates the current token, revokes other sessions and preserves the chosen session duration.
+- [x] Remember me uses persistent HttpOnly/SameSite=Lax cookies and server-side hashed tokens for 30 days (one day unchecked). HTTPS automatically applies Secure. Existing sessions keep their original expiry until the next sign-in.
+- [x] Browser password-manager autocomplete supported; application storage saves only the remembered email, never a password/token.
+- [x] Search header hidden on Favourites, Help, Repair and other non-shopping/account screens.
+- [x] Build, translation coverage and 40 backend tests pass. Phone browser checks pass code/password login, password reset, photo upload/reload/removal, restored browser sessions, search visibility and both themes; mock email only.
+- [ ] Publish when requested. No new environment variables, live emails, production account/password/photo changes, commit or push performed for this batch.
+
+See docs/customer-account-access.md for session/recovery and photo behaviour.
+
+## Reference profile design and final flow review — 13 October 2026
+
+Owner resumed work and authorized pushing the tested update to main.
+
+- [x] Reference-inspired compact account menu with welcome avatar, icon rows for profile/password/orders/favourites/help and WhatsApp support. Existing brand colours and both themes retained.
+- [x] Separate profile editor with round photo/camera control, simple rounded fields and save/back actions. No forced profile editing immediately after login or when opening the account menu.
+- [x] Accessible native password sheet with backdrop, Escape/back/outside close and URL-backed recovery. No fake push-notification setting added.
+- [x] Login respects the intended destination; embedded sign-in closes its window. Signed-in visitors see an account overview, not editable fields. Checkout explicitly links to profile completion when required.
+- [x] Prevent blank password submission, lock fields/method changes during requests and show expired-code recovery.
+- [x] Final build, 833 translation checks and 40 backend tests pass. Phone account/photo/password/recovery/persistence tests pass; category/dock/cart/comparison tests pass at 320/390/430/1440 in both themes. Broad admin/EMI/favourites/email-code/profile/checkout/tracking and responsive checks pass at 320/390/768/1024/1440. Email delivery simulated; no production accounts or stock were changed during QA.
+- [x] Private environment files and QA images remain ignored. All changes reviewed for the requested commit/push. New production stock migration runs after deployment, not during these local tests.

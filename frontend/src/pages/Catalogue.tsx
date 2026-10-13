@@ -8,6 +8,7 @@ import { useProducts } from "../context/ProductContext";
 import { accessoryCategories } from "../data/categories";
 import type { Category } from "../types";
 import ProductCard from "../components/ProductCard";
+import CategoryNav from "../components/CategoryNav";
 import { money } from "../data/shop";
 export default function Catalogue({ category }: { category?: Category }) {
   const t = useT();
@@ -119,12 +120,8 @@ export default function Catalogue({ category }: { category?: Category }) {
         <div className="catalogue-results">
           <div className="catalogue-heading">
             <h1>{t(title)}</h1>
-            {category && (
-              <Link className="text-link" to="/search">
-                {t("Search all products")}
-              </Link>
-            )}
           </div>
+          <CategoryNav />
           <div className="catalogue-controls">
             <div className="search-input">
               <Search size={17} />

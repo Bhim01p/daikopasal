@@ -5,6 +5,8 @@ export interface Customer {
   name: string;
   email: string;
   profileComplete: boolean;
+  hasPassword?: boolean;
+  photo?: string;
 }
 export interface Product {
   id: string;

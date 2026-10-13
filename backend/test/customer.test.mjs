@@ -151,7 +151,7 @@ test("phone login, saved checkout details, private order ownership, multi-device
     const aliceCookie = verified.headers.get("set-cookie").split(";")[0];
     assert.match(
       verified.headers.get("set-cookie"),
-      /HttpOnly; SameSite=Strict/,
+      /HttpOnly; SameSite=Lax/,
     );
     assert.equal(verified.data.customer.phone, "+9779806600444");
     assert.equal(verified.data.customer.profileComplete, false);
@@ -367,7 +367,7 @@ test("phone login, saved checkout details, private order ownership, multi-device
       200,
       "Logging out one device must not revoke another device",
     );
-    time += 8 * 24 * 3600000;
+    time += 31 * 24 * 3600000;
     assert.equal(
       (
         await request(

@@ -47,6 +47,31 @@ export function upgradeStarterCatalogue(current) {
     ...(removable.length ? { previousStarterCatalogue: removable } : {}),
   };
 }
+// Owner-approved one-time opening quantity. Never refill sold or edited inventory.
+export function upgradeStarterStock(current) {
+  if (current.starterStockRevision === 1) return current;
+  const starters = seedStore().products;
+  return {
+    ...current,
+    starterStockRevision: 1,
+    products: current.products.map((product) => {
+      const seed = starters.find((p) => p.id === product.id);
+      const usedInOrder = current.orders.some((order) =>
+        order.items?.some((item) => (item.product?.id || item.productId) === product.id),
+      );
+      const untouched =
+        seed &&
+        product.stockQuantity === 0 &&
+        product.stockVersion === 0 &&
+        [...new Set([...Object.keys(seed), ...Object.keys(product)])].every(
+          (key) => JSON.stringify(product[key]) === JSON.stringify(seed[key]),
+        );
+      return untouched && !usedInOrder
+        ? { ...product, stockQuantity: 1, stockVersion: 1, available: true }
+        : product;
+    }),
+  };
+}
 export function normalizeStore(current) {
   if (!Array.isArray(current.products) || !Array.isArray(current.orders))
     throw new Error(
@@ -103,7 +128,8 @@ export function createStore(
     ? normalizeStore(JSON.parse(readFileSync(file, "utf8")))
     : seedStore(initialProducts);
   const previous = current;
-  if (migrateStarter) current = upgradeStarterCatalogue(current);
+  if (migrateStarter)
+    current = upgradeStarterStock(upgradeStarterCatalogue(current));
   current = upgradePhoneCatalogue(current);
   function commit(next) {
     mkdirSync(path.dirname(file), { recursive: true });

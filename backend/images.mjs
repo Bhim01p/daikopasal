@@ -3,7 +3,12 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { HttpError } from "./validation.mjs";
 
-export async function saveProductImage(request, directory, storage) {
+export async function saveProductImage(
+  request,
+  directory,
+  storage,
+  { avatar = false } = {},
+) {
   const type = request.headers["content-type"]?.split(";")[0];
   const extensions = {
     "image/png": "png",
@@ -12,9 +17,12 @@ export async function saveProductImage(request, directory, storage) {
   };
   if (!extensions[type])
     throw new HttpError(415, "Choose a JPG, PNG, or WebP photo.");
-  const limit = (storage ? 4 : 5) * 1024 * 1024;
+  const limit = (avatar ? 2 : storage ? 4 : 5) * 1024 * 1024;
   if (Number(request.headers["content-length"]) > limit)
-    throw new HttpError(413, `Photo must be ${storage ? 4 : 5} MB or smaller.`);
+    throw new HttpError(
+      413,
+      `Photo must be ${avatar ? 2 : storage ? 4 : 5} MB or smaller.`,
+    );
   const chunks = [];
   let bytes = 0;
   for await (const chunk of request) {
@@ -22,7 +30,7 @@ export async function saveProductImage(request, directory, storage) {
     if (bytes > limit)
       throw new HttpError(
         413,
-        `Photo must be ${storage ? 4 : 5} MB or smaller.`,
+        `Photo must be ${avatar ? 2 : storage ? 4 : 5} MB or smaller.`,
       );
     chunks.push(chunk);
   }
@@ -49,7 +57,7 @@ export async function saveProductImage(request, directory, storage) {
       400,
       "This file does not match the selected photo format.",
     );
-  const name = `upload-${randomUUID()}.${extensions[type]}`;
+  const name = `${avatar ? "avatar" : "upload"}-${randomUUID()}.${extensions[type]}`;
   if (storage) return storage.saveImage(name, type, data);
   mkdirSync(directory, { recursive: true });
   writeFileSync(path.join(directory, name), data, { flag: "wx" });

@@ -1176,3 +1176,97 @@ body :is(input, select, textarea) {
 @media (max-width: 767px) {
   .comparison-swipe-hint { display: block; font-size: 13px; }
 }
+
+/* Category switching and compact shopping actions. */
+.shop-category-switch { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 20px; }
+.shop-category-switch a { padding:10px 14px; border:1px solid var(--sky-border); border-radius:8px; color:var(--sky-text); background:var(--sky-surface); font-size:14px; font-weight:600; }
+.shop-category-switch a.active { color:var(--sky-accent); background:var(--ruby-soft); border-color:var(--sky-accent); }
+.shop-category-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.shop-category-cards a { border:1px solid var(--sky-border); border-radius:14px; background:var(--sky-surface); color:var(--sky-text); padding:20px; display:flex; flex-direction:column; gap:16px; font-size:20px; font-weight:700; }
+.shop-category-cards img { height:180px; width:100%; object-fit:contain; background:#fff; border-radius:10px; }
+.floating-cart { display:none; }
+:root body .compare-page { min-width:0; max-width:100%; }
+:root body .comparison-scroll { width:100%; max-width:100%; min-width:0; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; }
+@media (max-width:767px) {
+  :root body .mobile-dock { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  :root body .mobile-dock > a, :root body .mobile-dock > button { min-width:0; color:var(--sky-muted); }
+  :root body .mobile-dock > a.active, :root body .mobile-dock > button.active { color:var(--sky-accent); }
+  .shop-category-cards { grid-template-columns:1fr; gap:12px; }
+  .shop-category-cards a { flex-direction:row; align-items:center; padding:14px; font-size:18px; }
+  .shop-category-cards img { width:80px; height:90px; }
+  .shop-category-switch { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+  .shop-category-switch a { text-align:center; padding:10px 4px; font-size:12px; }
+  :root body .shopping-floating-actions { position:fixed; right:12px; bottom:calc(82px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px; z-index:40; }
+  :root body .shopping-floating-actions .floating-cart,
+  :root body .shopping-floating-actions .floating-whatsapp { display:flex; position:relative; inset:auto; width:48px; height:48px; min-height:48px; align-items:center; justify-content:center; border-radius:50%; box-shadow:0 3px 12px #0002; }
+  :root body .shopping-floating-actions .floating-cart { background:var(--sky-accent); color:#fff; border:1px solid var(--sky-border); }
+  :root body .shopping-floating-actions .floating-cart span { position:absolute; right:-3px; top:-4px; background:var(--sky-surface); color:var(--sky-accent); border:1px solid var(--sky-border); border-radius:12px; min-width:20px; padding:1px 4px; font-size:11px; }
+  :root body .shopping-floating-actions .floating-whatsapp { background:#207344; color:#fff; border:0; }
+  :root body .compare-page .comparison-table { min-width:0; width:100%; font-size:12px; }
+  :root body .compare-page .comparison-table th, :root body .compare-page .comparison-table td { padding:10px 6px; overflow-wrap:anywhere; }
+  :root body .compare-page .comparison-table thead strong { font-size:14px; }
+  :root body .compare-page .comparison-table th:first-child { width:24%; }
+  :root body .compare-page .comparison-table small, :root body .compare-page .comparison-table a { font-size:11px; }
+  :root body .comparison-swipe-hint { display:none; }
+}
+@media (max-width: 767px) {
+  :root[data-theme="dark"] body .shopping-floating-actions .floating-cart { color:#102331; }
+}
+.customer-avatar { width:25px; height:25px; border-radius:50%; object-fit:cover; }
+.profile-photo-preview { width:88px; height:88px; border-radius:50%; object-fit:cover; border:2px solid var(--sky-border); }
+.customer-settings { display:grid; gap:12px; padding-bottom:24px; margin-bottom:24px; border-bottom:1px solid var(--sky-border); min-width:0; }
+.customer-settings form { display:grid; gap:12px; }
+.customer-settings h2 { margin:8px 0; }
+.profile-upload { display:grid; gap:8px; }
+.profile-upload input { max-width:100%; font-size:14px; }
+.login-methods { display:flex; gap:10px; flex-wrap:wrap; }
+:root body .remember-login { display:flex; gap:10px; align-items:center; font-size:14px; }
+:root body .remember-login input { width:18px; height:18px; margin:0; flex-shrink:0; }
+/* Account layout inspired by the supplied settings/profile reference. */
+:root body .account-overview, :root body .profile-editor { max-width:600px; margin-inline:auto; }
+:root body .account-overview .account-heading { margin-bottom:20px; }
+:root body .account-overview .account-heading h1 { font-size:30px; margin:0; }
+.account-menu-card { background:var(--sky-surface); border:1px solid var(--sky-border); border-radius:20px; padding:24px; }
+.account-welcome { display:flex; align-items:center; gap:14px; padding:8px 0 26px; }
+.account-welcome > div { flex:1; min-width:0; }
+.account-welcome h2 { margin:4px 0; font-size:18px; overflow-wrap:anywhere; }
+.account-welcome small, .account-welcome p { color:var(--sky-muted); font-size:12px; margin:0; overflow-wrap:anywhere; }
+:root body .account-welcome .profile-photo-preview, .account-welcome .profile-photo-placeholder { width:54px; height:54px; flex-shrink:0; }
+.profile-photo-placeholder { display:flex; align-items:center; justify-content:center; width:108px; height:108px; border-radius:50%; background:var(--ruby-soft); color:var(--sky-accent); }
+:root body .account-menu-row { display:flex; align-items:center; gap:14px; min-height:64px; border-top:1px solid var(--sky-border); color:var(--sky-text); font-size:15px; }
+.account-menu-row > span { flex:1; }
+.account-menu-row > svg:first-child { color:var(--sky-muted); }
+.account-menu-row > svg:last-child { color:var(--sky-accent); }
+.account-support { background:var(--ruby-soft); border-radius:16px; padding:20px; text-align:center; margin-top:24px; }
+.account-support p { font-size:14px; margin:0 0 14px; }
+.account-support a { color:var(--sky-accent); font-size:14px; font-weight:700; text-decoration:underline; }
+:root body .profile-editor .account-heading { position:relative; text-align:center; margin-bottom:16px; }
+.profile-editor .account-heading > a { position:absolute; left:0; top:4px; }
+:root body .profile-editor .account-heading h1 { font-size:22px; margin:0 32px; }
+:root body .profile-editor .account-layout { grid-template-columns:minmax(0,1fr); }
+:root body .profile-editor .account-form { border-radius:20px; padding:24px; }
+:root body .profile-editor input:not([type=file]), :root body .password-sheet input { border-radius:24px; min-height:48px; }
+:root body .profile-editor .button, :root body .password-sheet .button { border-radius:24px; }
+.profile-editor-aside { display:none; }
+.profile-photo-control { position:relative; margin:8px auto 4px; width:108px; height:108px; }
+:root body .profile-photo-control .profile-photo-preview { width:108px; height:108px; border:4px solid var(--sky-border); }
+:root body .profile-photo-control .profile-upload { position:absolute; right:-2px; bottom:0; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--sky-surface); border:1px solid var(--sky-border); color:var(--sky-accent); cursor:pointer; }
+.profile-upload:focus-within { outline:2px solid var(--sky-accent); outline-offset:2px; }
+.profile-photo-control input[type=file] { position:absolute; width:1px; height:1px; padding:0; opacity:0; overflow:hidden; }
+:root body .profile-editor .customer-settings { padding:0 0 16px; margin:0; border:0; text-align:center; }
+.profile-editor .customer-settings button { justify-self:center; }
+:root body .password-sheet { position:fixed; width:min(500px,calc(100% - 32px)); max-height:85dvh; border:1px solid var(--sky-border); border-radius:24px; background:var(--sky-surface); color:var(--sky-text); padding:30px 24px 24px; overflow:auto; }
+.password-sheet::backdrop { background:#0009; }
+.sheet-handle { width:40px; height:4px; border-radius:4px; background:var(--sky-border); margin:0 auto 20px; }
+.sheet-close { position:absolute; right:12px; top:10px; }
+:root body .password-sheet .customer-settings { border:0; margin:0; padding:0; }
+.password-sheet h2 { text-align:center; font-size:22px; }
+.password-sheet label { display:grid; gap:8px; font-size:14px; }
+.password-sheet input { width:100%; padding:12px 16px; background:var(--sky-input); border:1px solid var(--sky-border); color:var(--sky-text); font-size:16px; }
+@media(max-width:767px) {
+  :root body .password-sheet { width:100%; max-width:100%; margin:0; inset:auto 0 0; border-radius:26px 26px 0 0; padding-bottom:calc(24px + env(safe-area-inset-bottom)); }
+  .account-menu-card { padding:20px; }
+  :root body .account-overview { padding-top:24px; }
+}
+:root body .profile-editor .account-form .button,
+:root body .password-sheet .customer-settings form .button { border-radius:24px; }

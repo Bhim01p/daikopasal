@@ -86,9 +86,14 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const shoppingPage =
-    ["/", "/mobiles", "/second-hand", "/accessories", "/search"].includes(
-      location.pathname,
-    ) || location.pathname.startsWith("/product/");
+    [
+      "/",
+      "/shop",
+      "/mobiles",
+      "/second-hand",
+      "/accessories",
+      "/search",
+    ].includes(location.pathname) || location.pathname.startsWith("/product/");
   useEffect(() => {
     setMenu(false);
     setAccountOpen(false);
@@ -99,6 +104,12 @@ export default function Layout() {
     if (section) section.scrollIntoView({ behavior: "instant" });
     else window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname, location.hash]);
+  const showFloatingActions =
+    !cartOpen &&
+    !accountOpen &&
+    !["/login", "/account", "/cart", "/checkout"].includes(location.pathname) &&
+    !location.pathname.startsWith("/order/");
+  const showSearch = shoppingPage;
   useEffect(() => {
     if (!menu) return;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -160,27 +171,29 @@ export default function Layout() {
               </div>
             </nav>
           </div>
-          <form
-            className="shop-header-search"
-            role="search"
-            onSubmit={(event) => {
-              event.preventDefault();
-              navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-            }}
-          >
-            <label className="sr-only" htmlFor="header-query">
-              {t("Search all products")}
-            </label>
-            <input
-              id="header-query"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t("Search products…")}
-            />
-            <button type="submit" aria-label={t("Search the shop")}>
-              <Search size={21} />
-            </button>
-          </form>
+          {showSearch && (
+            <form
+              className="shop-header-search"
+              role="search"
+              onSubmit={(event) => {
+                event.preventDefault();
+                navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+              }}
+            >
+              <label className="sr-only" htmlFor="header-query">
+                {t("Search all products")}
+              </label>
+              <input
+                id="header-query"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("Search products…")}
+              />
+              <button type="submit" aria-label={t("Search the shop")}>
+                <Search size={21} />
+              </button>
+            </form>
+          )}
           <div className="nav-tools">
             <LanguageSwitch />
             <ThemeSwitch />
@@ -194,7 +207,17 @@ export default function Layout() {
             </Link>
             <HeaderDropdown
               label={t("Account")}
-              trigger={<UserRound size={22} />}
+              trigger={
+                customer?.photo ? (
+                  <img
+                    className="customer-avatar"
+                    src={customer.photo}
+                    alt={t("Profile photo")}
+                  />
+                ) : (
+                  <UserRound size={22} />
+                )
+              }
               triggerClass="customer-account-link"
               className="account-dropdown"
             >
@@ -370,7 +393,7 @@ export default function Layout() {
           <span>{t("Home")}</span>
         </NavLink>
         <NavLink
-          to="/mobiles"
+          to="/shop"
           className={({ isActive }) =>
             isActive || (shoppingPage && location.pathname !== "/")
               ? "active"
@@ -380,26 +403,11 @@ export default function Layout() {
           <Smartphone size={21} />
           <span>{t("Shop")}</span>
         </NavLink>
-        <NavLink
-          to="/cart"
-          onClick={(event) => {
-            event.preventDefault();
-            setAccountOpen(false);
-            setCartOpen(true);
-          }}
-          aria-haspopup="dialog"
-          className={({ isActive }) =>
-            isActive ||
-            location.pathname === "/checkout" ||
-            location.pathname.startsWith("/order/")
-              ? "dock-bag active"
-              : "dock-bag"
-          }
-        >
-          <ShoppingBag size={21} />
+        <NavLink to="/favourites">
+          <Heart size={21} />
           <span>
-            {t("Cart")}
-            {count > 0 ? ` (${count})` : ""}
+            {t("Favourites")}
+            {favouriteIds.length ? ` (${favouriteIds.length})` : ""}
           </span>
         </NavLink>
         <button
@@ -412,27 +420,39 @@ export default function Layout() {
               : ""
           }
         >
-          <UserRound size={21} />
+          {customer?.photo ? (
+            <img className="customer-avatar" src={customer.photo} alt="" />
+          ) : (
+            <UserRound size={21} />
+          )}
           <span>{t("Account")}</span>
         </button>
-        <a
-          href={whatsapp()}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={t("Chat with shop on WhatsApp")}
-        >
-          <WhatsAppIcon size={24} />
-        </a>
       </nav>
-      <a
-        className="floating-whatsapp"
-        href={whatsapp()}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={t("Contact shop on WhatsApp")}
-      >
-        <WhatsAppIcon size={25} />
-      </a>
+      {showFloatingActions && (
+        <div className="shopping-floating-actions">
+          <button
+            className="floating-cart"
+            aria-label={t("Shopping cart, {{v0}} items", { v0: String(count) })}
+            aria-haspopup="dialog"
+            onClick={() => {
+              setAccountOpen(false);
+              setCartOpen(true);
+            }}
+          >
+            <ShoppingBag size={24} />
+            <span>{count}</span>
+          </button>
+          <a
+            className="floating-whatsapp"
+            href={whatsapp()}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t("Contact shop on WhatsApp")}
+          >
+            <WhatsAppIcon size={25} />
+          </a>
+        </div>
+      )}
       {notice && (
         <div className="toast" role="status">
           {t(notice)}
