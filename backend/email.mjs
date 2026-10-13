@@ -39,7 +39,12 @@ export function createOrderEmail(order, kind = "status") {
   const title =
     kind === "received" ? "Order received" : `Order update: ${order.status}`;
   const sample = order.items.some(({ product }) => product.isSample !== false);
-  const totalLabel = sample ? "Sample total" : "Total";
+  const estimated = order.items.some(({ product }) => product.priceIsEstimate);
+  const totalLabel = sample
+    ? "Sample total"
+    : estimated
+      ? "Estimated total"
+      : "Total";
   const items = order.items.map(
     ({ product, quantity }) =>
       `${product.brand} ${product.name} × ${quantity} — ${money(product.price * quantity)}`,
@@ -62,6 +67,9 @@ export function createOrderEmail(order, kind = "status") {
           "This order includes sample listings. Confirm actual prices and availability with the shop.",
         ]
       : []),
+    ...(estimated
+      ? ["Prices are estimates and require shop confirmation."]
+      : []),
     ...(order.note ? [`Your note: ${order.note}`] : []),
     "",
     `Shop pickup: ${shop.location}`,
@@ -79,6 +87,7 @@ export function createOrderEmail(order, kind = "status") {
     <ul>${items.map((item) => `<li>${escape(item)}</li>`).join("")}</ul>
     <p><strong>${totalLabel}: ${escape(money(order.total))}</strong></p>
     ${sample ? "<p>This order includes sample listings. Confirm actual prices and availability with the shop.</p>" : ""}
+    ${estimated ? "<p>Prices are estimates and require shop confirmation.</p>" : ""}
     ${order.note ? `<p>Your note: ${escape(order.note)}</p>` : ""}
     <p><strong>Shop pickup</strong><br>${shop.location}<br>Open ${shop.hours}</p>
     <p>Payment is arranged with the shop at pickup. No online payment has been taken.</p>
@@ -102,6 +111,9 @@ export function createOrderEmail(order, kind = "status") {
               "This order includes sample listings. Confirm actual prices and availability with the shop.",
             ),
           ]
+        : []),
+      ...(estimated
+        ? [t("Prices are estimates and require shop confirmation.")]
         : []),
       ...(order.note ? [`${t("Your note")}: ${order.note}`] : []),
       `${t("Shop pickup")}: ${shop.location}`,

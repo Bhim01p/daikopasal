@@ -72,6 +72,7 @@ const adminSections = [
     id: "staff-tab",
   },
 ] as const;
+import ProductFinanceEditor from "../components/ProductFinanceEditor";
 import StaffManager from "../components/StaffManager";
 import { ThemeSwitch } from "../context/ThemeContext";
 import QuickStock from "../components/QuickStock";
@@ -1003,10 +1004,10 @@ export default function Admin() {
                     {t("Search catalogue")}
                   </label>
                   <details className="admin-import">
-                    <summary>{t("Replace sample listings")}</summary>
+                    <summary>{t("Import inventory")}</summary>
                     <p>
                       {t(
-                        "Import verified shop details. Existing real listings and all order receipts are kept. A private backup is saved before samples are removed.",
+                        "Import verified shop details. Existing products and order receipts are kept. Review the file before confirming.",
                       )}
                     </p>
                     <a
@@ -1035,8 +1036,6 @@ export default function Admin() {
                         <p>
                           {inventoryPreview.products.length}{" "}
                           {t(" real products to add ·")}{" "}
-                          {inventoryPreview.sampleCount}{" "}
-                          {t(" samples to remove ·")}{" "}
                           {inventoryPreview.preservedCount}{" "}
                           {t(" existing real listings to keep.")}
                         </p>
@@ -1065,7 +1064,7 @@ export default function Admin() {
                         >
                           {busy === "import"
                             ? t("Importing…")
-                            : t("Import real listings and remove samples")}
+                            : t("Import products")}
                         </button>
                       </div>
                     )}
@@ -1096,9 +1095,7 @@ export default function Admin() {
                   </div>
                   {productFilter === "low-stock" && (
                     <p className="admin-help">
-                      {t(
-                        "Real listings with 0–3 units available. Sample products are excluded.",
-                      )}
+                      {t("Products with 0–3 units available.")}
                     </p>
                   )}
                   <div className="admin-product-list">
@@ -1123,7 +1120,6 @@ export default function Admin() {
                                 : "admin-stock"
                             }
                           >
-                            {p.isSample !== false ? t("Sample · ") : ""}
                             {p.stockQuantity === null
                               ? t("Set stock quantity")
                               : t("{{v0}} available", {
@@ -1266,7 +1262,6 @@ export default function Admin() {
                             max={64}
                             step={1}
                             value={draft.ram ?? ""}
-                            required={draft.category === "new"}
                             onChange={(e) =>
                               setDraft({
                                 ...draft,
@@ -1482,6 +1477,7 @@ export default function Admin() {
                       ))}
                     </div>
                   </fieldset>
+                  <ProductFinanceEditor draft={draft} onChange={setDraft} />
                   <fieldset className="editor-section">
                     <legend>{t("Descriptions & specifications")}</legend>
                     <label htmlFor="product-description">
@@ -1603,13 +1599,19 @@ export default function Admin() {
                     <label className="admin-check">
                       <input
                         type="checkbox"
-                        checked={draft.isSample !== false}
+                        checked={draft.priceIsEstimate === true}
                         onChange={(e) =>
-                          setDraft({ ...draft, isSample: e.target.checked })
+                          setDraft({
+                            ...draft,
+                            priceIsEstimate: e.target.checked,
+                            isSample: false,
+                          })
                         }
                       />
                       <span>
-                        {t("Sample listing (example price and stock)")}
+                        {t(
+                          "Temporary estimated price — confirm before selling",
+                        )}
                       </span>
                     </label>
                     <label htmlFor="product-stock">

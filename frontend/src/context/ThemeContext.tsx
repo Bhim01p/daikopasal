@@ -24,7 +24,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.theme = theme;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "dark" ? "#15222e" : "#F4F8FF");
+      ?.setAttribute("content", theme === "dark" ? "#130f13" : "#faf8f8");
   }, [theme]);
   useEffect(() => {
     const sync = (event: StorageEvent) => {

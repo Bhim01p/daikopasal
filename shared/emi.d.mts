@@ -1,0 +1,1 @@
+export function calculateEmi(price:number,downPayment:number,annualRate:number,months:number,fee?:number,method?:"reducing"|"flat"):{principal:number;monthly:number;interest:number;total:number;upfront:number};

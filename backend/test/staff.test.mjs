@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { hashAdminPassword } from "../admin-settings.mjs";
-import { createApp } from "../server.mjs";
+import { createApp } from "./app-fixture.mjs";
 
 test("staff permissions, private credentials, revocation and restart persistence", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "me-staff-test-"));

@@ -14,6 +14,8 @@ import {
 import { useProducts } from "../context/ProductContext";
 import { money, shop, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
+import ProductTools from "../components/ProductTools";
+import EmiCalculator from "../components/EmiCalculator";
 import ProductCard from "../components/ProductCard";
 import ProductGallery from "../components/ProductGallery";
 import WhatsAppIcon from "../components/WhatsAppIcon";
@@ -62,17 +64,24 @@ export default function Product() {
             {product.category === "used" ? t("Second-hand set") : product.brand}
           </span>
           <h1>{product.name}</h1>
+          <ProductTools product={product} />
           <div
             className={`availability ${product.available ? "" : "unavailable"}`}
           >
-            {isSampleProduct(product) ? t("Sample · ") : ""}
             {product.available
               ? t("In stock · {{v0}} available · Shop pickup", {
                   v0: String(product.stockQuantity),
                 })
-              : t("Currently out of stock")}
+              : t("Contact for availability")}
           </div>
-          <div className="detail-price">{money(product.price)}</div>
+          <div className="detail-price">
+            {money(product.price)}
+            {product.priceIsEstimate && (
+              <small className="price-estimate">
+                {t("Estimated price — confirm with the shop")}
+              </small>
+            )}
+          </div>
           <p>
             {language === "ne" && product.descriptionNe
               ? product.descriptionNe
@@ -82,11 +91,15 @@ export default function Product() {
             <div className="condition-grid">
               <div>
                 <span>{t("Condition")}</span>
-                <strong>{t(product.condition)}</strong>
+                <strong>{t(product.condition || "Inspection pending")}</strong>
               </div>
               <div>
                 <span>{t("Battery health")}</span>
-                <strong>{product.battery}%</strong>
+                <strong>
+                  {product.battery === undefined
+                    ? t("Inspection pending")
+                    : `${product.battery}%`}
+                </strong>
               </div>
               <div>
                 <span>{t("Storage")}</span>
@@ -100,16 +113,17 @@ export default function Product() {
               </div>
             </div>
           )}
-          {isSampleProduct(product) && (
+          {(product.priceIsEstimate || isSampleProduct(product)) && (
             <div className="sample-note">
               <Info size={17} />
               <span>
                 {t(
-                  "Sample price and details. Availability, condition, and warranty require shop confirmation.",
+                  "Price is an estimate. Availability, condition and warranty require shop confirmation.",
                 )}
               </span>
             </div>
           )}
+          <EmiCalculator key={product.id} product={product} />
           <label className="quantity-label">{t("Quantity")}</label>
           <div className="purchase-row">
             <div className="quantity">
@@ -173,6 +187,16 @@ export default function Product() {
       </div>
       <section className="specifications">
         <h2>{t("The details, at a glance.")}</h2>
+        {product.specSourceUrl && (
+          <a
+            className="text-link"
+            href={product.specSourceUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("Manufacturer specifications")} ↗
+          </a>
+        )}
         <dl>
           {Object.entries(product.specs).map(([key, value]) => (
             <div key={key}>

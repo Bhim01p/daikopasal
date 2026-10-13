@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { createApp } from "../server.mjs";
-import { seedStore } from "../store.mjs";
+import { createApp } from "./app-fixture.mjs";
+import { seedStore } from "./app-fixture.mjs";
 
 test("SMS challenges, attempt limits and customer sessions work across separate hosted app instances", async () => {
   let data = seedStore();

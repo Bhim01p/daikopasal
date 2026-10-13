@@ -1,5 +1,23 @@
 # Pending project tasks
 
+## Current update — 13 October 2026
+
+Owner approved the burgundy/red reference redesign, both themes, mobile layouts, favourites, sourced two-phone comparison, EMI estimates and email-code login. The later instruction replaces generic testing products with manufacturer-sourced models and removes customer-facing test features.
+
+- [x] Shared burgundy/red light/dark design across storefront and admin; compact two-row desktop navigation and responsive mobile layouts.
+- [x] Home Favourites tab, product hearts, browser persistence and direct removal.
+- [x] Two-model specification table, variant labels, source links, differences-only filter and unknown-model handling. Reference library starts with official Redmi 9 Nepal and Redmi 10 Global data; shop models use admin-supplied specifications/source URLs. No AI, paid API or unrestricted live web scraping.
+- [x] Optional product EMI terms in admin and customer calculator: minimum down payment, allowed periods, annual rate, reducing/flat method, upfront fee and estimated total. Terms disabled until the shop configures them.
+- [x] Gmail/email-code login, expiry/single-use/attempt limits, resend cooldown, IP/identity/global limits and verified-email lock. Unique existing customer emails preserve account IDs/orders; duplicate emails require manual assistance. Guest orders are not silently merged.
+- [x] Remove SMS sender creation from deployed application, SMS setup commands and customer test-code UI. Existing legacy authentication regression fixtures are isolated from real email sending.
+- [x] Replace untouched starter examples with eight sourced models across the three categories; preserve owner-edited products/uploads, receipts/accounts/sessions. Manufacturer images are bundled locally. Temporary prices are marked; stock starts at zero and used condition/battery require inspection.
+- [x] Local private Gmail/login settings prepared without printing credentials or sending live messages.
+- [x] Build, 30 backend tests, translation coverage, end-to-end mock-email order flow and layout checks at 320/390/768/1024/1440 pixels passed. Final light/dark previews inspected. Admin is loaded separately to reduce the initial bundle.
+- [ ] Owner: confirm actual prices/stock/used-unit condition and applicable EMI terms before selling.
+- [ ] Owner: set CUSTOMER_AUTH_MODE=email in Vercel Production/Preview, keep existing Gmail settings and SMS_PROVIDER=disabled, then deploy the new commit. Verify one real inbox login. No environment upload, Git commit/push or deployment performed here.
+- SQL backup/recovery and payment gateway remain deferred. SMS is removed from planned scope.
+
+
 ## Approved workflow batch — 12 October 2026
 
 Scope: owner authorized queue items 1–13. Items 14 (backup/recovery guidance) and 15 (mobile improvements/testing) are explicitly deferred. Do not start either without new instructions. The owner reported order emails working and had pushed the previous build to main; the changes in this batch are local and await the owner's review/commit. No deployment or credential changes belong to this batch.
@@ -180,3 +198,9 @@ Owner briefing (pricing checked 12 October 2026): Sparrow requires a volume-base
 
 Sources: https://sparrowsms.com/faqs/ ; https://sms.ekrasunya.com/pricing ; https://www.ntc.net.np/services/sms-based-vas-services
 No purchase, SMS activation or SQL backup setup performed. Guest checkout remains available while SMS login is disabled.
+
+## Deferred colour preference — next update
+- [ ] Apply the owner's latest colour reference: white background, charcoal/dark-grey navigation and text, light-grey surfaces, and bright pink/magenta accents for active navigation, buttons, links and highlights.
+- Reference: C:/Users/USER/AppData/Local/Temp/codex-clipboard-80c85bce-34be-40d3-8dba-6329ba9cc293.png (user attached 12 October 2026).
+- This request is for the colour palette only; preserve the current approved layout and flows. Clarify dark-theme treatment when implementation resumes.
+- Deferred at the owner's request due to credit limits. No UI changes, commit or deployment performed for this item.

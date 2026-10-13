@@ -30,11 +30,8 @@ export function Login({
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const next = destination(params.get("next"));
-  const [phone, setPhone] = useState("");
-  const localPhone = normalizeDigits(phone)
-    .replace(/[\s()-]/g, "")
-    .replace(/^(?:\+977|977)(?=9[78]\d{8}$)/, "");
-  const phoneValid = /^9[78]\d{8}$/.test(localPhone);
+  const [loginEmail, setLoginEmail] = useState("");
+  const emailValid = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(loginEmail.trim());
   const [code, setCode] = useState("");
   const [challenge, setChallenge] = useState<{
     challengeId: string;
@@ -88,9 +85,9 @@ export function Login({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (busy || mode === "disabled") return;
-    if (!challenge && !phoneValid) {
-      setError("Enter a valid Nepal mobile number.");
-      document.getElementById(`${formId}-phone`)?.focus();
+    if (!challenge && !emailValid) {
+      setError("Enter a valid email address for order updates.");
+      document.getElementById(`${formId}-login-email`)?.focus();
       return;
     }
     if (challenge && !/^\d{6}$/.test(code)) {
@@ -108,7 +105,7 @@ export function Login({
           developmentCode?: string;
         }>("/customer/auth/start", {
           method: "POST",
-          body: JSON.stringify({ phone: `+977${localPhone}` }),
+          body: JSON.stringify({ email: loginEmail.trim().toLowerCase() }),
         });
         setChallenge({ ...result, resendAvailableAt: Date.now() + 60000 });
         setCode("");
@@ -149,19 +146,12 @@ export function Login({
       <form className="account-form" onSubmit={submit} noValidate>
         <UserRound size={32} />
         <h2>
-          {challenge ? t("Enter your code") : t("Log in with your phone")}
+          {challenge ? t("Enter your code") : t("Log in with your email")}
         </h2>
-        {mode === "development" && (
-          <p className="account-demo-note">
-            {t(
-              "Local test mode: no SMS is sent and phone ownership is not verified. A test code will appear here.",
-            )}
-          </p>
-        )}
         {mode === "disabled" && (
           <p className="account-demo-note">
             {t(
-              "Phone login is being set up. You can still browse and use guest checkout.",
+              "Email login is being set up. You can still browse and use guest checkout.",
             )}
           </p>
         )}
@@ -169,15 +159,9 @@ export function Login({
           <>
             <p>
               {t("For ")}
-              {phone}
+              {loginEmail}
               {t(". Your code expires after five minutes.")}
             </p>
-            {challenge.developmentCode && (
-              <p className="account-demo-code">
-                {t("Local test code: ")}
-                <strong>{challenge.developmentCode}</strong>
-              </p>
-            )}
             <label htmlFor={`${formId}-code`}>{t("Verification code")}</label>
             <input
               id={`${formId}-code`}
@@ -195,33 +179,21 @@ export function Login({
           </>
         ) : (
           <>
-            <label htmlFor={`${formId}-phone`}>
-              {t("Nepal mobile number")}
+            <label htmlFor={`${formId}-login-email`}>
+              {t("Email address")}
             </label>
-            <div className="nepal-phone-input">
-              <span aria-hidden="true">+977</span>
-              <input
-                id={`${formId}-phone`}
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) =>
-                  setPhone(
-                    normalizeDigits(e.target.value)
-                      .replace(/[\s()-]/g, "")
-                      .replace(/^(?:\+977|977)(?=9[78]\d{8}$)/, ""),
-                  )
-                }
-                placeholder={t("98XXXXXXXX")}
-                maxLength={20}
-                required
-              />
-            </div>
+            <input
+              id={`${formId}-login-email`}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              maxLength={254}
+              required
+            />
             <p className="summary-note">
-              {t(
-                "Enter your 10-digit mobile number. We add +977 automatically.",
-              )}
+              {t("We will email you a six-digit login code.")}
             </p>
           </>
         )}
@@ -241,17 +213,15 @@ export function Login({
         )}
         <button
           className="button dark full"
-          disabled={busy || mode === "disabled" || (!challenge && !phoneValid)}
+          disabled={busy || mode === "disabled" || (!challenge && !emailValid)}
         >
           {mode === "disabled"
-            ? t("SMS login unavailable")
+            ? t("Email login unavailable")
             : busy
               ? t("Please wait…")
               : challenge
                 ? t("Verify and log in")
-                : mode === "development"
-                  ? t("Get test code")
-                  : t("Send login code")}
+                : t("Send login code")}
           <ArrowRight size={18} />
         </button>
         {challenge && (
@@ -266,7 +236,7 @@ export function Login({
                 setError("");
               }}
             >
-              {t("Change number")}
+              {t("Change email")}
             </button>
             <button
               type="button"
@@ -280,7 +250,9 @@ export function Login({
                     "/customer/auth/start",
                     {
                       method: "POST",
-                      body: JSON.stringify({ phone: `+977${localPhone}` }),
+                      body: JSON.stringify({
+                        email: loginEmail.trim().toLowerCase(),
+                      }),
                     },
                   );
                   setChallenge({
@@ -337,12 +309,14 @@ export default function Account({
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   useEffect(() => {
     setName(customer?.name || "");
     setEmail(customer?.email || "");
+    setPhone(customer?.phone || "");
   }, [customer?.id, customer?.name, customer?.email]);
   if (checking)
     return (
@@ -358,7 +332,7 @@ export default function Account({
         <p>{t("Log in to save your details and see your orders.")}</p>
         {sessionError && <p role="alert">{t(sessionError)}</p>}
         <Link className="button dark" to="/login?next=/account">
-          {t("Log in with your phone")}
+          {t("Log in with your email")}
         </Link>
       </div>
     );
@@ -381,7 +355,7 @@ export default function Account({
     try {
       const result = await api<{ customer: Customer }>("/customer/profile", {
         method: "PATCH",
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, phone }),
       });
       setCustomer(result.customer);
       setNotice("Your details have been saved.");
@@ -422,11 +396,20 @@ export default function Account({
       <div className="account-layout">
         <form className="account-form" onSubmit={save} noValidate>
           <h2>{t("Customer details")}</h2>
-          <label>{t("Login number")}</label>
-          <p className="account-phone">{customer.phone}</p>
+          <label>{t("Login email")}</label>
+          <p className="account-phone">{customer.email}</p>
           <p className="summary-note">
-            {t("To use another number, sign out and log in with that number.")}
+            {t("To use another email, sign out and verify that email.")}
           </p>
+          <label htmlFor={`${formId}-phone`}>{t("Nepal mobile number")}</label>
+          <input
+            id={`${formId}-phone`}
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(normalizeDigits(e.target.value))}
+            required
+          />
           <label htmlFor={`${formId}-name`}>{t("Full name")}</label>
           <input
             id={`${formId}-name`}
@@ -440,6 +423,7 @@ export default function Account({
           <label htmlFor={`${formId}-email`}>{t("Email address")}</label>
           <input
             id={`${formId}-email`}
+            readOnly
             type="email"
             autoComplete="email"
             inputMode="email"

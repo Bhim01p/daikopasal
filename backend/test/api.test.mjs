@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { scryptSync, randomUUID } from "node:crypto";
-import { createApp } from "../server.mjs";
+import { createApp } from "./app-fixture.mjs";
 test("admin authorization, product CRUD, server-priced orders, private receipts, and restart persistence", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "me-backend-test-"));
   const password = "test-password-only";

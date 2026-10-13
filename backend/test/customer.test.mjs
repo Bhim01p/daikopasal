@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID, scryptSync } from "node:crypto";
-import { createApp } from "../server.mjs";
+import { createApp } from "./app-fixture.mjs";
 import http from "node:http";
 import { normalizePhone } from "../customer-auth.mjs";
 

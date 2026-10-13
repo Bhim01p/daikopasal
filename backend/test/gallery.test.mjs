@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { scryptSync, randomUUID } from "node:crypto";
-import { createApp } from "../server.mjs";
+import { createApp } from "./app-fixture.mjs";
 
 test("product galleries validate local images, preserve legacy cover edits, receipts and photos after restart", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "me-gallery-test-"));

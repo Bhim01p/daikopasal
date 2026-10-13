@@ -1,0 +1,200 @@
+[
+  {
+    "id": "new-0",
+    "name": "Galaxy A55 5G",
+    "description": "Explore the Samsung Galaxy A55 5G for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-1",
+    "name": "iPhone 15",
+    "description": "Explore the Apple iPhone 15 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-2",
+    "name": "Redmi Note 13 Pro",
+    "description": "Explore the Xiaomi Redmi Note 13 Pro for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-3",
+    "name": "Phone (2a)",
+    "description": "Explore the Nothing Phone (2a) for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-4",
+    "name": "Nord CE4",
+    "description": "Explore the OnePlus Nord CE4 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-5",
+    "name": "12 Pro",
+    "description": "Explore the Realme 12 Pro for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-6",
+    "name": "V30",
+    "description": "Explore the Vivo V30 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-7",
+    "name": "Reno11",
+    "description": "Explore the Oppo Reno11 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-8",
+    "name": "X9b",
+    "description": "Explore the Honor X9b for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "new-9",
+    "name": "Galaxy S24",
+    "description": "Explore the Samsung Galaxy S24 for your everyday calls, photos, and apps. This listing uses sample specifications and pricing; please confirm the exact variant with the shop.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-0",
+    "name": "iPhone 13",
+    "description": "A sample second-hand Apple iPhone 13 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-1",
+    "name": "Galaxy S22",
+    "description": "A sample second-hand Samsung Galaxy S22 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-2",
+    "name": "iPhone 12",
+    "description": "A sample second-hand Apple iPhone 12 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-3",
+    "name": "9 Pro",
+    "description": "A sample second-hand OnePlus 9 Pro listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-4",
+    "name": "Redmi Note 12",
+    "description": "A sample second-hand Xiaomi Redmi Note 12 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-5",
+    "name": "iPhone 14",
+    "description": "A sample second-hand Apple iPhone 14 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "used-6",
+    "name": "V27",
+    "description": "A sample second-hand Vivo V27 listing. Condition and battery health are demonstration values. Ask the shop about the actual set, inspection details, and included accessories before buying.",
+    "image": "/assets/phone.svg"
+  },
+  {
+    "id": "accessory-0",
+    "name": "Soft-touch phone cover",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/cover.svg"
+  },
+  {
+    "id": "accessory-1",
+    "name": "Clear protective case",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/cover.svg"
+  },
+  {
+    "id": "accessory-2",
+    "name": "USB-C wall charger",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/charger.svg"
+  },
+  {
+    "id": "accessory-3",
+    "name": "20W charging adapter",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/charger.svg"
+  },
+  {
+    "id": "accessory-4",
+    "name": "Wireless everyday earbuds",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/earbuds.svg"
+  },
+  {
+    "id": "accessory-5",
+    "name": "Compact wireless earbuds",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/earbuds.svg"
+  },
+  {
+    "id": "accessory-6",
+    "name": "Tempered glass protector",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/cover.svg"
+  },
+  {
+    "id": "accessory-7",
+    "name": "Privacy screen protector",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/cover.svg"
+  },
+  {
+    "id": "accessory-8",
+    "name": "Portable Bluetooth speaker",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/speaker.svg"
+  },
+  {
+    "id": "accessory-9",
+    "name": "Mini desktop speaker",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/speaker.svg"
+  },
+  {
+    "id": "accessory-10",
+    "name": "Wired in-ear earphones",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/earbuds.svg"
+  },
+  {
+    "id": "accessory-11",
+    "name": "USB-C earphones",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/earbuds.svg"
+  },
+  {
+    "id": "accessory-12",
+    "name": "LED bulb 9W",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/bulb.svg"
+  },
+  {
+    "id": "accessory-13",
+    "name": "LED bulb 12W",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/bulb.svg"
+  },
+  {
+    "id": "accessory-14",
+    "name": "USB-C charging cable",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/charger.svg"
+  },
+  {
+    "id": "accessory-15",
+    "name": "Adjustable phone stand",
+    "description": "A useful everyday essential. This is a sample listing; please confirm compatibility, brand, and availability with the shop.",
+    "image": "/assets/cover.svg"
+  }
+]

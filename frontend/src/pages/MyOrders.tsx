@@ -120,7 +120,7 @@ export default function MyOrders() {
           <h1>{t("Your orders, in one place.")}</h1>
           <p>
             {t(
-              "Log in with your phone to follow orders placed through your account.",
+              "Log in with your email to follow orders placed through your account.",
             )}
           </p>
           <div className="shop-empty-actions">

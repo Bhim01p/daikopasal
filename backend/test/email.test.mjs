@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID, scryptSync } from "node:crypto";
-import { createApp } from "../server.mjs";
-import { createStore } from "../store.mjs";
+import { createApp } from "./app-fixture.mjs";
+import { createStore } from "./app-fixture.mjs";
 import {
   createOrderEmail,
   createEmailTransport,

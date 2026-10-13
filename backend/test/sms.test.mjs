@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createSmsTransport } from "../sms.mjs";
-import { createApp } from "../server.mjs";
+import { createApp } from "./app-fixture.mjs";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";

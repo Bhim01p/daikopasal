@@ -21,7 +21,7 @@ export function normalizePhone(value) {
   return `+977${number}`;
 }
 export function profileComplete(customer) {
-  return !!customer?.name && !!customer?.email;
+  return !!customer?.name && !!customer?.email && !!customer?.phone;
 }
 export function publicCustomer(customer) {
   return customer
@@ -43,11 +43,13 @@ export function createCustomerAuth(store, options = {}) {
   const configuredMode =
     options.mode ?? process.env.CUSTOMER_AUTH_MODE ?? "disabled";
   const sms = options.smsTransport;
+  const emailTransport = options.emailTransport;
   const now = options.now || Date.now;
   const lifetime = 7 * 24 * 60 * 60 * 1000;
   const challenges = stateMap(store, "customerChallenges");
   const limits = stateMap(store, "customerLimits");
   function mode(request) {
+    if (configuredMode === "email" && emailTransport) return "email";
     if (configuredMode === "sms" && sms) return "sms";
     if (
       configuredMode !== "development" ||
@@ -104,16 +106,31 @@ export function createCustomerAuth(store, options = {}) {
     if (currentMode === "disabled")
       throw new HttpError(
         503,
-        "Phone login is not enabled yet. You can still use guest checkout.",
+        "Email login is not enabled yet. You can still use guest checkout.",
       );
-    const phone = normalizePhone(input?.phone);
+    const emailLogin =
+      currentMode === "email" ||
+      (currentMode === "development" && input?.email !== undefined);
+    const email = emailLogin
+      ? text(input?.email, "Email address", 3, 254).toLowerCase()
+      : null;
+    if (emailLogin && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email))
+      throw new HttpError(
+        400,
+        "Enter a valid email address for order updates.",
+      );
+    const phone = emailLogin ? null : normalizePhone(input?.phone);
+    const identity = emailLogin ? `email:${email}` : `phone:${phone}`;
     if (
       currentMode === "development" &&
       store
         .read()
         .customers.some(
           (customer) =>
-            customer.phone === phone && customer.verifiedVia === "sms",
+            (emailLogin
+              ? customer.email?.toLowerCase() === email
+              : customer.phone === phone) &&
+            ["sms", "email"].includes(customer.verifiedVia),
         )
     )
       throw new HttpError(
@@ -125,7 +142,8 @@ export function createCustomerAuth(store, options = {}) {
     for (const [key, limit] of limits)
       if (limit.until <= now()) limits.delete(key);
     const existing = [...challenges.values()].find(
-      (challenge) => challenge.phone === phone,
+      (challenge) =>
+        (challenge.identity || `phone:${challenge.phone}`) === identity,
     );
     if (existing && existing.createdAt + 60000 > now())
       throw new HttpError(
@@ -133,8 +151,9 @@ export function createCustomerAuth(store, options = {}) {
         "Please wait one minute before requesting another code.",
       );
     const keys = [
-      [`phone:${phone}`, 5],
+      [identity, 5],
       [`ip:${request.clientIp || request.socket.remoteAddress}`, 10],
+      ...(emailLogin ? [["email-global", 200]] : []),
     ];
     for (const [key, maximum] of keys)
       if ((limits.get(key)?.count || 0) >= maximum)
@@ -146,15 +165,19 @@ export function createCustomerAuth(store, options = {}) {
       const limit = limits.get(key);
       limits.set(key, {
         count: (limit?.count || 0) + 1,
-        until: limit?.until || now() + 3600000,
+        until:
+          limit?.until || now() + (key === "email-global" ? 86400000 : 3600000),
       });
     }
     for (const [id, challenge] of challenges)
-      if (challenge.phone === phone) challenges.delete(id);
+      if ((challenge.identity || `phone:${challenge.phone}`) === identity)
+        challenges.delete(id);
     const id = randomBytes(24).toString("hex");
     const code = randomInt(100000, 1000000).toString();
     const challenge = {
       phone,
+      email,
+      identity,
       codeHash: hash(`${id}:${code}`),
       mode: currentMode,
       createdAt: now(),
@@ -162,6 +185,25 @@ export function createCustomerAuth(store, options = {}) {
       attempts: 0,
     };
     challenges.set(id, challenge);
+    if (currentMode === "email") {
+      try {
+        await emailTransport.send(
+          {
+            from: emailTransport.from,
+            to: [email],
+            subject: "Your login code · Machhapuchhree Electronics",
+            text: `Your login code is ${code}. It expires in five minutes. Do not share this code. If you did not request it, ignore this email.`,
+          },
+          `login-${id}`,
+        );
+      } catch {
+        challenges.delete(id);
+        throw new HttpError(
+          503,
+          "We could not send the login code. Please try again later.",
+        );
+      }
+    }
     if (currentMode === "sms") {
       try {
         await sms.sendOTP(phone, code);
@@ -205,16 +247,28 @@ export function createCustomerAuth(store, options = {}) {
     }
     challenges.delete(id);
     const current = store.read();
-    let customer = current.customers.find(
-      (customer) => customer.phone === challenge.phone,
+    const matches = current.customers.filter((customer) =>
+      challenge.email
+        ? customer.email?.toLowerCase() === challenge.email
+        : customer.phone === challenge.phone,
     );
+    if (matches.length > 1)
+      throw new HttpError(
+        409,
+        "Multiple accounts use this email. Contact the shop for help.",
+      );
+    let customer = matches[0];
     customer = customer
-      ? { ...customer, verifiedVia: challenge.mode }
+      ? {
+          ...customer,
+          ...(challenge.email ? { email: challenge.email } : {}),
+          verifiedVia: challenge.mode,
+        }
       : {
           id: randomUUID(),
-          phone: challenge.phone,
+          phone: challenge.phone || "",
           name: "",
-          email: "",
+          email: challenge.email || "",
           verifiedVia: challenge.mode,
           createdAt: new Date(now()).toISOString(),
         };
@@ -245,6 +299,14 @@ export function createCustomerAuth(store, options = {}) {
     const { customer } = requireSession(request);
     const name = text(input?.name, "Full name", 2, 100);
     const email = text(input?.email, "Email address", 3, 254);
+    if (
+      customer.verifiedVia === "email" &&
+      email.toLowerCase() !== customer.email.toLowerCase()
+    )
+      throw new HttpError(
+        400,
+        "Sign out and verify the new email address before changing it.",
+      );
     if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email))
       throw new HttpError(
         400,
@@ -254,6 +316,10 @@ export function createCustomerAuth(store, options = {}) {
       ...customer,
       name,
       email,
+      phone:
+        customer.verifiedVia === "email" || !customer.phone
+          ? normalizePhone(input?.phone)
+          : customer.phone,
       updatedAt: new Date(now()).toISOString(),
     };
     const current = store.read();

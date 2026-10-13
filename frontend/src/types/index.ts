@@ -22,12 +22,23 @@ export interface Product {
   stockQuantity: number | null;
   stockVersion: number;
   isSample?: boolean;
+  priceIsEstimate?: boolean;
   description: string;
   descriptionNe?: string;
   specs: Record<string, string>;
   condition?: "Like New" | "Excellent" | "Good" | "Fair";
   battery?: number;
   accessoryCategory?: string;
+  specVariant?: string;
+  specSourceUrl?: string;
+  emi?: {
+    enabled: boolean;
+    annualRate: number;
+    months: number[];
+    minimumDownPercent: number;
+    fee: number;
+    method: "reducing" | "flat";
+  };
   added: number;
 }
 export interface CartItem {

@@ -7,11 +7,44 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-export function seedStore() {
-  const products = JSON.parse(
-    readFileSync(new URL("./seed/products.json", import.meta.url), "utf8"),
-  );
+export function seedStore(initialProducts) {
+  const products =
+    initialProducts ||
+    JSON.parse(
+      readFileSync(new URL("./seed/products.json", import.meta.url), "utf8"),
+    );
   return normalizeStore({ products, orders: [] });
+}
+export function upgradeStarterCatalogue(current) {
+  if (current.catalogueRevision === 2) return current;
+  const legacy = JSON.parse(
+    readFileSync(
+      new URL("./seed/legacy-signatures.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const removable = current.products.filter(
+    (p) =>
+      p.isSample !== false &&
+      legacy.some(
+        (old) =>
+          old.id === p.id &&
+          old.name === p.name &&
+          old.description === p.description &&
+          old.image === p.image,
+      ),
+  );
+  const retained = current.products.filter((p) => !removable.includes(p));
+  const starters = seedStore().products;
+  const existing = new Set(retained.map((p) => p.id));
+  return {
+    ...current,
+    catalogueRevision: 2,
+    products: removable.length
+      ? [...retained, ...starters.filter((p) => !existing.has(p.id))]
+      : retained,
+    ...(removable.length ? { previousStarterCatalogue: removable } : {}),
+  };
 }
 export function normalizeStore(current) {
   if (!Array.isArray(current.products) || !Array.isArray(current.orders))
@@ -61,10 +94,15 @@ export function normalizeStore(current) {
     throw new Error("Invalid email queue in store file.");
   return current;
 }
-export function createStore(file) {
+export function createStore(
+  file,
+  { initialProducts, migrateStarter = true } = {},
+) {
   let current = existsSync(file)
     ? normalizeStore(JSON.parse(readFileSync(file, "utf8")))
-    : seedStore();
+    : seedStore(initialProducts);
+  const previous = current;
+  if (migrateStarter) current = upgradeStarterCatalogue(current);
   function commit(next) {
     mkdirSync(path.dirname(file), { recursive: true });
     const temporary = file + ".tmp";
@@ -74,7 +112,7 @@ export function createStore(file) {
     renameSync(temporary, file);
     current = next;
   }
-  if (!existsSync(file)) commit(current);
+  if (!existsSync(file) || previous !== current) commit(current);
   return { read: () => current, commit };
 }
 export const defaultStorePath = path.join(

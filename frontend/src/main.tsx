@@ -10,6 +10,9 @@ import {
   Navigate,
 } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
+import { FavouritesProvider } from "./context/FavouritesContext";
+import Favourites from "./pages/Favourites";
+import Compare from "./pages/Compare";
 import Layout from "./components/Layout";
 import Home from "./pages/ReferenceHome";
 import Catalogue from "./pages/Catalogue";
@@ -19,7 +22,7 @@ import Checkout, { OrderSuccess } from "./pages/Checkout";
 import Contact from "./pages/Contact";
 import Repair from "./pages/Repair";
 import NotFound from "./pages/NotFound";
-import Admin from "./pages/Admin";
+const Admin = React.lazy(() => import("./pages/Admin"));
 import Account, { Login } from "./pages/Account";
 import MyOrders from "./pages/MyOrders";
 import { CustomerProvider, useCustomer } from "./context/CustomerContext";
@@ -36,9 +39,17 @@ import "./product-gallery.css";
 import "./shopping.css";
 import "./refinement.css";
 import "./sky-theme.css";
-import "./ice-cobalt.css";
 import "./workflow.css";
+import "./ruby-theme.css";
 import { ThemeProvider } from "./context/ThemeContext";
+function RouteLoading() {
+  const t = useT();
+  return (
+    <div className="container empty-state" role="status">
+      {t("Opening the shop…")}
+    </div>
+  );
+}
 function Meta() {
   const t = useT();
   const { language } = useLanguage();
@@ -57,6 +68,8 @@ function Meta() {
       "/help": "Help",
       "/repair": "Repair",
       "/search": "Search Products",
+      "/compare": "Compare phones",
+      "/favourites": "Your favourites",
       "/not-admin": "Shop Admin",
       "/login": "Customer Login",
       "/account": "Your Profile",
@@ -116,50 +129,70 @@ function App() {
         <CustomerProvider>
           <ProductProvider>
             <CartProvider>
-              <Meta />
-              <Routes>
-                <Route path="not-admin/*" caseSensitive element={<Admin />} />
-                <Route element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route
-                    path="mobiles"
-                    element={<Catalogue key="new" category="new" />}
-                  />
-                  <Route
-                    path="second-hand"
-                    element={<Catalogue key="used" category="used" />}
-                  />
-                  <Route
-                    path="accessories"
-                    element={<Catalogue key="accessory" category="accessory" />}
-                  />
-                  <Route path="search" element={<Catalogue key="search" />} />
-                  <Route path="product/:slug" element={<ProductPage />} />
-                  <Route path="cart" element={<Cart />} />
-                  <Route path="checkout" element={<Checkout />} />
-                  <Route path="login" element={<Login />} />
-                  <Route path="account" element={<Account />} />
-                  <Route path="my-orders" element={<MyOrders />} />
-                  <Route path="order/:id" element={<OrderPage />} />
-                  <Route path="help" element={<Contact />} />
-                  <Route
-                    path="contact"
-                    element={<Navigate to="/help" replace />}
-                  />
-                  <Route path="repair" element={<Repair />} />
-                  <Route
-                    path="digital-meter-repair"
-                    element={
-                      <Navigate to="/repair#digital-meter-repairs" replace />
-                    }
-                  />
-                  <Route
-                    path="mobile-repair"
-                    element={<Navigate to="/repair#phone-repairs" replace />}
-                  />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
+              <FavouritesProvider>
+                <Meta />
+                <React.Suspense fallback={<RouteLoading />}>
+                  <Routes>
+                    <Route
+                      path="not-admin/*"
+                      caseSensitive
+                      element={<Admin />}
+                    />
+                    <Route element={<Layout />}>
+                      <Route index element={<Home />} />
+                      <Route
+                        path="mobiles"
+                        element={<Catalogue key="new" category="new" />}
+                      />
+                      <Route
+                        path="second-hand"
+                        element={<Catalogue key="used" category="used" />}
+                      />
+                      <Route
+                        path="accessories"
+                        element={
+                          <Catalogue key="accessory" category="accessory" />
+                        }
+                      />
+                      <Route path="favourites" element={<Favourites />} />
+                      <Route path="compare" element={<Compare />} />
+                      <Route
+                        path="search"
+                        element={<Catalogue key="search" />}
+                      />
+                      <Route path="product/:slug" element={<ProductPage />} />
+                      <Route path="cart" element={<Cart />} />
+                      <Route path="checkout" element={<Checkout />} />
+                      <Route path="login" element={<Login />} />
+                      <Route path="account" element={<Account />} />
+                      <Route path="my-orders" element={<MyOrders />} />
+                      <Route path="order/:id" element={<OrderPage />} />
+                      <Route path="help" element={<Contact />} />
+                      <Route
+                        path="contact"
+                        element={<Navigate to="/help" replace />}
+                      />
+                      <Route path="repair" element={<Repair />} />
+                      <Route
+                        path="digital-meter-repair"
+                        element={
+                          <Navigate
+                            to="/repair#digital-meter-repairs"
+                            replace
+                          />
+                        }
+                      />
+                      <Route
+                        path="mobile-repair"
+                        element={
+                          <Navigate to="/repair#phone-repairs" replace />
+                        }
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                </React.Suspense>
+              </FavouritesProvider>
             </CartProvider>
           </ProductProvider>
         </CustomerProvider>

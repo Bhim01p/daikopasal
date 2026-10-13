@@ -1,6 +1,10 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import postgres from "postgres";
-import { normalizeStore, seedStore } from "./store.mjs";
+import {
+  normalizeStore,
+  seedStore,
+  upgradeStarterCatalogue,
+} from "./store.mjs";
 
 // A database row lock serializes stock/order changes across Vercel instances.
 // The transaction snapshot stays private to its asynchronous request context.
@@ -72,7 +76,9 @@ export function createDatabaseStore(
         await tx`set local lock_timeout = '15s'`;
         const [row] =
           await tx`select data from ${tx(schema)}.store where id = 1 for update`;
-        const current = { data: normalizeStore(row.data), dirty: false, tx };
+        const normalized = normalizeStore(row.data);
+        const upgraded = upgradeStarterCatalogue(normalized);
+        const current = { data: upgraded, dirty: upgraded !== normalized, tx };
         const result = await context.run(current, callback);
         if (current.dirty)
           await tx`update ${tx(schema)}.store

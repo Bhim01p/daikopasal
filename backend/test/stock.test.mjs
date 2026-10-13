@@ -4,8 +4,8 @@ import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID, scryptSync } from "node:crypto";
-import { createApp } from "../server.mjs";
-import { createStore } from "../store.mjs";
+import { createApp } from "./app-fixture.mjs";
+import { createStore } from "./app-fixture.mjs";
 
 test("stock reservations are atomic, retries are safe, cancellation returns units once and closed orders stay closed", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "me-stock-test-"));
@@ -246,7 +246,7 @@ test("legacy real listings need counts; old orders never manufacture returned st
   const directory = mkdtempSync(path.join(os.tmpdir(), "me-stock-migration-"));
   const file = path.join(directory, "store.json");
   const seed = JSON.parse(
-    readFileSync(new URL("../seed/products.json", import.meta.url), "utf8"),
+    readFileSync(new URL("./fixtures/products.json", import.meta.url), "utf8"),
   )[0];
   const legacyOrder = {
     id: "old-order",

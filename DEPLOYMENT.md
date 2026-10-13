@@ -38,7 +38,13 @@ If PowerShell blocks npm/npx scripts, use `npm.cmd` / `npx.cmd` instead. Vercel 
 - Vercel Hobby is for personal, non-commercial use. Use Pro for the commercial shop launch: https://vercel.com/docs/plans/hobby.
 - Photos are stored in Neon for this small prototype; hosted photos are limited to 4 MB each. Keep images compressed and monitor database storage.
 - Each API invocation can process a bounded email batch after its response. The authenticated cron job supplies a daily fallback at 02:00 UTC (07:45 Nepal time). This fits Hobby's scheduler limits but can delay retries until the next day when the site is idle. For Pro, change the cron schedule to `*/5 * * * *` and redeploy for retries every five minutes.
-- Phone login stays disabled on the hosted site until real SMS is configured. Guest pickup checkout remains available. Never enable development OTPs on Vercel.
+- For this update, set `CUSTOMER_AUTH_MODE=email` in Vercel Production/Preview and retain the existing Gmail settings. Keep `SMS_PROVIDER=disabled`. Redeploy after the environment change. Never enable development OTPs on Vercel.
 - The Neon integration test uses a unique temporary `qa_deployment_...` schema, completes order/photo checks with email sending disabled, then removes only that test schema. Shop data is kept separate.
 - Actual recipient inbox delivery, hosted checkout/status updates, photo retrieval after redeploy, and hosted cookie/session behavior must still be verified. Gmail SMTP authentication alone does not prove inbox delivery.
-- Never commit secrets or upload the private environment files. `.gitignore` and `.vercelignore` exclude them. Existing sample catalogue entries still need real inventory before commercial launch.
+- Never commit secrets or upload the private environment files. `.gitignore` and `.vercelignore` exclude them. The new sourced listings have temporary estimated prices and zero stock: confirm actual prices, unit condition and quantities before selling.
+
+## 13 October update
+
+No new credential names are required. The existing CUSTOMER_AUTH_MODE value must change from disabled to email to enable email-code login. The configure script now selects email mode, but it overwrites other settings from private laptop files; use a targeted Vercel dashboard change when other hosted settings already work. Existing unique-email phone accounts keep their IDs/orders after verification. Duplicate legacy emails require manual assistance.
+
+The one-time starter migration replaces only untouched examples; receipts and owner-edited/uploaded inventory are preserved. Do not reset the Neon database or remove its store row. SQL backup/recovery is still deferred.

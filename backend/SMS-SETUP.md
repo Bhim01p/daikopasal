@@ -1,3 +1,5 @@
+> Superseded on 13 October 2026: SMS was removed from the deployed website at the owner's request. Do not activate this historical checklist. See CUSTOMER-LOGIN.md for email-code login.
+
 # Connect real phone verification
 
 An optional Sparrow SMS adapter is implemented in `sms.mjs` and wired into the backend. It follows the provider's [outgoing SMS API](https://docs.sparrowsms.com/sms/outgoing_sendsms/). Its HTTPS endpoint was reachable without credentials. Automated checks use mock responses; actual handset delivery has not been verified.

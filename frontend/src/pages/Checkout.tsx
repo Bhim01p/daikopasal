@@ -120,7 +120,7 @@ export default function Checkout() {
                 ) : (
                   <p>
                     {t(
-                      "Complete your name and email before placing your order.",
+                      "Complete your name and phone number before placing your order.",
                     )}
                   </p>
                 )}
@@ -249,7 +249,7 @@ export default function Checkout() {
               <strong>{t("Pay at pickup")}</strong>
               <p>
                 {t(
-                  "Arrange payment at pickup. There is no online payment on this prototype.",
+                  "Arrange payment with the shop at pickup. Online payment is not available.",
                 )}
               </p>
             </div>
@@ -303,10 +303,12 @@ export default function Checkout() {
               <strong>
                 {items.some((item) =>
                   products.some(
-                    (p) => p.id === item.productId && isSampleProduct(p),
+                    (p) =>
+                      p.id === item.productId &&
+                      (p.priceIsEstimate || isSampleProduct(p)),
                   ),
                 )
-                  ? t("Sample total")
+                  ? t("Estimated total")
                   : t("Total")}
               </strong>
               <strong>{money(total)}</strong>
@@ -398,7 +400,7 @@ export function OrderSuccess({ id }: { id?: string }) {
         )}
         <p>
           {t(
-            "For an account order, log in with the number used to place it. For a guest order, use the original browser or contact the shop with your reference.",
+            "For an account order, log in with the email used for your account. For a guest order, use the original browser or contact the shop with your reference.",
           )}
         </p>
         <Link className="button dark" to="/cart">
@@ -527,8 +529,11 @@ export function OrderSuccess({ id }: { id?: string }) {
         ))}
         <div className="summary-line total">
           <strong>
-            {order.items.some((item) => isSampleProduct(item.product))
-              ? t("Sample total")
+            {order.items.some(
+              (item) =>
+                item.product.priceIsEstimate || isSampleProduct(item.product),
+            )
+              ? t("Estimated total")
               : t("Total")}
           </strong>
           <strong>{money(order.total)}</strong>

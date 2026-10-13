@@ -1,3 +1,4 @@
+import ProductTools from "./ProductTools";
 import SafeImage from "./SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
@@ -6,11 +7,7 @@ import WhatsAppIcon from "./WhatsAppIcon";
 import type { Product } from "../types";
 import { money, shop, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
-import {
-  isIllustration,
-  isSampleProduct,
-  productImageSource,
-} from "../utils/products";
+import { isIllustration, productImageSource } from "../utils/products";
 export function ProductImage({
   product,
   className = "",
@@ -40,13 +37,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   return (
     <article className="product-card">
+      <ProductTools product={product} />
       <Link to={`/product/${product.slug}`} className="product-image-link">
         <ProductImage product={product} />
         <span
           className={`badge ${product.category === "used" ? "used-badge" : ""}`}
         >
           {product.category === "used"
-            ? t(product.condition)
+            ? t(product.condition || "Inspection pending")
             : product.category === "new"
               ? t("New phone")
               : t(product.accessoryCategory)}
@@ -65,7 +63,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 v1: String(product.storage),
               })}
         </p>
-        {product.category === "used" && (
+        {product.category === "used" && product.battery !== undefined && (
           <p className="product-spec">
             {t("Battery health: ")}
             {product.battery}%
@@ -74,11 +72,15 @@ export default function ProductCard({ product }: { product: Product }) {
         <div
           className={`availability ${!product.available ? "unavailable" : ""}`}
         >
-          {isSampleProduct(product) ? t("Sample · ") : ""}
-          {product.available ? t("In stock") : t("Out of stock")}
+          {product.available ? t("In stock") : t("Contact for availability")}
         </div>
         <div className="price-row">
-          <strong>{money(product.price)}</strong>
+          <strong>
+            {money(product.price)}
+            {product.priceIsEstimate && (
+              <small className="price-estimate">{t("Estimated price")}</small>
+            )}
+          </strong>
           <button
             className="add-button"
             disabled={!product.available}

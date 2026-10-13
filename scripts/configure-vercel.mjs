@@ -29,7 +29,7 @@ try {
     EMAIL_FROM: saved.EMAIL_FROM,
     EMAIL_REPLY_TO: saved.EMAIL_REPLY_TO || saved.GMAIL_USER,
     COOKIE_SECURE: "true",
-    CUSTOMER_AUTH_MODE: "disabled",
+    CUSTOMER_AUTH_MODE: "email",
     SMS_PROVIDER: "disabled",
     CRON_SECRET: saved.CRON_SECRET || randomBytes(32).toString("hex"),
   };
@@ -86,7 +86,7 @@ try {
     "Configuration complete. Push the updated code or create a new deployment next.",
   );
   console.log(
-    "Customer SMS login stays disabled until a live SMS provider is configured. Guest pickup orders remain available.",
+    "Email-code login uses the configured mail service. SMS remains disabled. Guest pickup orders remain available.",
   );
 } catch (error) {
   // Only our own validation errors are shown; provider output and credentials stay private.

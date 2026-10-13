@@ -39,7 +39,26 @@ function integer(value, label, min, max) {
   return value;
 }
 function validateImage(value) {
-  const image = text(value, "Image", 1, 250);
+  const image = text(value, "Image", 1, 1000);
+  if (/^https:\/\//.test(image)) {
+    let url;
+    try {
+      url = new URL(image);
+    } catch {
+      throw new HttpError(400, "Invalid product image URL.");
+    }
+    if (
+      [
+        "i01.appmifile.com",
+        "i02.appmifile.com",
+        "cdsassets.apple.com",
+      ].includes(url.hostname) &&
+      !url.username &&
+      !url.password &&
+      /\.(png|jpe?g|webp)$/.test(url.pathname)
+    )
+      return image;
+  }
   if (
     !/^\/assets\/[a-zA-Z0-9_-]+\.(svg|png|jpe?g|webp)$/.test(image) &&
     !/^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(image)
@@ -72,6 +91,11 @@ export function validateProduct(input, existing) {
     );
   if (input.isSample !== undefined && typeof input.isSample !== "boolean")
     throw new HttpError(400, "Sample listing must be true or false.");
+  if (
+    input.priceIsEstimate !== undefined &&
+    typeof input.priceIsEstimate !== "boolean"
+  )
+    throw new HttpError(400, "Invalid price confirmation.");
   const image = validateImage(input.image);
   const suppliedImages =
     input.images === undefined
@@ -125,7 +149,9 @@ export function validateProduct(input, existing) {
     available: stockQuantity > 0,
     stockQuantity,
     stockVersion: existing ? existing.stockVersion + 1 : 0,
-    isSample: input.isSample ?? existing?.isSample ?? true,
+    isSample: input.isSample ?? existing?.isSample ?? false,
+    priceIsEstimate:
+      input.priceIsEstimate ?? existing?.priceIsEstimate ?? false,
     description: text(input.description, "Description", 1, 2000),
     descriptionNe: text(
       input.descriptionNe ?? existing?.descriptionNe ?? "",
@@ -136,12 +162,72 @@ export function validateProduct(input, existing) {
     specs,
     added: existing?.added || Date.now(),
   };
+  result.specVariant = text(
+    input.specVariant ?? existing?.specVariant ?? "",
+    "Model variant",
+    0,
+    180,
+  );
+  result.specSourceUrl = text(
+    input.specSourceUrl ?? existing?.specSourceUrl ?? "",
+    "Specification URL",
+    0,
+    500,
+  );
+  if (result.specSourceUrl) {
+    let url;
+    try {
+      url = new URL(result.specSourceUrl);
+    } catch {
+      throw new HttpError(400, "Use a valid HTTPS specification source URL.");
+    }
+    if (url.protocol !== "https:" || url.username || url.password)
+      throw new HttpError(400, "Use a valid HTTPS specification source URL.");
+  }
+  const emi = input.emi ?? existing?.emi;
+  if (emi !== undefined) {
+    if (
+      !emi ||
+      typeof emi !== "object" ||
+      Array.isArray(emi) ||
+      typeof emi.enabled !== "boolean"
+    )
+      throw new HttpError(400, "Invalid EMI terms.");
+    if (emi.enabled && category !== "accessory") {
+      if (
+        ![emi.annualRate, emi.minimumDownPercent, emi.fee].every(
+          Number.isFinite,
+        ) ||
+        emi.annualRate < 0 ||
+        emi.annualRate > 100 ||
+        emi.minimumDownPercent < 0 ||
+        emi.minimumDownPercent >= 100 ||
+        emi.fee < 0 ||
+        emi.fee > 10000000 ||
+        !["flat", "reducing"].includes(emi.method) ||
+        !Array.isArray(emi.months) ||
+        !emi.months.length ||
+        emi.months.length > 12 ||
+        new Set(emi.months).size !== emi.months.length ||
+        emi.months.some((m) => !Number.isInteger(m) || m < 1 || m > 120) ||
+        price <= 0
+      )
+        throw new HttpError(400, "Invalid EMI terms.");
+      result.emi = {
+        enabled: true,
+        annualRate: emi.annualRate,
+        minimumDownPercent: emi.minimumDownPercent,
+        fee: emi.fee,
+        method: emi.method,
+        months: [...emi.months].sort((a, b) => a - b),
+      };
+    } else result.emi = { enabled: false };
+  }
   if (category !== "accessory") {
     delete result.specs.Category;
     result.storage = integer(input.storage, "Storage", 16, 2048);
     if (input.ram !== undefined) result.ram = integer(input.ram, "RAM", 1, 64);
-    if (category === "new" && result.ram === undefined)
-      throw new HttpError(400, "RAM is required for new phones.");
+
     result.specs.Storage = `${result.storage} GB`;
     if (result.ram) result.specs.RAM = `${result.ram} GB`;
   } else {

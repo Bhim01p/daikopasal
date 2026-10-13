@@ -1,3 +1,4 @@
+import { referencePhones } from "../data/referencePhones";
 import { useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -8,7 +9,6 @@ import { accessoryCategories } from "../data/categories";
 import type { Category } from "../types";
 import ProductCard from "../components/ProductCard";
 import { money } from "../data/shop";
-import { isSampleProduct } from "../utils/products";
 export default function Catalogue({ category }: { category?: Category }) {
   const t = useT();
   const { products } = useProducts();
@@ -333,12 +333,28 @@ export default function Catalogue({ category }: { category?: Category }) {
           <div className="result-count">
             {result.length} {result.length === 1 ? t("product") : t("products")}{" "}
             {query && t("matching “{{query}}”", { query })}
-            <span>
-              {base.some(isSampleProduct)
-                ? t("Includes sample listings")
-                : t("Shop pickup available")}
-            </span>
+            <span>{t("Shop pickup available")}</span>
           </div>
+          {query &&
+            referencePhones.some((p) =>
+              p.name.toLowerCase().includes(query.toLowerCase()),
+            ) && (
+              <div className="reference-search-results">
+                <strong>{t("Manufacturer specifications")}</strong>
+                {referencePhones
+                  .filter((p) =>
+                    p.name.toLowerCase().includes(query.toLowerCase()),
+                  )
+                  .map((p) => (
+                    <Link
+                      key={p.id}
+                      to={"/compare?first=" + encodeURIComponent(p.id)}
+                    >
+                      {p.name} · {t("Compare")} ↗
+                    </Link>
+                  ))}
+              </div>
+            )}
           {active && (
             <div className="active-filters">
               <span>

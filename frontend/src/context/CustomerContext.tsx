@@ -10,7 +10,7 @@ import {
 import { api } from "../utils/api";
 import type { Customer } from "../types";
 
-type Mode = "disabled" | "development" | "sms";
+type Mode = "disabled" | "development" | "sms" | "email";
 const Context = createContext<{
   customer: Customer | null;
   checking: boolean;

@@ -15,7 +15,6 @@ import { stateMap } from "./state-map.mjs";
 import { bufferedResponse } from "./buffered-response.mjs";
 import { saveProductImage } from "./images.mjs";
 import { publicStaff, saveStaff } from "./staff.mjs";
-import { createSmsTransport } from "./sms.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
 import {
   createCustomerAuth,
@@ -81,22 +80,26 @@ function adminOrder(order) {
 export function createApp(options = {}) {
   const dataFile =
     options.dataFile || process.env.DATA_FILE || defaultStorePath;
-  const store = options.store || createStore(dataFile);
-  const customerAuth = createCustomerAuth(store, {
-    mode: options.customerAuthMode,
-    smsTransport:
-      options.smsTransport === undefined
-        ? createSmsTransport()
-        : options.smsTransport,
-    now: options.customerNow,
-  });
-  const emailWorker = createEmailWorker(
-    store,
+  const store =
+    options.store ||
+    createStore(dataFile, {
+      initialProducts: options.initialProducts,
+      migrateStarter: options.migrateStarter,
+    });
+  const emailTransport =
     options.emailTransport === undefined
       ? createEmailTransport()
-      : options.emailTransport,
-    { automatic: !options.serverless },
-  );
+      : options.emailTransport;
+  const customerAuth = createCustomerAuth(store, {
+    mode: options.customerAuthMode,
+    emailTransport,
+    // Legacy transport injection remains for regression tests; deployed app never creates an SMS sender.
+    smsTransport: options.smsTransport || null,
+    now: options.customerNow,
+  });
+  const emailWorker = createEmailWorker(store, emailTransport, {
+    automatic: !options.serverless,
+  });
   function sendQueuedEmails() {
     if (store.transaction) return; // Drain after the request has committed.
     void emailWorker

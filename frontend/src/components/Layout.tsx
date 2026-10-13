@@ -9,6 +9,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import {
+  Heart,
   ChevronDown,
   Menu,
   X,
@@ -23,6 +24,7 @@ import {
 import { shop, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
 import { useCustomer } from "../context/CustomerContext";
+import { useFavourites } from "../context/FavouritesContext";
 import HeaderDropdown from "./HeaderDropdown";
 import CartDialog from "./CartDialog";
 import AccountDialog from "./AccountDialog";
@@ -72,6 +74,7 @@ export default function Layout() {
     if (header.current) observer.observe(header.current);
     return () => observer.disconnect();
   }, []);
+  const { ids: favouriteIds } = useFavourites();
   const { customer } = useCustomer();
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
@@ -143,6 +146,10 @@ export default function Layout() {
                   </NavLink>
                 ))}
               </HeaderDropdown>
+              <NavLink to="/compare">{t("Compare")}</NavLink>
+              <NavLink to="/favourites" className="mobile-favourites-link">
+                {t("Favourites")}
+              </NavLink>
               <NavLink to="/help">{t("Help")}</NavLink>
               <NavLink to="/repair">{t("Repair")}</NavLink>
               <div className="mobile-menu-preferences">
@@ -175,6 +182,14 @@ export default function Layout() {
           <div className="nav-tools">
             <LanguageSwitch />
             <ThemeSwitch />
+            <Link
+              to="/favourites"
+              className="header-favourites"
+              aria-label={t("Favourites")}
+            >
+              <Heart size={20} />
+              <span>{favouriteIds.length}</span>
+            </Link>
             <HeaderDropdown
               label={t("Account")}
               trigger={<UserRound size={22} />}

@@ -135,10 +135,12 @@ export default function Cart() {
             <p className="summary-note">
               {items.some((item) =>
                 products.some(
-                  (p) => p.id === item.productId && isSampleProduct(p),
+                  (p) =>
+                    p.id === item.productId &&
+                    (p.priceIsEstimate || isSampleProduct(p)),
                 ),
               )
-                ? t("Includes sample prices. ")
+                ? t("Includes estimated prices. ")
                 : ""}
               {t("The shop will confirm your pickup before you visit.")}
             </p>
