@@ -16,7 +16,7 @@ type StaffAccount = {
   username: string;
   enabled: boolean;
   createdAt: string;
-  permissions?: { paymentQr?: boolean };
+  permissions?: { orders?: boolean; sales?: boolean; billing?: boolean; inventory?: boolean; repairs?: boolean; paymentQr?: boolean };
 };
 const emptyDraft = {
   id: "",
@@ -25,6 +25,11 @@ const emptyDraft = {
   password: "",
   confirmation: "",
   paymentQr: false,
+  orders: true,
+  sales: true,
+  billing: true,
+  inventory: true,
+  repairs: true,
 };
 
 export default function StaffManager({
@@ -91,6 +96,11 @@ export default function StaffManager({
           name: account.name,
           username: account.username,
           paymentQr: !!account.permissions?.paymentQr,
+          orders: account.permissions?.orders !== false,
+          sales: account.permissions?.sales !== false,
+          billing: account.permissions?.billing !== false,
+          inventory: account.permissions?.inventory !== false,
+          repairs: account.permissions?.repairs !== false,
         }
       : emptyDraft;
     baseline.current = JSON.stringify(next);
@@ -147,7 +157,7 @@ export default function StaffManager({
             ...(!draft.id || draft.password
               ? { password: draft.password }
               : {}),
-            permissions: { paymentQr: draft.paymentQr },
+            permissions: { orders: draft.orders, sales: draft.sales, billing: draft.billing, inventory: draft.inventory, repairs: draft.repairs, paymentQr: draft.paymentQr },
           }),
         },
       );
@@ -221,6 +231,9 @@ export default function StaffManager({
             )}
           </p>
           <label className="staff-permission"><input type="checkbox" checked={draft.paymentQr} onChange={(e) => setDraft({ ...draft, paymentQr: e.target.checked })} /> {t("Can manage payment QR")}</label>
+          <fieldset className="staff-permissions"><legend>{t("Access roles")}</legend>
+            {([['orders','Can manage orders'],['sales','Can view sales'],['billing','Can create bills'],['inventory','Can update inventory'],['repairs','Can manage repair tickets']] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={draft[key]} onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })} /> {t(label)}</label>)}
+          </fieldset>
           {loading ? (
             <p role="status">{t("Loading staff logins…")}</p>
           ) : accounts.length === 0 ? (

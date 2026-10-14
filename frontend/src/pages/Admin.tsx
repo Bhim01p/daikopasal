@@ -136,7 +136,7 @@ export default function Admin() {
   const { products, refresh } = useProducts();
   const [user, setUser] = useState<string | null>(null);
   const [role, setRole] = useState<"owner" | "staff">("staff");
-  const [permissions, setPermissions] = useState<{ paymentQr?: boolean }>({});
+  const [permissions, setPermissions] = useState<{ orders?: boolean; sales?: boolean; billing?: boolean; inventory?: boolean; repairs?: boolean; paymentQr?: boolean }>({});
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -549,7 +549,7 @@ export default function Admin() {
   }
   useEffect(() => {
     let active = true;
-    api<{ user: { username: string; role: "owner" | "staff"; permissions?: { paymentQr?: boolean } } | null }>(
+    api<{ user: { username: string; role: "owner" | "staff"; permissions?: typeof permissions } | null }>(
       "/admin/session",
     )
       .then((result) => {
@@ -589,7 +589,7 @@ export default function Admin() {
     setError("");
     try {
       const result = await api<{
-        user: { username: string; role: "owner" | "staff"; permissions?: { paymentQr?: boolean } };
+        user: { username: string; role: "owner" | "staff"; permissions?: typeof permissions };
       }>("/admin/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
@@ -845,7 +845,13 @@ export default function Admin() {
           >
             {adminSections
               .filter(
-                (section) => (section.value !== "staff" || role === "owner") && (section.value !== "qr" || role === "owner" || !!permissions.paymentQr),
+                (section) => {
+                  if (role === "owner") return true;
+                  if (section.value === "staff") return false;
+                  if (section.value === "qr") return !!permissions.paymentQr;
+                  const permission = section.value === "products" ? "inventory" : section.value;
+                  return permissions[permission as keyof typeof permissions] !== false;
+                },
               )
               .map((section) => {
                 const { value, label, Icon, panel, id } = section;

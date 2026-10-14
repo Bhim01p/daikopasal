@@ -38,6 +38,16 @@ import {
   validateCustomer,
   statuses,
 } from "./validation.mjs";
+
+function staffPermissionForRoute(route) {
+  if (route.startsWith("/api/admin/orders")) return "orders";
+  if (route.startsWith("/api/admin/sales")) return "sales";
+  if (route.startsWith("/api/admin/bills")) return "billing";
+  if (route.startsWith("/api/admin/products") || route.startsWith("/api/admin/catalogue") || route === "/api/admin/images") return "inventory";
+  if (route.startsWith("/api/admin/repairs")) return "repairs";
+  if (route.startsWith("/api/admin/payment-config")) return "paymentQr";
+  return null;
+}
 const backendRoot = path.dirname(fileURLToPath(import.meta.url));
 if (existsSync(path.join(backendRoot, ".env")))
   loadEnvFile(path.join(backendRoot, ".env"));
@@ -458,6 +468,9 @@ export function createApp(options = {}) {
       }
       if (route.startsWith("/api/admin/") && !session(request))
         throw new HttpError(401, "Please sign in to the admin area.");
+      const requiredStaffPermission = staffPermissionForRoute(route);
+      if (requiredStaffPermission && session(request)?.role !== "owner" && !session(request)?.permissions?.[requiredStaffPermission])
+        throw new HttpError(403, "Your staff role does not allow this area.");
       if (
         route === "/api/admin/staff" ||
         route.startsWith("/api/admin/staff/")
