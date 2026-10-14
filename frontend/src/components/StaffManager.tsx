@@ -16,6 +16,7 @@ type StaffAccount = {
   username: string;
   enabled: boolean;
   createdAt: string;
+  permissions?: { paymentQr?: boolean };
 };
 const emptyDraft = {
   id: "",
@@ -23,6 +24,7 @@ const emptyDraft = {
   username: "",
   password: "",
   confirmation: "",
+  paymentQr: false,
 };
 
 export default function StaffManager({
@@ -88,6 +90,7 @@ export default function StaffManager({
           id: account.id,
           name: account.name,
           username: account.username,
+          paymentQr: !!account.permissions?.paymentQr,
         }
       : emptyDraft;
     baseline.current = JSON.stringify(next);
@@ -144,6 +147,7 @@ export default function StaffManager({
             ...(!draft.id || draft.password
               ? { password: draft.password }
               : {}),
+            permissions: { paymentQr: draft.paymentQr },
           }),
         },
       );
@@ -216,6 +220,7 @@ export default function StaffManager({
               "Staff can manage orders and inventory. Only the main admin can create or change staff logins.",
             )}
           </p>
+          <label className="staff-permission"><input type="checkbox" checked={draft.paymentQr} onChange={(e) => setDraft({ ...draft, paymentQr: e.target.checked })} /> {t("Can manage payment QR")}</label>
           {loading ? (
             <p role="status">{t("Loading staff logins…")}</p>
           ) : accounts.length === 0 ? (

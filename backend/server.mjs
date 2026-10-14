@@ -386,7 +386,7 @@ export function createApp(options = {}) {
         const active = session(request);
         return json(response, 200, {
           user: active
-            ? { username: active.username, role: active.role }
+          ? { username: active.username, role: active.role, permissions: active.permissions || {} }
             : null,
           configured,
         });
@@ -440,14 +440,14 @@ export function createApp(options = {}) {
           username: accountUsername,
           role,
           ...(staff
-            ? { staffId: staff.id, accessVersion: staff.accessVersion }
+            ? { staffId: staff.id, accessVersion: staff.accessVersion, permissions: staff.permissions || {} }
             : {}),
           credentialHash: credential,
           expires: Date.now() + sessionDuration,
         });
         setCookie(response, token);
         return json(response, 200, {
-          user: { username: accountUsername, role },
+          user: { username: accountUsername, role, permissions: staff?.permissions || {} },
         });
       }
       if (route === "/api/admin/logout" && method === "POST") {
@@ -500,7 +500,7 @@ export function createApp(options = {}) {
       if (route === "/api/admin/payment-config" && method === "GET")
         return json(response, 200, { config: store.read().paymentConfig || { qrImage: "", instructions: "", accountName: "" } });
       if (route === "/api/admin/payment-config" && method === "PATCH") {
-        if (session(request)?.role !== "owner") throw new HttpError(403, "Only the main admin can manage payment QR settings.");
+        if (session(request)?.role !== "owner" && !session(request)?.permissions?.paymentQr) throw new HttpError(403, "You do not have permission to manage payment QR settings.");
         const input = await body(request);
         const config = {
           qrImage: typeof input.qrImage === "string" ? input.qrImage.slice(0, 1000) : (store.read().paymentConfig?.qrImage || ""),
@@ -511,7 +511,7 @@ export function createApp(options = {}) {
         return json(response, 200, { config });
       }
       if (route === "/api/admin/payment-config/image" && method === "POST") {
-        if (session(request)?.role !== "owner") throw new HttpError(403, "Only the main admin can manage payment QR settings.");
+        if (session(request)?.role !== "owner" && !session(request)?.permissions?.paymentQr) throw new HttpError(403, "You do not have permission to manage payment QR settings.");
         const uploaded = await saveProductImage(request, imageDirectory, store.saveImage ? store : undefined);
         const config = { ...(store.read().paymentConfig || {}), qrImage: uploaded.image };
         store.commit({ ...store.read(), paymentConfig: config });

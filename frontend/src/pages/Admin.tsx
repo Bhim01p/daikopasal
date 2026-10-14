@@ -26,7 +26,7 @@ import {
   ReceiptText,
   Wrench,
 } from "lucide-react";
-type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "repairs" | "sales";
+type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "qr" | "repairs" | "sales";
 const adminSections = [
   {
     value: "dashboard",
@@ -43,6 +43,7 @@ const adminSections = [
     id: "orders-tab",
   },
   { value: "billing", label: "Billing", Icon: ReceiptText, panel: "admin-billing", id: "billing-tab" },
+  { value: "qr", label: "Payment QR", Icon: ReceiptText, panel: "admin-payment-qr", id: "payment-qr-tab" },
   { value: "sales", label: "Sales", Icon: ReceiptText, panel: "admin-sales", id: "sales-tab" },
   { value: "repairs", label: "Repair tickets", Icon: Wrench, panel: "admin-repairs", id: "repairs-tab" },
   {
@@ -135,6 +136,7 @@ export default function Admin() {
   const { products, refresh } = useProducts();
   const [user, setUser] = useState<string | null>(null);
   const [role, setRole] = useState<"owner" | "staff">("staff");
+  const [permissions, setPermissions] = useState<{ paymentQr?: boolean }>({});
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -163,6 +165,8 @@ export default function Admin() {
       ? "orders"
       : parts[0] === "billing"
         ? "billing"
+      : parts[0] === "payment-qr"
+        ? "qr"
         : parts[0] === "repairs"
           ? "repairs"
       : parts[0] === "sales"
@@ -545,13 +549,14 @@ export default function Admin() {
   }
   useEffect(() => {
     let active = true;
-    api<{ user: { username: string; role: "owner" | "staff" } | null }>(
+    api<{ user: { username: string; role: "owner" | "staff"; permissions?: { paymentQr?: boolean } } | null }>(
       "/admin/session",
     )
       .then((result) => {
         if (active) {
           setUser(result.user?.username || null);
           setRole(result.user?.role || "staff");
+          setPermissions(result.user?.permissions || {});
         }
       })
       .catch((error) => {
@@ -584,13 +589,14 @@ export default function Admin() {
     setError("");
     try {
       const result = await api<{
-        user: { username: string; role: "owner" | "staff" };
+        user: { username: string; role: "owner" | "staff"; permissions?: { paymentQr?: boolean } };
       }>("/admin/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
       });
       setUser(result.user.username);
       setRole(result.user.role);
+      setPermissions(result.user.permissions || {});
       setPassword("");
     } catch (error) {
       fail(error);
@@ -839,7 +845,7 @@ export default function Admin() {
           >
             {adminSections
               .filter(
-                (section) => section.value !== "staff" || role === "owner",
+                (section) => (section.value !== "staff" || role === "owner") && (section.value !== "qr" || role === "owner" || !!permissions.paymentQr),
               )
               .map((section) => {
                 const { value, label, Icon, panel, id } = section;
@@ -890,6 +896,7 @@ export default function Admin() {
                             : "Inventory",
                     orders: "Orders",
                     billing: "Billing",
+                    qr: "Payment QR",
                     sales: "Sales",
                     repairs: "Repair tickets",
                     staff: "Staff logins",
@@ -1725,7 +1732,8 @@ export default function Admin() {
             <div className="sales-summary-cards"><div><span>{t("Total sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Website sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Shop sales")}</span><strong>{money(0)}</strong></div></div>
             <div className="admin-sales-history"><div className="admin-panel-title"><h3>{t("Recent sales")}</h3></div>{salesOrders.map((order) => <div className="admin-sales-row" key={order.id}><span><strong>#{order.id}</strong><small>{new Date(order.date).toLocaleString()} · {t("Website")}</small></span><span>{order.name}</span><span>{order.payment?.method === "ESEWA" ? "eSewa" : t("Pay at shop")}</span><strong>{money(order.total)}</strong><button className="button white" onClick={() => setSelectedOrderId(order.id)}>{t("View")}</button></div>)}{!salesOrders.length && <p>{t("No completed sales in this period.")}</p>}</div>
           </section>}
-          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} onStockChanged={refresh} /><AdminPaymentQr /></div>}
+          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} onStockChanged={refresh} /></div>}
+          {tab === "qr" && <div id="admin-payment-qr" role="tabpanel" aria-labelledby="payment-qr-tab"><AdminPaymentQr /></div>}
           {tab === "repairs" && <div id="admin-repairs" role="tabpanel" aria-labelledby="repairs-tab"><AdminRepairs /></div>}
           {tab === "orders" && (
             <section

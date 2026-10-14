@@ -11,6 +11,7 @@ export function publicStaff(account) {
     username: account.username,
     name: account.name,
     enabled: account.enabled,
+    permissions: account.permissions || { paymentQr: false },
     createdAt: account.createdAt,
   };
 }
@@ -63,6 +64,7 @@ export function saveStaff(store, ownerUsername, input, id) {
         ? existing.passwordHash
         : hashAdminPassword(input.password),
     accessVersion: (existing?.accessVersion || 0) + 1,
+    permissions: { paymentQr: input.permissions?.paymentQr === true },
     createdAt: existing?.createdAt || new Date().toISOString(),
   };
   // Client-supplied roles/owner credentials are deliberately never copied.
