@@ -2022,8 +2022,8 @@ export default function Admin() {
           value={closingOrder}
           busy={!!busy}
           onCancel={() => setClosingOrder(null)}
-          onConfirm={async (pickupReference) => {
-            if (await updateStatus(closingOrder.order, closingOrder.status, pickupReference))
+          onConfirm={async () => {
+            if (await updateStatus(closingOrder.order, closingOrder.status))
               setClosingOrder(null);
           }}
         />

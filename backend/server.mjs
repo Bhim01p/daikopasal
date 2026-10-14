@@ -1,6 +1,7 @@
 import http from "node:http";
 import {
   randomBytes,
+  randomInt,
   randomUUID,
   scryptSync,
   timingSafeEqual,
@@ -22,6 +23,7 @@ import {
   createCustomerAuth,
   publicCustomer,
   profileComplete,
+  normalizePhone,
 } from "./customer-auth.mjs";
 import {
   createOrderEmail,
@@ -78,6 +80,10 @@ function publicOrder(order) {
 function adminOrder(order) {
   const { receiptToken, ...receipt } = publicOrder(order);
   return { ...receipt, ...(order.handover ? { handover: order.handover } : {}) };
+}
+function publicRepairTicket(ticket) {
+  return { id: ticket.id, device: ticket.device, status: ticket.status,
+    history: ticket.history.map(({ status, date }) => ({ status, date })) };
 }
 async function sendBill(response, bill) {
   const pdf = await billPdf(bill);
@@ -322,6 +328,42 @@ export function createApp(options = {}) {
             .sort((a, b) => b.date.localeCompare(a.date)),
         });
       }
+      if (route === "/api/customer/repairs" && method === "GET") {
+        const { customer } = customerAuth.requireSession(request);
+        return json(response, 200, { tickets: store.read().repairTickets
+          .filter((ticket) => ticket.customerId === customer.id)
+          .slice().reverse().map(publicRepairTicket) });
+      }
+      if (route === "/api/customer/repairs/claim" && method === "POST") {
+        const { customer } = customerAuth.requireSession(request);
+        const input = await body(request);
+        const phone = normalizePhone(input?.phone);
+        const code = text(input?.code, "Repair code", 6, 6);
+        if (!/^\d{6}$/.test(code)) throw new HttpError(400, "Enter the six-digit repair code.");
+        const current = store.read();
+        const now = Date.now();
+        const limits = current.repairClaimLimits || {};
+        const limit = limits[phone];
+        if (limit && limit.count >= 5 && now - limit.since < 15 * 60_000)
+          throw new HttpError(429, "Too many attempts. Try again in 15 minutes.");
+        const ticket = current.repairTickets.find((entry) => {
+          try { return normalizePhone(entry.phone) === phone && entry.claimCode && equal(entry.claimCode, code) && !entry.customerId; }
+          catch { return false; }
+        });
+        if (!ticket) {
+          store.commit({ ...current, repairClaimLimits: { ...limits, [phone]:
+            limit && now - limit.since < 15 * 60_000
+              ? { since: limit.since, count: limit.count + 1 }
+              : { since: now, count: 1 } } });
+          throw new HttpError(404, "Repair not found. Check the phone number and code.");
+        }
+        const updated = { ...ticket, customerId: customer.id, claimCode: null };
+        const nextLimits = { ...limits };
+        delete nextLimits[phone];
+        store.commit({ ...current, repairClaimLimits: nextLimits,
+          repairTickets: current.repairTickets.map((entry) => entry.id === ticket.id ? updated : entry) });
+        return json(response, 200, { ticket: publicRepairTicket(updated) });
+      }
       const customerBill = route.match(/^\/api\/orders\/([^/]+)\/bill$/);
       if (customerBill && method === "GET") {
         const order = store.read().orders.find((item) => item.id === customerBill[1]);
@@ -338,9 +380,7 @@ export function createApp(options = {}) {
         const ticket = store.read().repairTickets.find((item) => item.id === repairLookup[1]);
         if (!ticket || !equal(request.headers["x-repair-token"] || "", ticket.token))
           throw new HttpError(404, "Repair ticket not found.");
-        const publicTicket = { id: ticket.id, device: ticket.device, status: ticket.status,
-          history: ticket.history.map(({ status, date }) => ({ status, date })) };
-        return json(response, 200, { ticket: publicTicket });
+        return json(response, 200, { ticket: publicRepairTicket(ticket) });
       }
       if (route === "/api/admin/session" && method === "GET") {
         const active = session(request);
@@ -552,8 +592,9 @@ export function createApp(options = {}) {
         const ticket = {
           id: `ME-R${String(current.repairTickets.length + 1).padStart(6, "0")}`,
           token: randomBytes(16).toString("hex"),
+          claimCode: String(randomInt(100000, 1000000)),
           customerName: text(input.customerName, "Customer name", 2, 100),
-          phone: text(input.phone, "Phone", 10, 20),
+          phone: normalizePhone(input.phone),
           device: text(input.device, "Device", 2, 120),
           problem: text(input.problem, "Problem", 2, 1000),
           status: "Received",
@@ -563,6 +604,16 @@ export function createApp(options = {}) {
         };
         store.commit({ ...current, repairTickets: [...current.repairTickets, ticket] });
         return json(response, 201, { ticket });
+      }
+      const repairCode = route.match(/^\/api\/admin\/repairs\/([^/]+)\/code$/);
+      if (repairCode && method === "POST") {
+        const current = store.read();
+        const ticket = current.repairTickets.find((item) => item.id === repairCode[1]);
+        if (!ticket) throw new HttpError(404, "Repair ticket not found.");
+        if (ticket.customerId) throw new HttpError(409, "Repair is already linked to an account.");
+        const updated = { ...ticket, claimCode: String(randomInt(100000, 1000000)) };
+        store.commit({ ...current, repairTickets: current.repairTickets.map((item) => item.id === ticket.id ? updated : item) });
+        return json(response, 200, { ticket: updated });
       }
       const repairUpdate = route.match(/^\/api\/admin\/repairs\/([^/]+)$/);
       if (repairUpdate && method === "PATCH") {
@@ -614,8 +665,6 @@ export function createApp(options = {}) {
           );
         if (input.status === "Completed" && order.status !== "Ready for pickup")
           throw new HttpError(409, "Mark the order ready before pickup.");
-        if (input.status === "Completed" && input?.pickupReference !== order.id)
-          throw new HttpError(400, "Verify the customer's order reference before handover.");
         const releaseStock =
           input.status === "Cancelled" && order.stockReserved === true;
         const products = releaseStock

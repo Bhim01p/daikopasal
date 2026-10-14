@@ -50,7 +50,7 @@ test("stock reservations are atomic, retries are safe, cancellation returns unit
   const current = async (id) =>
     (await catalogue()).find((product) => product.id === id);
   const status = (id, value) =>
-    request(`/api/admin/orders/${id}`, "PATCH", { status: value, ...(value === "Completed" ? { pickupReference: id } : {}) }, true);
+    request(`/api/admin/orders/${id}`, "PATCH", { status: value }, true);
   const orderBody = (items, total) => ({
     name: "Stock Customer",
     phone: "9806600444",

@@ -53,8 +53,10 @@ async function avatarBlob(file: File): Promise<Blob> {
 }
 export default function AccountSettings({
   section = "all",
+  onPasswordSaved,
 }: {
   section?: "all" | "photo" | "password";
+  onPasswordSaved?: () => void;
 }) {
   const { customer, setCustomer, logout } = useCustomer();
   const t = useT(),
@@ -120,6 +122,7 @@ export default function AccountSettings({
       setPassword("");
       setConfirm("");
       setNotice("Password saved. Other sessions have been signed out.");
+      onPasswordSaved?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Please try again.");
     } finally {

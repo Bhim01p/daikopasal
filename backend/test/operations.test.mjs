@@ -25,10 +25,9 @@ test("admin bill, customer PDF, repair tracking and pickup handover enforce acce
     const product = (await call("/api/products")).data.products.find((p) => p.available && !p.priceIsEstimate);
     const initialStock = product.stockQuantity;
     const order = (await call("/api/orders", "POST", { name: "Guest Buyer", phone: "9806600444", email: "guest@example.com", items: [{ productId: product.id, quantity: 1 }], expectedTotal: product.price, requestId: randomUUID() })).data.order;
-    assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Completed", pickupReference: order.id }, true)).status, 409);
+    assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Completed" }, true)).status, 409);
     assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Ready for pickup" }, true)).status, 200);
-    assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Completed", pickupReference: "wrong" }, true)).status, 400);
-    assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Completed", pickupReference: order.id }, true)).status, 200);
+    assert.equal((await call(`/api/admin/orders/${order.id}`, "PATCH", { status: "Completed" }, true)).status, 200);
     assert.equal((await call(`/api/orders/${order.id}/bill`, "GET", undefined, false, { "X-Order-Token": order.receiptToken })).status, 404);
     assert.equal((await call("/api/admin/bills", "POST", { orderId: order.id }, true)).status, 201);
     assert.equal((await call(`/api/orders/${order.id}/bill`)).status, 404);

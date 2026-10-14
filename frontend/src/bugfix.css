@@ -1,5 +1,51 @@
 :root { background: var(--sky-background); }
 body, #root { min-height: 100dvh; background: var(--sky-background); }
+.home-slide-links { display:flex; flex-wrap:wrap; gap:10px; }
+.customer-repairs { margin:20px 0; padding:20px; border:1px solid var(--sky-border); border-radius:12px; background:var(--sky-surface); }
+.customer-repairs h2 { margin:0 0 12px; }
+.customer-repairs form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; }
+.customer-repairs form h3, .customer-repairs form p { grid-column:1/-1; margin:0; }
+.customer-repairs form label { display:grid; gap:6px; }
+.customer-repairs form input { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-background); color:var(--sky-text); }
+.customer-repairs form .button { justify-self:start; }
+.legacy-repair-tracking { margin-top:24px; }
+.legacy-repair-tracking summary { cursor:pointer; }
+.repair-current-status { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; padding:12px 14px; border:1px solid color-mix(in srgb, var(--sky-accent) 45%, var(--sky-border)); border-radius:9px; background:color-mix(in srgb, var(--sky-accent) 10%, var(--sky-surface)); }
+.repair-current-status small { color:var(--sky-muted); font-weight:600; }
+.repair-current-status strong { color:var(--sky-accent); font-size:16px; }
+.repair-device-name { display:block; font-size:18px; }
+:root body .password-sheet,
+:root body .order-close-dialog { position:fixed; inset:0; margin:auto; }
+:root body .quick-stock button { background:var(--sky-surface); border-color:var(--sky-border); color:var(--sky-text); }
+:root body .quick-stock button:hover:not(:disabled),
+:root body .quick-stock button:focus-visible { background:var(--sky-input); border-color:var(--sky-accent); color:var(--sky-text); }
+:root body .quick-stock button:disabled { opacity:.55; }
+@media (max-width: 767px) {
+  .customer-repairs { padding:16px; }
+  .customer-repairs form { grid-template-columns:1fr; }
+  :root:has(.home-carousel), body:has(.home-carousel) { overscroll-behavior-y: none; }
+  :root body:has(.home-carousel) { padding-bottom: 0; }
+  :root body:has(.home-carousel) footer { padding-bottom: calc(20px + var(--home-dock-height, 76px) + env(safe-area-inset-bottom)); }
+  :root body .home-carousel .home-slide-links { gap:8px; }
+  :root body .home-carousel .home-slide-links .button { padding-inline:11px; font-size:12px; }
+  :root body .admin-header { padding-block:12px; gap:10px; }
+  :root body .admin-header .brand { font-size:15px; }
+  :root body .admin-header > div { display:grid; grid-template-columns:minmax(0,1fr) auto auto auto; gap:7px; align-items:center; }
+  :root body .admin-header .button { min-width:0; min-height:42px; padding:7px; font-size:12px; gap:4px; }
+  :root body .admin-layout { padding-top:10px; }
+  :root body .admin-sidebar { margin-bottom:12px; padding:8px; }
+  :root body .admin-identity { padding:0 4px 6px; }
+  :root body .admin-side-menu { display:flex; gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:thin; padding-bottom:4px; }
+  :root body .admin-side-menu button { width:auto; min-width:max-content; min-height:40px; padding:7px 10px; white-space:nowrap; font-size:13px; }
+  :root body .admin-layout .admin-shell { padding-top:0; }
+  :root body .admin-layout .admin-heading { gap:8px; }
+  :root body .admin-layout .admin-heading p { margin-block:4px 8px; }
+  :root body .order-close-dialog { width:calc(100% - 24px); max-width:520px; padding:20px; }
+  :root body .order-close-dialog label { display:grid; gap:8px; margin:18px 0; }
+  :root body .order-close-dialog label input { display:block; width:100%; min-width:0; min-height:44px; }
+  :root body .order-close-dialog .button-row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  :root body .order-close-dialog .button-row button { min-width:0; width:100%; padding-inline:8px; }
+}
 .shop-loading-screen {
   min-height: 100dvh;
   padding: clamp(32px, 8vw, 80px) 20px;

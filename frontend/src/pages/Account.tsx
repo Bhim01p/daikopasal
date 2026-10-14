@@ -18,11 +18,12 @@ import { useCustomer } from "../context/CustomerContext";
 import { api } from "../utils/api";
 import type { Customer } from "../types";
 import AccountSettings from "../components/AccountSettings";
+import CustomerRepairs from "../components/CustomerRepairs";
 import { whatsapp } from "../data/shop";
 
 function destination(value: string | null) {
   return value &&
-    /^\/(checkout|my-orders|account|order\/[a-zA-Z0-9-]+)$/.test(value)
+    /^\/(checkout|my-orders|account|repair|order\/[a-zA-Z0-9-]+)$/.test(value)
     ? value
     : "/account";
 }
@@ -112,9 +113,8 @@ export function Login({
     }
     const finish = (user: Customer) => {
       setCustomer(user);
-      if (embedded && !recovering) onComplete?.();
-      else
-        navigate(recovering ? "/account?security=1" : next, { replace: true });
+      if (embedded) onComplete?.();
+      navigate(recovering ? "/account?security=1" : next, { replace: true });
     };
     setBusy(true);
     setError("");
@@ -624,6 +624,7 @@ export default function Account({
             </a>
           </div>
         </div>
+        <CustomerRepairs />
         {security && (
           <dialog
             ref={sheet}
@@ -654,7 +655,10 @@ export default function Account({
             >
               <X size={20} />
             </button>
-            <AccountSettings section="password" />
+            <AccountSettings
+              section="password"
+              onPasswordSaved={() => navigate("/account", { replace: true })}
+            />
           </dialog>
         )}
       </section>

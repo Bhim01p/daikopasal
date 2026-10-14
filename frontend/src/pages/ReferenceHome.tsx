@@ -8,28 +8,22 @@ export default function ReferenceHome() {
   const t = useT();
   const slides = [
     {
-      title: "New phones",
-      description: "Find your next phone.",
-      to: "/mobiles",
+      title: "New and used phones",
+      description: "Find your next phone or a pre-owned option.",
+      links: [{ to: "/mobiles", label: "New phones" }, { to: "/second-hand", label: "Used phones" }],
       image: "/assets/catalogue-iphone-15.png",
     },
     {
-      title: "Used phones",
-      description: "More options for your budget",
-      to: "/second-hand",
-      image: "/assets/catalogue-redmi-9.png",
+      title: "Phone and meter repair",
+      description: "Help for your phone or vehicle meter.",
+      links: [{ to: "/repair#phone-repairs", label: "Phone repair" }, { to: "/repair#digital-meter-repairs", label: "Digital meter repair" }],
+      image: "/assets/pulsar-meter-repair.png",
     },
     {
       title: "Accessories",
       description: "Everyday essentials",
-      to: "/accessories",
+      links: [{ to: "/accessories", label: "Explore category" }],
       image: "/assets/catalogue-redmi-buds-6-play.jpg",
-    },
-    {
-      title: "Digital meter repair",
-      description: "Bike or vehicle meter trouble? Let us take a look.",
-      to: "/repair",
-      image: "/assets/pulsar-meter-repair.png",
     },
   ];
   const [index, setIndex] = useState(0);
@@ -62,13 +56,12 @@ export default function ReferenceHome() {
   const suppress = useRef(0);
   const paused = useRef(false);
   const pauseUntil = useRef(0);
-  const move = (n: number) => { pauseUntil.current = Date.now() + 8000; setIndex((i) => (i + n + slides.length) % slides.length); };
+  const move = (n: number) => { pauseUntil.current = Date.now() + 3000; setIndex((i) => (i + n + slides.length) % slides.length); };
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
       if (document.visibilityState === "visible" && !drag.current && !paused.current && Date.now() > pauseUntil.current)
-        setIndex((i) => (i + 1) % 4);
-    }, 5000);
+        setIndex((i) => (i + 1) % slides.length);
+    }, 3000);
     return () => window.clearInterval(timer);
   }, []);
   const slide = slides[index];
@@ -81,9 +74,9 @@ export default function ReferenceHome() {
         aria-roledescription="carousel"
         aria-label={t("Shop categories")}
         tabIndex={0}
-        onMouseEnter={() => { paused.current = true; }}
+        onMouseEnter={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) paused.current = true; }}
         onMouseLeave={() => { paused.current = false; }}
-        onFocusCapture={() => { paused.current = true; }}
+        onFocusCapture={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) paused.current = true; }}
         onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) paused.current = false; }}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
@@ -92,9 +85,10 @@ export default function ReferenceHome() {
           }
         }}
         onPointerDown={(e) => {
-          if (e.button === 0) { drag.current = { x: e.clientX, y: e.clientY }; pauseUntil.current = Date.now() + 8000; }
+          if (e.pointerType !== "touch" && e.button === 0) { drag.current = { x: e.clientX, y: e.clientY }; }
         }}
         onPointerMove={(e) => {
+          if (e.pointerType === "touch") return;
           const d = drag.current;
           if (
             d &&
@@ -106,6 +100,7 @@ export default function ReferenceHome() {
           }
         }}
         onPointerUp={(e) => {
+          if (e.pointerType === "touch") return;
           const d = drag.current;
           drag.current = null;
           if (
@@ -118,7 +113,21 @@ export default function ReferenceHome() {
         onPointerCancel={() => {
           drag.current = null;
         }}
-        onLostPointerCapture={() => {
+        onTouchStart={(e) => {
+          const touch = e.touches[0];
+          drag.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
+        }}
+        onTouchEnd={(e) => {
+          const start = drag.current;
+          const touch = e.changedTouches[0];
+          drag.current = null;
+          if (start && touch && Math.abs(touch.clientX - start.x) > 45 && Math.abs(touch.clientX - start.x) > Math.abs(touch.clientY - start.y) * 1.25) {
+            suppress.current = Date.now() + 500;
+            move(touch.clientX < start.x ? 1 : -1);
+          }
+        }}
+        onLostPointerCapture={(e) => {
+          if (e.pointerType === "touch") return;
           drag.current = null;
         }}
         onClickCapture={(e) => {
@@ -129,10 +138,10 @@ export default function ReferenceHome() {
         }}
       >
         <div
-          className={`hero reference-banner-main ${index === 1 ? "used-slide" : ""} ${index === 3 ? "repair-slide" : ""}`}
+          className={`hero reference-banner-main ${index === 1 ? "repair-slide" : ""}`}
           role="group"
           aria-roledescription="slide"
-          aria-label={`${index + 1} / 4: ${t(slide.title)}`}
+          aria-label={`${index + 1} / ${slides.length}: ${t(slide.title)}`}
         >
           <SafeImage
             className="reference-banner-photo"
@@ -145,9 +154,7 @@ export default function ReferenceHome() {
             <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
             <h1>{t(slide.title)}</h1>
             <p>{t(slide.description)}</p>
-            <Link className="button dark" to={slide.to}>
-              {t(index === 3 ? "Ask about meter repair" : "Explore category")} <ArrowRight size={17} />
-            </Link>
+            <div className="home-slide-links">{slide.links.map((link) => <Link key={link.to} className="button dark" to={link.to}>{t(link.label)} <ArrowRight size={17} /></Link>)}</div>
           </div>
         </div>
       </section>

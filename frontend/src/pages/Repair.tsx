@@ -2,6 +2,7 @@ import { useT } from "../context/LanguageContext";
 import Services from "./Services";
 import { useState, type FormEvent } from "react";
 import { api } from "../utils/api";
+import CustomerRepairs from "../components/CustomerRepairs";
 
 export default function Repair() {
   const t = useT();
@@ -28,6 +29,8 @@ export default function Repair() {
       </div>
       <Services />
       <section className="container repair-tracking">
+        <CustomerRepairs />
+        <details className="legacy-repair-tracking"><summary>{t("Have an older tracking code?")}</summary>
         <h2>{t("Track a repair")}</h2>
         <p>{t("Use the ticket reference and private tracking code given by the shop.")}</p>
         <form onSubmit={(event) => void track(event)}>
@@ -37,6 +40,7 @@ export default function Repair() {
         </form>
         {error && <p role="alert">{t(error)}</p>}
         {ticket && <div className="repair-status-card"><strong>{ticket.id} · {ticket.device}</strong><p>{t(ticket.status)}</p><ol>{ticket.history.map((event, index) => <li key={index}>{t(event.status)} · {new Date(event.date).toLocaleDateString()}</li>)}</ol></div>}
+        </details>
       </section>
     </>
   );
