@@ -1,4 +1,3 @@
-import { useT } from "./LanguageContext";
 import {
   createContext,
   useContext,
@@ -11,10 +10,12 @@ import type { Product } from "../types";
 import { api } from "../utils/api";
 const ProductContext = createContext<{
   products: Product[];
+  loading: boolean;
+  error: string;
+  retry: () => Promise<void>;
   refresh: () => Promise<void>;
 } | null>(null);
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const t = useT();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,25 +44,8 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
   }, [load, refresh]);
-  if (loading)
-    return (
-      <div className="container empty-state" role="status">
-        <h1>{t("Opening the shop…")}</h1>
-        <p>{t("Loading the current catalogue.")}</p>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="container empty-state">
-        <h1>{t("Let’s reconnect.")}</h1>
-        <p role="alert">{t(error)}</p>
-        <button className="button dark" onClick={() => void load()}>
-          {t("Try again")}
-        </button>
-      </div>
-    );
   return (
-    <ProductContext.Provider value={{ products, refresh }}>
+    <ProductContext.Provider value={{ products, loading, error, retry: load, refresh }}>
       {children}
     </ProductContext.Provider>
   );

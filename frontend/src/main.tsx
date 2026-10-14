@@ -43,6 +43,7 @@ import "./sky-theme.css";
 import "./workflow.css";
 import "./ruby-theme.css";
 import "./operations.css";
+import "./bugfix.css";
 import { ThemeProvider } from "./context/ThemeContext";
 function RouteLoading() {
   const t = useT();
@@ -51,6 +52,16 @@ function RouteLoading() {
       {t("Opening the shop…")}
     </div>
   );
+}
+function ProductRouteGate({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const { loading, error, retry } = useProducts();
+  const t = useT();
+  const needsCatalogue = ["/shop", "/mobiles", "/second-hand", "/accessories", "/search", "/cart", "/checkout", "/favourites"].includes(pathname) || pathname.startsWith("/product/");
+  if (!needsCatalogue) return children;
+  if (loading) return <div className="shop-loading-screen" role="status"><h1>{t("Opening the shop…")}</h1><p>{t("Loading the current catalogue.")}</p></div>;
+  if (error) return <div className="shop-loading-screen" role="alert"><h1>{t("Let’s reconnect.")}</h1><p>{t(error)}</p><button className="button dark" onClick={() => void retry()}>{t("Try again")}</button></div>;
+  return children;
 }
 function Meta() {
   const t = useT();
@@ -134,6 +145,7 @@ function App() {
             <CartProvider>
               <FavouritesProvider>
                 <Meta />
+                <ProductRouteGate>
                 <React.Suspense fallback={<RouteLoading />}>
                   <Routes>
                     <Route
@@ -196,6 +208,7 @@ function App() {
                     </Route>
                   </Routes>
                 </React.Suspense>
+                </ProductRouteGate>
               </FavouritesProvider>
             </CartProvider>
           </ProductProvider>

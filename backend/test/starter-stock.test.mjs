@@ -1,6 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { seedStore, upgradeStarterStock } from "../store.mjs";
+import { seedStore, upgradeStarterStock, removeStarterListings } from "../store.mjs";
+
+test("supplied shop listings are removed once while owner items and old order/bill snapshots remain", () => {
+  const original = seedStore();
+  const owner = { ...original.products[0], id: "owner-created-123", name: "Owner phone" };
+  const order = { id: "order-1", items: [{ product: original.products[0], quantity: 1 }] };
+  const bill = { id: "bill-1", lines: [{ name: original.products[0].name, quantity: 1 }] };
+  const next = removeStarterListings({ ...original, products: [...original.products, owner], orders: [order], bills: [bill] });
+  assert.deepEqual(next.products, [owner]);
+  assert.deepEqual(next.orders, [order]);
+  assert.deepEqual(next.bills, [bill]);
+  assert.strictEqual(removeStarterListings(next), next);
+});
 
 test("opening stock gives exactly one to untouched starter products once", () => {
   const original = seedStore();

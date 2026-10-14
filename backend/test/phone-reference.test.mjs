@@ -91,7 +91,7 @@ test("catalogue migration is idempotent, preserves custom references and leaves 
   );
 });
 
-test("Neon transaction persists reference migration once and public API serves it without changing products", async () => {
+test("Neon transaction keeps comparison references while removing supplied shop products", async () => {
   let saved = seedStore(),
     updates = 0;
   const sql = Object.assign(() => [], {
@@ -137,7 +137,7 @@ test("Neon transaction persists reference migration once and public API serves i
     assert.equal(phones.length, 85);
     assert.ok(phones.every((p) => !("raw" in p)));
     const { products } = await (await fetch(base + "/api/products")).json();
-    assert.deepEqual(products, upgradeStarterStock(seedStore()).products);
+    assert.deepEqual(products, []);
   } finally {
     await new Promise((resolve) => app.close(resolve));
   }

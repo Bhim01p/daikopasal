@@ -67,15 +67,15 @@ export default function AccountDialog({ onClose }: { onClose: () => void }) {
           onClose();
       }}
     >
-      <button
-        className="icon-button dialog-close"
-        aria-label={t("Close account window")}
-        onClick={onClose}
-      >
-        <X size={22} />
-      </button>
-      <div className="dialog-language">
-        <LanguageSwitch />
+      <div className="account-dialog-topbar">
+        <div className="dialog-language"><LanguageSwitch /></div>
+        <button
+          className="icon-button dialog-close"
+          aria-label={t("Close account window")}
+          onClick={onClose}
+        >
+          <X size={22} />
+        </button>
       </div>
       <Login embedded onComplete={onClose} />
     </dialog>

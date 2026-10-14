@@ -19,6 +19,7 @@ export default function Services() {
       <section id="phone-repairs" className="help-service">
         <Smartphone size={28} />
         <div>
+          <img className="repair-section-photo" src="/assets/phone-repair-workbench.png" alt={t("Phone repair")}/>
           <h2>{t("Phone repair")}</h2>
           <p>
             {t(
@@ -63,6 +64,7 @@ export default function Services() {
       <section id="digital-meter-repairs" className="help-service">
         <Bike size={28} />
         <div>
+          <img className="repair-section-photo" src="/assets/pulsar-meter-repair.png" alt={t("Digital meter repair")}/>
           <h2>{t("Digital meter repair")}</h2>
           <p>
             {t(

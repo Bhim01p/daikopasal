@@ -25,10 +25,11 @@ export default function CartDialog({ onClose }: { onClose: () => void }) {
       className="account-dialog cart-dialog"
       aria-label={t("Your shopping cart.")}
       onCancel={onClose}
-      onClickCapture={(event) => {
-        if ((event.target as Element).closest("a[href]")) onClose();
-      }}
       onClick={(event) => {
+        if ((event.target as Element).closest("a[href]")) {
+          onClose();
+          return;
+        }
         if (event.target !== event.currentTarget) return;
         const rect = event.currentTarget.getBoundingClientRect();
         if (

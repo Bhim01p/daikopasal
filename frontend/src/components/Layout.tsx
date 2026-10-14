@@ -127,7 +127,7 @@ export default function Layout() {
       </a>
       <header
         ref={header}
-        className={`site-header ${["/mobiles", "/second-hand", "/accessories", "/search"].includes(location.pathname) ? "catalogue-header" : ""}`}
+        className={`site-header ${["/mobiles", "/second-hand", "/accessories", "/search"].includes(location.pathname) ? "catalogue-header" : ""} ${!showSearch ? "non-shopping-header" : ""}`}
       >
         <div className="container nav-row">
           <Brand />
@@ -411,7 +411,10 @@ export default function Layout() {
           </span>
         </NavLink>
         <button
-          onClick={() => setAccountOpen(true)}
+          onClick={() => {
+            setAccountOpen(false);
+            navigate(customer ? "/account" : "/login?next=/account");
+          }}
           aria-haspopup="dialog"
           className={
             accountOpen ||

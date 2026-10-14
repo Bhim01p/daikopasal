@@ -72,6 +72,19 @@ export function upgradeStarterStock(current) {
     }),
   };
 }
+// Remove only product IDs supplied by this project. Orders and bills retain their
+// own item snapshots, while owner-created listings use independent IDs.
+export function removeStarterListings(current) {
+  if (current.ownerCatalogueRevision === 1) return current;
+  const supplied = new Set(seedStore().products.map((product) => product.id));
+  const legacy = JSON.parse(readFileSync(new URL("./seed/legacy-signatures.json", import.meta.url), "utf8"));
+  for (const product of legacy) supplied.add(product.id);
+  return {
+    ...current,
+    ownerCatalogueRevision: 1,
+    products: current.products.filter((product) => !supplied.has(product.id)),
+  };
+}
 export function normalizeStore(current) {
   if (!Array.isArray(current.products) || !Array.isArray(current.orders))
     throw new Error(
@@ -130,10 +143,10 @@ export function createStore(
 ) {
   let current = existsSync(file)
     ? normalizeStore(JSON.parse(readFileSync(file, "utf8")))
-    : seedStore(initialProducts);
+    : seedStore(initialProducts ?? (migrateStarter ? [] : undefined));
   const previous = current;
   if (migrateStarter)
-    current = upgradeStarterStock(upgradeStarterCatalogue(current));
+    current = removeStarterListings(upgradeStarterStock(upgradeStarterCatalogue(current)));
   current = upgradePhoneCatalogue(current);
   function commit(next) {
     mkdirSync(path.dirname(file), { recursive: true });

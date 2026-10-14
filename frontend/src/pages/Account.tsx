@@ -1,4 +1,4 @@
-import { useT } from "../context/LanguageContext";
+import { LanguageSwitch, useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -24,7 +24,7 @@ function destination(value: string | null) {
   return value &&
     /^\/(checkout|my-orders|account|order\/[a-zA-Z0-9-]+)$/.test(value)
     ? value
-    : "/my-orders";
+    : "/account";
 }
 export function Login({
   embedded = false,
@@ -180,6 +180,7 @@ export function Login({
     <div
       className={`container account-page ${embedded ? "embedded-account" : ""}`}
     >
+      {!embedded && <div className="login-language"><LanguageSwitch /></div>}
       <div className="account-heading">
         <span className="eyebrow">{t("Your shop account")}</span>
         <h1>{t("Welcome back.")}</h1>

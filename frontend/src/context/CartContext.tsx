@@ -7,7 +7,6 @@ import {
 } from "react";
 import type { CartItem } from "../types";
 import { useProducts } from "./ProductContext";
-import type { Product } from "../types";
 import { purchaseLimit } from "../utils/products";
 const CartContext = createContext<{
   items: CartItem[];
@@ -19,7 +18,7 @@ const CartContext = createContext<{
   notice: string;
   dismiss: () => void;
 } | null>(null);
-function readCart(products: Product[]): CartItem[] {
+function readCart(): CartItem[] {
   try {
     const data: unknown = JSON.parse(localStorage.getItem("me-cart") || "[]");
     return Array.isArray(data)
@@ -28,7 +27,6 @@ function readCart(products: Product[]): CartItem[] {
             (i): i is CartItem =>
               !!i &&
               typeof i.productId === "string" &&
-              products.some((p) => p.id === i.productId && p.available) &&
               Number.isInteger(i.quantity) &&
               i.quantity > 0 &&
               i.quantity <= 10,
@@ -44,10 +42,11 @@ function readCart(products: Product[]): CartItem[] {
   }
 }
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { products } = useProducts();
-  const [items, setItems] = useState<CartItem[]>(() => readCart(products));
+  const { products, loading, error } = useProducts();
+  const [items, setItems] = useState<CartItem[]>(readCart);
   const [notice, setNotice] = useState("");
   useEffect(() => {
+    if (loading || error) return;
     const valid = items.flatMap((item) => {
       const product = products.find((product) => product.id === item.productId);
       const maximum = product ? purchaseLimit(product) : 0;
@@ -64,14 +63,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
         "Stock changed. We updated your cart to the available quantities.",
       );
     }
-  }, [products, items]);
+  }, [products, items, loading, error]);
   useEffect(() => {
+    if (loading || error) return;
     try {
       localStorage.setItem("me-cart", JSON.stringify(items));
     } catch {
       setNotice("Your browser could not save your cart. Keep this page open.");
     }
-  }, [items]);
+  }, [items, loading, error]);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 4000);
