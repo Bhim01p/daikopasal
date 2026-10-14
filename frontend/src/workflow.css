@@ -52,6 +52,7 @@ body .compare-page h1, body .compare-page p, body .compare-page label, body .com
 .admin-confirm-modal .button-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .admin-file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .admin-upload-button { display: inline-flex; width: fit-content; margin: 8px 0 12px; cursor: pointer; }
+.payment-qr-panel .form-success { margin: 10px 0 0; color: #167951; font-weight: 600; }
 body .site-header .shop-header-search input {
   flex: 1 1 auto;
   width: 0;

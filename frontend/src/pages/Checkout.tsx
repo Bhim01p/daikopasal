@@ -507,7 +507,10 @@ export function OrderSuccess({ id }: { id?: string }) {
       </a>
       {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel">
         <h2>{t("Pay by QR")}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
-        {paymentConfig?.qrImage && <img src={paymentConfig.qrImage} alt={t("Shop payment QR")} style={{maxWidth:240}} />}
+        {paymentConfig?.qrImage ? <>
+          <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
+          <a className="button white payment-qr-download" href={paymentConfig.qrImage} download="machhapuchhree-payment-qr">{t("Save QR to phone")}</a>
+        </> : <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
         {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
         <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
