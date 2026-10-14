@@ -125,6 +125,7 @@ export function normalizeStore(current) {
     bills: current.bills ?? [],
     repairTickets: current.repairTickets ?? [],
     paymentConfig: current.paymentConfig ?? { qrImage: "", instructions: "", accountName: "" },
+    sales: current.sales ?? [],
   };
   if (
     !Array.isArray(current.customers) ||
@@ -136,6 +137,7 @@ export function normalizeStore(current) {
     throw new Error("Invalid email queue in store file.");
   if (!Array.isArray(current.bills) || !Array.isArray(current.repairTickets))
     throw new Error("Invalid billing or repair ticket store.");
+  if (!Array.isArray(current.sales)) throw new Error("Invalid sales store.");
   return current;
 }
 export function createStore(

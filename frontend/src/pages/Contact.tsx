@@ -12,7 +12,7 @@ import {
   MessageCircle,
   ArrowUpRight,
 } from "lucide-react";
-import { shop, shopMap, shopDirections, whatsapp } from "../data/shop";
+import { shop, shopMap, shopMapEmbed, shopDirections, whatsapp } from "../data/shop";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 export default function Contact() {
   const t = useT();
@@ -120,6 +120,7 @@ export default function Contact() {
               {t("View on Google Maps")} <ArrowUpRight size={17} />
             </a>
           </div>
+          <iframe className="shop-map-embed" src={shopMapEmbed} title={t("Shop location map")} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
         </section>
         <section className="help-faq">
           <h2>{t("Common questions")}</h2>

@@ -16,18 +16,62 @@ body .admin-layout .admin-products-layout {
 }
 .admin-orders.compact-orders {
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
+}
+.admin-panel#admin-orders .order-search-controls {
+  margin: 18px 0 12px;
+  padding: 14px;
+  gap: 10px;
+  border: 1px solid var(--sky-border);
+  border-radius: 10px;
+  background: var(--sky-surface);
+}
+.admin-panel#admin-orders .order-search-controls label {
+  flex-basis: 240px;
+}
+.admin-panel#admin-orders .order-search-controls label:last-of-type {
+  flex-basis: 170px;
+}
+.admin-panel#admin-orders .order-search-controls span {
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: var(--sky-muted);
+}
+.admin-panel#admin-orders .order-search-controls input {
+  min-height: 42px;
+  border-radius: 8px;
+  background: var(--sky-input);
+  border-color: var(--sky-border);
+}
+.admin-panel#admin-orders .admin-filter-bar {
+  gap: 7px;
+  margin: 12px 0 16px;
+  padding: 3px 2px 7px;
+  scrollbar-width: thin;
+}
+.admin-panel#admin-orders .admin-filter-bar button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
 }
 .admin-order-summary {
   display: grid;
-  grid-template-columns: minmax(190px, 1.5fr) minmax(100px, 1fr) auto auto auto;
+  grid-template-columns: minmax(190px, 1.5fr) minmax(100px, 1fr) auto auto auto auto;
   gap: 18px;
   align-items: center;
-  padding: 17px 18px;
+  padding: 14px 16px;
   background: var(--sky-surface);
   color: var(--sky-text);
   border: 1px solid var(--sky-border);
-  border-radius: 9px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(18, 46, 59, 0.04);
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.admin-order-summary:hover {
+  border-color: var(--sky-accent);
+  box-shadow: 0 5px 14px rgba(18, 46, 59, 0.08);
+  transform: translateY(-1px);
 }
 .admin-order-summary :is(.order-summary-reference, .order-summary-customer) {
   display: grid;
@@ -44,10 +88,35 @@ body .admin-layout .admin-products-layout {
   font-size: 12px;
   color: var(--sky-muted);
 }
+.admin-order-summary .order-summary-customer .order-source-badge {
+  width: fit-content;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sky-accent) 12%, var(--sky-surface));
+  color: var(--sky-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+.admin-order-summary .order-source-badge.in-store {
+  background: color-mix(in srgb, #a56908 14%, var(--sky-surface));
+  color: #8a5a00;
+}
+.admin-order-summary .order-payment-label {
+  font-size: 12px;
+  color: var(--sky-muted);
+  white-space: nowrap;
+}
+.admin-order-summary .order-bill-button {
+  white-space: nowrap;
+  color: var(--sky-accent);
+}
 .admin-order-summary .order-status {
   font-size: 12px;
   text-align: center;
   padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--sky-input);
+  white-space: nowrap;
 }
 .admin-order-summary .button {
   white-space: nowrap;
@@ -64,7 +133,7 @@ body .admin-layout .admin-products-layout {
 }
 @media (max-width: 1150px) {
   .admin-order-summary {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto auto;
   }
 }
 @media (max-width: 767px) {

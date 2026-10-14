@@ -504,9 +504,11 @@
 }
 .admin-filter-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   margin: 16px 0;
+  overflow-x: auto;
+  padding-bottom: 3px;
 }
 .admin-filter-bar button {
   min-height: 46px;
@@ -515,6 +517,8 @@
   background: #fff;
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 .admin-filter-bar button[aria-pressed="true"] {
   color: #9c1142;

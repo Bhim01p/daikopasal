@@ -264,36 +264,19 @@ export default function Layout() {
         <div className="container footer-grid">
           <div>
             <Brand />
-            <p>
-              {t("Your local stop for mobiles,")}
-              <br /> {t(" accessories, and repairs.")}
-            </p>
+            <p className="footer-shop-hours">{t("Open ")}{t(shop.hours)}</p>
+            <p className="footer-shop-address">{t(shop.location)}</p>
             <small>
               © {new Date().getFullYear()} {shop.name}
             </small>
           </div>
           <div>
             <h3>{t("Explore the shop")}</h3>
-            {links.slice(1).map(([to, label]) => (
+            {links.slice(1).filter(([, label]) => label !== "My orders").map(([to, label]) => (
               <Link key={to} to={to}>
                 {t(label)}
               </Link>
             ))}
-          </div>
-          <div>
-            <h3>{t("Visit the shop")}</h3>
-            <p>
-              {t(shop.location)}
-              <br />
-              {t("Open ")}
-              {t(shop.hours)}
-              <br />
-              {t("Shop pickup only")}
-            </p>
-            <Link to="/help">
-              {t("Contact & location ")}
-              <ArrowUpRight size={14} />
-            </Link>
           </div>
           <div>
             <h3>{t("Let’s talk.")}</h3>
@@ -302,13 +285,15 @@ export default function Layout() {
               {shop.phone}
             </a>
             <a href={whatsapp()} target="_blank" rel="noreferrer">
-              {t("Message on WhatsApp ")}
+              <WhatsAppIcon size={17} />
+              {t("WhatsApp ")}
               <ArrowUpRight size={14} />
             </a>
             <p className="footer-note">
-              {t("Facebook · Instagram · TikTok")}
-              <br />
-              {t("Links coming later")}
+              <span className="footer-social-links">
+                <a href="https://www.facebook.com/share/1ErPWxDyZK/" target="_blank" rel="noreferrer"><span className="social-mark facebook-mark">f</span>Facebook</a>
+                <a href="https://www.tiktok.com/@snake_siddhartha?_r=1&_t=ZS-9AYFE49MZk2" target="_blank" rel="noreferrer"><span className="social-mark tiktok-mark">♪</span>TikTok</a>
+              </span>
             </p>
           </div>
         </div>

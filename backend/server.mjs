@@ -609,6 +609,31 @@ export function createApp(options = {}) {
       }
       if (route === "/api/admin/bills" && method === "GET")
         return json(response, 200, { bills: store.read().bills.slice().reverse() });
+      if (route === "/api/admin/sales" && method === "GET") {
+        const current = store.read();
+        const website = current.orders.filter((order) => ["Completed", "Delivered"].includes(order.status)).map((order) => ({
+          id: `ORDER-${order.id}`, date: order.handover?.date || order.date,
+          source: order.fulfillment === "DELIVERY" ? "WEBSITE_DELIVERY" : "WEBSITE_PICKUP",
+          total: order.total, paymentMethod: order.payment?.method || "PAY_AT_SHOP", customerName: order.name,
+          orderId: order.id, items: order.items.map((item) => ({ productId: item.product.id, name: item.product.name, quantity: item.quantity, price: item.product.price })),
+        }));
+        return json(response, 200, { sales: [...website, ...current.sales].sort((a, b) => b.date.localeCompare(a.date)) });
+      }
+      if (route === "/api/admin/sales" && method === "POST") {
+        const input = await body(request);
+        const current = store.read();
+        if (!Array.isArray(input.items) || !input.items.length) throw new HttpError(400, "Add at least one product.");
+        const items = input.items.map((line) => {
+          const product = current.products.find((item) => item.id === line.productId);
+          if (!product || product.stockQuantity === null || product.stockQuantity < line.quantity) throw new HttpError(409, "Insufficient stock.");
+          if (!Number.isInteger(line.quantity) || line.quantity < 1 || line.quantity > 100) throw new HttpError(400, "Invalid quantity.");
+          return { productId: product.id, name: product.name, quantity: line.quantity, price: product.price };
+        });
+        const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const sale = { id: `SALE-${Date.now().toString(36).toUpperCase()}`, date: new Date().toISOString(), source: "WALK_IN", paymentMethod: ["CASH", "QR_ESEWA", "OTHER"].includes(input.paymentMethod) ? input.paymentMethod : "CASH", total, customerName: typeof input.customerName === "string" ? input.customerName.trim().slice(0, 100) : "", note: typeof input.note === "string" ? input.note.trim().slice(0, 500) : "", staff: session(request).username, items };
+        store.commit({ ...current, sales: [...current.sales, sale], products: current.products.map((product) => { const line = items.find((item) => item.productId === product.id); if (!line) return product; const stockQuantity = product.stockQuantity - line.quantity; return { ...product, stockQuantity, stockVersion: product.stockVersion + 1, available: stockQuantity > 0 }; }) });
+        return json(response, 201, { sale });
+      }
       if (route === "/api/admin/bills" && method === "POST") {
         const bill = issueBill(store, await body(request), session(request));
         return json(response, 201, { bill });

@@ -26,7 +26,7 @@ import {
   ReceiptText,
   Wrench,
 } from "lucide-react";
-type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "repairs";
+type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "repairs" | "sales";
 const adminSections = [
   {
     value: "dashboard",
@@ -43,6 +43,7 @@ const adminSections = [
     id: "orders-tab",
   },
   { value: "billing", label: "Billing", Icon: ReceiptText, panel: "admin-billing", id: "billing-tab" },
+  { value: "sales", label: "Sales", Icon: ReceiptText, panel: "admin-sales", id: "sales-tab" },
   { value: "repairs", label: "Repair tickets", Icon: Wrench, panel: "admin-repairs", id: "repairs-tab" },
   {
     value: "products",
@@ -98,6 +99,13 @@ const nextActions = {
   Confirmed: ["Ready for pickup", "Ready for pickup"],
   "Ready for pickup": ["Completed", "Complete pickup"],
 } as const;
+type StoreSale = {
+  id: string;
+  date: string;
+  total: number;
+  customerName: string;
+  paymentMethod: string;
+};
 const initialSpecs = [{ name: "Warranty", value: "Confirm with shop" }];
 const draftKey = (draft: Product, specs: { name: string; value: string }[]) =>
   JSON.stringify([draft, specs]);
@@ -157,6 +165,8 @@ export default function Admin() {
         ? "billing"
         : parts[0] === "repairs"
           ? "repairs"
+      : parts[0] === "sales"
+        ? "sales"
       : parts[0] === "staff"
         ? "staff"
         : inventoryCategory !== "all" || parts[0] === "inventory"
@@ -197,17 +207,18 @@ export default function Admin() {
   const restoringPath = useRef(false);
   const [draft, setDraft] = useState<Product>(freshProduct);
   const [discardPrompt, setDiscardPrompt] = useState(false);
+  const [salesRange, setSalesRange] = useState<"today" | "7days" | "month" | "all">("today");
   useEffect(() => {
     if (productEditorOpen)
       document.getElementById("product-editor-title")?.focus();
   }, [productEditorOpen]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [storeSales, setStoreSales] = useState<StoreSale[]>([]);
   const selectedOrder = orders.find((order) => order.id === selectedOrderId);
   useEffect(() => {
     if (selectedOrderId) document.getElementById("back-to-orders")?.focus();
   }, [selectedOrderId]);
   const [emailConfigured, setEmailConfigured] = useState(false);
-  const [smsMode, setSmsMode] = useState("disabled");
   const [orderQuery, setOrderQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [closingOrder, setClosingOrder] = useState<{
@@ -234,6 +245,16 @@ export default function Admin() {
   const readyOrders = orders.filter(
     (order) => order.status === "Ready for pickup",
   );
+  const salesOrders = orders.filter((order) => {
+    if (!["Completed", "Delivered"].includes(order.status)) return false;
+    if (salesRange === "all") return true;
+    const date = new Date(order.handover?.date || order.date);
+    const now = new Date();
+    if (salesRange === "today") return date.toDateString() === now.toDateString();
+    if (salesRange === "month") return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    return now.getTime() - date.getTime() <= 7 * 86400000;
+  });
+  const filteredSalesTotal = salesOrders.reduce((sum, order) => sum + order.total, 0);
   const lowStock = products.filter(
     (product) =>
       product.isSample === false &&
@@ -517,9 +538,10 @@ export default function Admin() {
       smsMode: string;
     }>("/admin/orders");
     setOrders(result.orders);
+    const sales = await api<{ sales: StoreSale[] }>("/admin/sales");
+    setStoreSales(sales.sales.filter((sale) => sale.id.startsWith("SALE-")));
     setOrdersLoaded(true);
     setEmailConfigured(result.emailConfigured);
-    setSmsMode(result.smsMode);
   }
   useEffect(() => {
     let active = true;
@@ -698,6 +720,30 @@ export default function Admin() {
       setBusy("");
     }
   }
+  async function printOrderBill(order: Order) {
+    setBusy(`bill-${order.id}`);
+    setError("");
+    try {
+      let billId: string | undefined;
+      if (order.billIssued) {
+        const bills = await api<{ bills: { id: string; orderId: string | null }[] }>("/admin/bills");
+        billId = bills.bills.find((bill) => bill.orderId === order.id)?.id;
+      } else {
+        const result = await api<{ bill: { id: string } }>("/admin/bills", {
+          method: "POST",
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        billId = result.bill.id;
+        await loadOrders();
+      }
+      if (!billId) throw new Error("Bill not found for this order.");
+      window.open(`/api/admin/bills/${encodeURIComponent(billId)}/pdf`, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      fail(error);
+    } finally {
+      setBusy("");
+    }
+  }
   function selectProduct(product: Product) {
     if (!mayDiscard()) return;
     navigate(listPath + "/" + encodeURIComponent(product.id));
@@ -844,6 +890,7 @@ export default function Admin() {
                             : "Inventory",
                     orders: "Orders",
                     billing: "Billing",
+                    sales: "Sales",
                     repairs: "Repair tickets",
                     staff: "Staff logins",
                   }[tab],
@@ -943,35 +990,6 @@ export default function Admin() {
                     <small>{t("Real listings with 0–3 units left")}</small>
                   </button>
                 </div>
-              </section>
-              <section
-                className="service-status"
-                aria-label={t("Service status")}
-              >
-                <span>
-                  {t("Email: ")}
-                  {emailConfigured ? t("Connected") : t("Setup needed")}
-                </span>
-                <span>
-                  {t("SMS: ")}
-                  {smsMode === "sms"
-                    ? t("Connected")
-                    : smsMode === "development"
-                      ? t("Local test mode")
-                      : t("Setup needed")}
-                </span>
-                <button
-                  className="text-link"
-                  onClick={() => {
-                    setTab("orders");
-                    setOrderFilter("attention");
-                    setOrderQuery("");
-                    setDateFilter("");
-                  }}
-                >
-                  {t("Notification failures: ")}
-                  {notificationFailures.length}
-                </button>
               </section>
             </div>
           )}
@@ -1440,9 +1458,11 @@ export default function Admin() {
                         </option>
                       ))}
                     </select>
-                    <label htmlFor="product-photo">{t("Product photo")}</label>
+                    <label className="admin-field-label" htmlFor="product-photo">{t("Product photo")}</label>
+                    <label className="button white admin-upload-button" htmlFor="product-photo">{t("Upload product photos")}</label>
                     <input
                       id="product-photo"
+                      className="admin-file-input"
                       type="file"
                       multiple
                       accept="image/jpeg,image/png,image/webp"
@@ -1474,6 +1494,7 @@ export default function Admin() {
                           <button
                             type="button"
                             disabled={!!busy || index === 0}
+                            title={index === 0 ? t("This is already the cover photo") : t("Make this photo the cover")}
                             aria-label={t("Make photo {{v0}} cover", {
                               v0: String(index + 1),
                             })}
@@ -1490,6 +1511,7 @@ export default function Admin() {
                           <button
                             type="button"
                             disabled={!!busy || photos.length === 1}
+                            title={photos.length === 1 ? t("Add another photo before removing this one") : t("Remove this photo")}
                             aria-label={t("Remove photo {{v0}}", {
                               v0: String(index + 1),
                             })}
@@ -1698,7 +1720,12 @@ export default function Admin() {
           {tab === "staff" && role === "owner" && (
             <StaffManager onError={fail} />
           )}
-          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} orders={orders} onStockChanged={refresh} /><AdminPaymentQr /></div>}
+          {tab === "sales" && <section className="admin-panel admin-sales-page" id="admin-sales" role="tabpanel" aria-labelledby="sales-tab">
+            <div className="admin-sales-heading"><div><span className="eyebrow">{t("Shop admin")} / {t("Sales")}</span><h2>{t("Sales")}</h2></div><div className="sales-periods">{([["today", "Today"], ["7days", "7 Days"], ["month", "This Month"], ["all", "All Time"]] as const).map(([value, label]) => <button key={value} className={salesRange === value ? "active" : ""} onClick={() => setSalesRange(value)}>{t(label)}</button>)}<button className="button dark" onClick={() => setTab("billing")}>＋ {t("Record shop sale")}</button></div></div>
+            <div className="sales-summary-cards"><div><span>{t("Total sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Website sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Shop sales")}</span><strong>{money(0)}</strong></div></div>
+            <div className="admin-sales-history"><div className="admin-panel-title"><h3>{t("Recent sales")}</h3></div>{salesOrders.map((order) => <div className="admin-sales-row" key={order.id}><span><strong>#{order.id}</strong><small>{new Date(order.date).toLocaleString()} · {t("Website")}</small></span><span>{order.name}</span><span>{order.payment?.method === "ESEWA" ? "eSewa" : t("Pay at shop")}</span><strong>{money(order.total)}</strong><button className="button white" onClick={() => setSelectedOrderId(order.id)}>{t("View")}</button></div>)}{!salesOrders.length && <p>{t("No completed sales in this period.")}</p>}</div>
+          </section>}
+          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} onStockChanged={refresh} /><AdminPaymentQr /></div>}
           {tab === "repairs" && <div id="admin-repairs" role="tabpanel" aria-labelledby="repairs-tab"><AdminRepairs /></div>}
           {tab === "orders" && (
             <section
@@ -1777,7 +1804,7 @@ export default function Admin() {
                 <p className="admin-empty" role="status">
                   {t("Loading pickup orders…")}
                 </p>
-              ) : !shownOrders.length && !selectedOrder ? (
+              ) : !shownOrders.length && !storeSales.length && !selectedOrder ? (
                 <div className="admin-empty">
                   <ShoppingBag size={35} />
                   <h3>
@@ -1970,7 +1997,8 @@ export default function Admin() {
                       ))}
                     </div>
                   ) : (
-                    shownOrders.map((order) => (
+                    <>
+                    {shownOrders.map((order) => (
                       <article className="admin-order-summary" key={order.id}>
                         <div className="order-summary-reference">
                           <strong>{order.id}</strong>
@@ -1987,6 +2015,7 @@ export default function Admin() {
                         </div>
                         <div className="order-summary-customer">
                           <strong>{order.name}</strong>
+                          <span className="order-source-badge">{t("Website order")}</span>
                           <span>
                             {t("{{count}} items", {
                               count: order.items.reduce(
@@ -2000,6 +2029,16 @@ export default function Admin() {
                           {money(order.total)}
                         </strong>
                         <span className="order-status">{t(order.status)}</span>
+                        {order.status === "Completed" && (
+                          <button
+                            type="button"
+                            className="button white order-bill-button"
+                            disabled={busy === `bill-${order.id}`}
+                            onClick={() => void printOrderBill(order)}
+                          >
+                            {busy === `bill-${order.id}` ? t("Preparing…") : order.billIssued ? t("Print bill") : t("Create bill")}
+                          </button>
+                        )}
                         <button
                           id={`order-open-${order.id}`}
                           type="button"
@@ -2012,7 +2051,24 @@ export default function Admin() {
                           {t("Open order")} <ArrowUpRight size={16} />
                         </button>
                       </article>
-                    ))
+                      ))}
+                    {storeSales
+                      .filter((sale) => {
+                        if (orderQuery && !`${sale.id} ${sale.customerName}`.toLowerCase().includes(orderQuery.toLowerCase())) return false;
+                        if (dateFilter && !sale.date.startsWith(dateFilter)) return false;
+                        return orderFilter === "all" || orderFilter === "completed";
+                      })
+                      .map((sale) => (
+                        <article className="admin-order-summary" key={sale.id}>
+                          <div className="order-summary-reference"><strong>{sale.id}</strong><span>{new Date(sale.date).toLocaleString("en-GB", { timeZone: "Asia/Kathmandu", dateStyle: "medium", timeStyle: "short" })}</span></div>
+                          <div className="order-summary-customer"><strong>{sale.customerName || t("Walk-in customer")}</strong><span className="order-source-badge in-store">{t("In-store order")}</span><span>{t("Completed")}</span></div>
+                          <strong className="order-summary-total">{money(sale.total)}</strong>
+                          <span className="order-status">{t("Completed")}</span>
+                          <span className="order-payment-label">{sale.paymentMethod}</span>
+                          <span />
+                        </article>
+                      ))}
+                    </>
                   )}
                 </div>
               )}

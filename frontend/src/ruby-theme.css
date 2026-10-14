@@ -114,6 +114,15 @@ body .container {
   top: 0;
   right: 0;
   font-size: 10px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--ruby-solid);
+  color: #fff;
+  font-weight: 700;
 }
 .mobile-favourites-link {
   display: none !important;

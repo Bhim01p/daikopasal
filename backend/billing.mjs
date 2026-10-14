@@ -75,7 +75,19 @@ export function issueBill(store, input, actor) {
     const stockQuantity = product.stockQuantity - line.quantity;
     return { ...product, stockQuantity, available: stockQuantity > 0, stockVersion: product.stockVersion + 1 };
   });
-  store.commit({ ...current, products, bills: [...current.bills, bill] });
+  const sales = orderId
+    ? current.sales
+    : [...current.sales, {
+        id: `SALE-${bill.id}`,
+        date: bill.issuedAt,
+        source: "WALK_IN",
+        total,
+        paymentMethod: "CASH",
+        customerName,
+        items: lines.map((line) => ({ productId: line.productId, name: line.name, quantity: line.quantity, price: line.unitPrice })),
+        staff: actor.username,
+      }];
+  store.commit({ ...current, products, bills: [...current.bills, bill], sales });
   return bill;
 }
 

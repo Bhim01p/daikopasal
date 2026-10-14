@@ -75,6 +75,9 @@ body, #root { min-height: 100dvh; background: var(--sky-background); }
 :root[data-theme="dark"] body .cart-dialog .quantity button:disabled { opacity: .48; }
 :root[data-theme="dark"] body .cart-item .quantity span,
 :root[data-theme="dark"] body .cart-dialog .quantity span { color: var(--sky-text); }
+:root[data-theme="dark"] body .quantity button { background: var(--sky-surface); color: var(--sky-text); border-color: var(--sky-border); }
+:root[data-theme="dark"] body .quantity span { color: var(--sky-text); background: var(--sky-input); }
+:root[data-theme="dark"] body .quantity button:disabled { color: var(--sky-muted); background: var(--sky-surface); opacity: .65; }
 
 .account-dialog .account-dialog-topbar {
   position: sticky;

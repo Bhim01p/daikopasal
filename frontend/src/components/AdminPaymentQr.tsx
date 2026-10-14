@@ -17,7 +17,7 @@ export default function AdminPaymentQr() {
   }
   return <section className="admin-panel payment-qr-panel"><h2>{t("Payment QR")}</h2><p>{t("Manage the QR customers use for pickup and delivery payments.")}</p>
     {config.qrImage && <img src={config.qrImage} alt={t("Current payment QR")} style={{maxWidth:220}} />}
-    <label>{t("Replace QR image")}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => void upload(e.target.files?.[0])} /></label>
+    <div><span>{t("Replace QR image")}</span><label className="button white admin-upload-button" htmlFor="payment-qr-upload">{t("Upload QR image")}</label><input id="payment-qr-upload" className="admin-file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => void upload(e.target.files?.[0])} /></div>
     <label>{t("Payment/account name")}<input value={config.accountName} onChange={(e) => setConfig({ ...config, accountName: e.target.value })} /></label>
     <label>{t("Payment instructions")}<textarea rows={4} value={config.instructions} onChange={(e) => setConfig({ ...config, instructions: e.target.value })} /></label>
     <button className="button dark" onClick={() => void save()}>{saved ? t("Saved") : t("Save QR settings")}</button>
