@@ -311,3 +311,35 @@ Owner resumed work and authorized pushing the tested update to main.
 - [x] Prevent blank password submission, lock fields/method changes during requests and show expired-code recovery.
 - [x] Final build, 833 translation checks and 40 backend tests pass. Phone account/photo/password/recovery/persistence tests pass; category/dock/cart/comparison tests pass at 320/390/430/1440 in both themes. Broad admin/EMI/favourites/email-code/profile/checkout/tracking and responsive checks pass at 320/390/768/1024/1440. Email delivery simulated; no production accounts or stock were changed during QA.
 - [x] Private environment files and QA images remain ignored. All changes reviewed for the requested commit/push. New production stock migration runs after deployment, not during these local tests.
+
+## Owner task status and standing reminder — 13 October 2026
+
+- Owner confirms latest deployment and real Gmail login-code delivery passed.
+- Owner plans actual inventory/prices/photos and EMI setup tomorrow.
+- Warranty and final policies belong to the shop owner.
+- Location/social links and backups remain for discussion.
+- Payment/eSewa removed from the current plan at the owner's request.
+- Standing preference: every time the owner asks for the task list, include maintaining/expanding the phone comparison catalogue (new models, corrected specs, source dates and updated CSV). This is a task-list reminder, not a scheduled automation or authorization to fetch/import new data automatically.
+
+## New planning queue — 13 October 2026
+
+Status: collecting requirements only. Do not implement until the owner says to start.
+
+1. Admin bill printing: add a dedicated Billing menu where the owner can prepare and print bills for both website orders and walk-in shop customers. Select items from the existing admin inventory, with inventory changes made through the existing inventory menus reflected in Billing. Website orders should be selectable so their customer/items can prefill a bill; walk-in bills should support entering customer details and selecting items directly. Use a compact receipt layout sized for a typical narrow shop receipt printer, with a PDF version. Visual reference provided in `codex-clipboard-f323761a-716c-4ca5-81fa-085ec094561f.png`: centered shop header, bill number/date, item/rate/quantity/amount rows, subtotal, prominent total, and short thank-you line. Treat the example's shop identity and tax rates as visual placeholders only. Customers who order through the website must be able to access/download their own bill as a PDF after it is issued. Tax/VAT rules are not ready: use clearly provisional, configurable sample settings during development and do not present a sample tax amount as a finalized tax invoice. Confirm final tax/VAT rules, numbering, receipt-printer width, and whether issuing a bill changes stock or order status before real-world use.
+2. Homepage slider: add a fourth Repair slide to the existing three category slides. Focus the copy and visual on bike/vehicle digital meter repair; use a web-sourced Pulsar 200 meter/dashboard image as the visual reference, subject to image reuse permission or a suitable licensed alternative. Link the slide to the Repair page. Set automatic rotation to about five seconds per slide so the message can be read; keep swipe navigation and pause rotation during user interaction. Keep the existing desktop/mobile slider behaviour and English/Nepali plus light/dark support.
+3. Used-phone condition reports: for each actual used unit, let admin record battery health, screen, cameras, charging, defects, included accessories and other inspected details. Show the report on that unit's product page before ordering. Do not imply an uninspected field passed; distinguish unknown/not checked from passed. Prioritize this item among the new operational improvements.
+4. Repair tickets: record each customer device and reported problem with a ticket number, then track received, inspecting, awaiting approval, repairing and ready stages. Provide a simple customer status view and staff update workflow; plan privacy/access before implementation.
+5. Order pickup handover: have staff verify the customer's order reference at collection and record the handover time and staff member before marking a website order completed.
+6. Inventory freshness: show admins when a product's price and stock were last reviewed, and highlight stale listings for rechecking, especially one-off used phones. Define the review interval with the owner before implementation.
+
+### Proposed low-rework implementation flow (planning only)
+
+1. Lock the data rules in one short pass: receipt fields and numbering; online order versus walk-in stock movement; when bills are issued; used-phone inspection fields; repair-ticket visibility; review interval. Use a provisional non-tax receipt until actual tax rules are supplied. A bill must snapshot item names/prices at issue time so later inventory edits do not rewrite old bills. This is design work, not a request to change production data.
+2. Build shared admin/inventory foundations once: add per-listing inspection and last-reviewed metadata to existing product records, and reusable admin form/display helpers. Ship used-phone condition reports and inventory freshness together because they touch the same inventory editor and product listing. Keep unchecked condition fields visibly unknown.
+3. Add pickup handover to the existing order detail/status flow. Require a verification step and record staff plus time. Existing order stock reservation must not be deducted again at handover or billing.
+4. Add Billing to admin using existing product and order data. Create immutable issued-bill records in the current store, small receipt print CSS/PDF, customer-owned online bill download, and walk-in bill entry. Make walk-in stock deduction atomic and one-time if the owner confirms billing should deduct it. Test duplicate clicks/retries, price edits after issue, and customer access boundaries.
+5. Add repair tickets as a separate admin workflow and minimal customer tracking screen. Keep repair tickets separate from product orders and restrict personal details to the customer/staff who need them.
+6. Add the fourth Repair hero slide, five-second rotation, translated copy and a reusable/licensed Pulsar 200 meter visual. Validate mobile/full-screen slider and both themes.
+7. Run focused tests for each touched flow, then one end-to-end phone/desktop pass (inventory -> order -> pickup -> bill PDF, plus repair status and slider). Commit/push/deploy as one reviewed update when the owner authorizes implementation and publishing.
+
+Implemented locally: Billing with narrow PDF receipts and customer download, used-phone inspection reports, repair tickets and customer tracking, verified pickup handover, inventory review reminders, and the fourth meter-repair slider. Final tax/VAT rules and receipt numbering remain pending the shop owner's confirmation before these receipts are used as tax invoices. Comparison catalogue maintenance remains the standing task-list reminder above.

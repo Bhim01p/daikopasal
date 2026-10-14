@@ -17,6 +17,7 @@ import { saveProductImage } from "./images.mjs";
 import { publicStaff, saveStaff } from "./staff.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
 import { publicReferencePhones } from "./phone-reference.mjs";
+import { issueBill, billPdf } from "./billing.mjs";
 import {
   createCustomerAuth,
   publicCustomer,
@@ -69,14 +70,25 @@ async function body(request) {
   }
 }
 function publicOrder(order) {
-  const { requestId, fingerprint, customerId, stockReserved, ...receipt } =
+  const { requestId, fingerprint, customerId, stockReserved, handover, ...receipt } =
     order;
   if (customerId) delete receipt.receiptToken;
-  return { ...receipt, accountOrder: !!customerId };
+  return { ...receipt, ...(handover ? { handover: { date: handover.date } } : {}), accountOrder: !!customerId };
 }
 function adminOrder(order) {
   const { receiptToken, ...receipt } = publicOrder(order);
-  return receipt;
+  return { ...receipt, ...(order.handover ? { handover: order.handover } : {}) };
+}
+async function sendBill(response, bill) {
+  const pdf = await billPdf(bill);
+  response.writeHead(200, {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${bill.id}.pdf"`,
+    "Content-Length": pdf.length,
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  });
+  response.end(pdf);
 }
 export function createApp(options = {}) {
   const dataFile =
@@ -306,9 +318,29 @@ export function createApp(options = {}) {
           orders: store
             .read()
             .orders.filter((order) => order.customerId === customer.id)
-            .map(publicOrder)
+            .map((order) => ({ ...publicOrder(order), billIssued: store.read().bills.some((bill) => bill.orderId === order.id) }))
             .sort((a, b) => b.date.localeCompare(a.date)),
         });
+      }
+      const customerBill = route.match(/^\/api\/orders\/([^/]+)\/bill$/);
+      if (customerBill && method === "GET") {
+        const order = store.read().orders.find((item) => item.id === customerBill[1]);
+        if (!order || (order.customerId
+          ? customerAuth.session(request)?.customer.id !== order.customerId
+          : !equal(request.headers["x-order-token"] || "", order.receiptToken)))
+          throw new HttpError(404, "Bill not found.");
+        const bill = store.read().bills.find((item) => item.orderId === order.id);
+        if (!bill) throw new HttpError(404, "Bill has not been issued yet.");
+        return sendBill(response, bill);
+      }
+      const repairLookup = route.match(/^\/api\/repairs\/([^/]+)$/);
+      if (repairLookup && method === "GET") {
+        const ticket = store.read().repairTickets.find((item) => item.id === repairLookup[1]);
+        if (!ticket || !equal(request.headers["x-repair-token"] || "", ticket.token))
+          throw new HttpError(404, "Repair ticket not found.");
+        const publicTicket = { id: ticket.id, device: ticket.device, status: ticket.status,
+          history: ticket.history.map(({ status, date }) => ({ status, date })) };
+        return json(response, 200, { ticket: publicTicket });
       }
       if (route === "/api/admin/session" && method === "GET") {
         const active = session(request);
@@ -500,6 +532,54 @@ export function createApp(options = {}) {
             }))
             .sort((a, b) => b.date.localeCompare(a.date)),
         });
+      if (route === "/api/admin/bills" && method === "GET")
+        return json(response, 200, { bills: store.read().bills.slice().reverse() });
+      if (route === "/api/admin/bills" && method === "POST") {
+        const bill = issueBill(store, await body(request), session(request));
+        return json(response, 201, { bill });
+      }
+      const adminBillPdf = route.match(/^\/api\/admin\/bills\/([^/]+)\/pdf$/);
+      if (adminBillPdf && method === "GET") {
+        const bill = store.read().bills.find((item) => item.id === adminBillPdf[1]);
+        if (!bill) throw new HttpError(404, "Bill not found.");
+        return sendBill(response, bill);
+      }
+      if (route === "/api/admin/repairs" && method === "GET")
+        return json(response, 200, { tickets: store.read().repairTickets.slice().reverse() });
+      if (route === "/api/admin/repairs" && method === "POST") {
+        const input = await body(request);
+        const current = store.read();
+        const ticket = {
+          id: `ME-R${String(current.repairTickets.length + 1).padStart(6, "0")}`,
+          token: randomBytes(16).toString("hex"),
+          customerName: text(input.customerName, "Customer name", 2, 100),
+          phone: text(input.phone, "Phone", 10, 20),
+          device: text(input.device, "Device", 2, 120),
+          problem: text(input.problem, "Problem", 2, 1000),
+          status: "Received",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          history: [{ status: "Received", date: new Date().toISOString(), by: session(request).username }],
+        };
+        store.commit({ ...current, repairTickets: [...current.repairTickets, ticket] });
+        return json(response, 201, { ticket });
+      }
+      const repairUpdate = route.match(/^\/api\/admin\/repairs\/([^/]+)$/);
+      if (repairUpdate && method === "PATCH") {
+        const input = await body(request);
+        const statuses = ["Received", "Inspecting", "Awaiting approval", "Repairing", "Ready", "Collected", "Cancelled"];
+        if (!statuses.includes(input.status)) throw new HttpError(400, "Select a valid repair status.");
+        const current = store.read();
+        const ticket = current.repairTickets.find((item) => item.id === repairUpdate[1]);
+        if (!ticket) throw new HttpError(404, "Repair ticket not found.");
+        if (ticket.status === input.status) return json(response, 200, { ticket });
+        if (["Collected", "Cancelled"].includes(ticket.status)) throw new HttpError(409, "Repair ticket is closed.");
+        const date = new Date().toISOString();
+        const updated = { ...ticket, status: input.status, updatedAt: date,
+          history: [...ticket.history, { status: input.status, date, by: session(request).username }] };
+        store.commit({ ...current, repairTickets: current.repairTickets.map((item) => item.id === ticket.id ? updated : item) });
+        return json(response, 200, { ticket: updated });
+      }
       if (route === "/api/admin/catalogue/preview" && method === "POST")
         return json(
           response,
@@ -532,6 +612,10 @@ export function createApp(options = {}) {
             409,
             "This order is closed. Cancelled and completed orders cannot be changed.",
           );
+        if (input.status === "Completed" && order.status !== "Ready for pickup")
+          throw new HttpError(409, "Mark the order ready before pickup.");
+        if (input.status === "Completed" && input?.pickupReference !== order.id)
+          throw new HttpError(400, "Verify the customer's order reference before handover.");
         const releaseStock =
           input.status === "Cancelled" && order.stockReserved === true;
         const products = releaseStock
@@ -551,6 +635,7 @@ export function createApp(options = {}) {
         const updated = {
           ...order,
           status: input.status,
+          ...(input.status === "Completed" ? { handover: { date: new Date().toISOString(), by: session(request).username } } : {}),
           ...(releaseStock ? { stockReserved: false } : {}),
           history: [
             ...(order.history || [{ status: order.status, date: order.date }]),
@@ -577,6 +662,9 @@ export function createApp(options = {}) {
       if (route === "/api/admin/products" && method === "POST") {
         const product = validateProduct(await body(request));
         product.id = randomUUID();
+        product.reviewedAt = new Date().toISOString();
+        if (product.inspection && (Object.values(product.inspection.checks).some((value) => value !== "not_checked") || product.inspection.defects || product.inspection.included))
+          product.inspection.inspectedAt = new Date().toISOString();
         product.slug =
           `${product.brand}-${product.name}`
             .toLowerCase()
@@ -591,6 +679,15 @@ export function createApp(options = {}) {
       const stockRoute = route.match(
         /^\/api\/admin\/products\/([^/]+)\/stock$/,
       );
+      const reviewRoute = route.match(/^\/api\/admin\/products\/([^/]+)\/review$/);
+      if (reviewRoute && method === "POST") {
+        const current = store.read();
+        const product = current.products.find((p) => p.id === reviewRoute[1]);
+        if (!product) throw new HttpError(404, "Product not found.");
+        const updated = { ...product, reviewedAt: new Date().toISOString() };
+        store.commit({ ...current, products: current.products.map((p) => p.id === product.id ? updated : p) });
+        return json(response, 200, { product: updated });
+      }
       if (stockRoute && method === "PATCH") {
         const input = await body(request);
         const current = store.read();
@@ -612,6 +709,7 @@ export function createApp(options = {}) {
           stockQuantity: input.stockQuantity,
           stockVersion: product.stockVersion + 1,
           available: input.stockQuantity > 0,
+          reviewedAt: new Date().toISOString(),
         };
         store.commit({
           ...current,
@@ -635,6 +733,10 @@ export function createApp(options = {}) {
           return json(response, 200, { ok: true });
         }
         const updated = validateProduct(input, product);
+        if (updated.price !== product.price || updated.stockQuantity !== product.stockQuantity)
+          updated.reviewedAt = new Date().toISOString();
+        if (updated.inspection && JSON.stringify(updated.inspection) !== JSON.stringify(product.inspection))
+          updated.inspection.inspectedAt = new Date().toISOString();
         store.commit({
           ...current,
           products: current.products.map((p) =>
@@ -764,7 +866,7 @@ export function createApp(options = {}) {
               ))
         )
           throw new HttpError(404, "Order not found.");
-        return json(response, 200, { order: publicOrder(order) });
+        return json(response, 200, { order: { ...publicOrder(order), billIssued: store.read().bills.some((bill) => bill.orderId === order.id) } });
       }
       if (route.startsWith("/api"))
         throw new HttpError(404, "API route not found.");

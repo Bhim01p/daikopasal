@@ -305,6 +305,7 @@ export default function MyOrders() {
                 {t("View order")}
                 <ArrowRight size={18} />
               </Link>
+              {order.billIssued && <a className="button white" href={`/api/orders/${encodeURIComponent(order.id)}/bill`} download>{t("Download bill PDF")}</a>}
             </div>
           </article>
         ))}

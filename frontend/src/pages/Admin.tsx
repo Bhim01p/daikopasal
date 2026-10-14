@@ -23,8 +23,10 @@ import {
   RefreshCw,
   LayoutDashboard,
   Users,
+  ReceiptText,
+  Wrench,
 } from "lucide-react";
-type AdminTab = "dashboard" | "products" | "orders" | "staff";
+type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "repairs";
 const adminSections = [
   {
     value: "dashboard",
@@ -40,6 +42,8 @@ const adminSections = [
     panel: "admin-orders",
     id: "orders-tab",
   },
+  { value: "billing", label: "Billing", Icon: ReceiptText, panel: "admin-billing", id: "billing-tab" },
+  { value: "repairs", label: "Repair tickets", Icon: Wrench, panel: "admin-repairs", id: "repairs-tab" },
   {
     value: "products",
     category: "new",
@@ -86,6 +90,8 @@ import { money } from "../data/shop";
 import type { Product, Order, Category } from "../types";
 import { productImages } from "../utils/products";
 import SafeImage from "../components/SafeImage";
+import AdminBilling from "../components/AdminBilling";
+import AdminRepairs from "../components/AdminRepairs";
 const nextActions = {
   "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
   Confirmed: ["Ready for pickup", "Ready for pickup"],
@@ -113,8 +119,6 @@ const freshProduct = (): Product => ({
   description: "",
   specs: { Warranty: "Confirm with shop" },
   added: 0,
-  condition: "Good",
-  battery: 90,
   accessoryCategory: "Mobile Covers",
 });
 export default function Admin() {
@@ -148,6 +152,10 @@ export default function Admin() {
   const tab: AdminTab =
     parts[0] === "orders"
       ? "orders"
+      : parts[0] === "billing"
+        ? "billing"
+        : parts[0] === "repairs"
+          ? "repairs"
       : parts[0] === "staff"
         ? "staff"
         : inventoryCategory !== "all" || parts[0] === "inventory"
@@ -205,7 +213,7 @@ export default function Admin() {
     status: "Completed" | "Cancelled";
   } | null>(null);
   const [query, setQuery] = useState("");
-  const [productFilter, setProductFilter] = useState<"all" | "low-stock">(
+  const [productFilter, setProductFilter] = useState<"all" | "low-stock" | "review">(
     "all",
   );
   const [orderFilter, setOrderFilter] = useState<
@@ -230,8 +238,9 @@ export default function Admin() {
       product.stockQuantity !== null &&
       product.stockQuantity <= 3,
   );
+  const needsReview = products.filter((product) => !product.reviewedAt || Date.now() - Date.parse(product.reviewedAt) > 30 * 86400000);
   const shownProducts = (
-    productFilter === "low-stock" ? lowStock : products
+    productFilter === "low-stock" ? lowStock : productFilter === "review" ? needsReview : products
   ).filter(
     (product) =>
       (inventoryCategory === "all" || product.category === inventoryCategory) &&
@@ -664,14 +673,14 @@ export default function Admin() {
       setBusy("");
     }
   }
-  async function updateStatus(order: Order, status: Order["status"]) {
+  async function updateStatus(order: Order, status: Order["status"], pickupReference?: string) {
     setBusy(order.id);
     setError("");
     setNotice("");
     try {
       const result = await api<{ order: Order }>(
         `/admin/orders/${encodeURIComponent(order.id)}`,
-        { method: "PATCH", body: JSON.stringify({ status }) },
+        { method: "PATCH", body: JSON.stringify({ status, pickupReference }) },
       );
       setOrders((current) =>
         current.map((existing) =>
@@ -832,6 +841,8 @@ export default function Admin() {
                             ? "Accessories"
                             : "Inventory",
                     orders: "Orders",
+                    billing: "Billing",
+                    repairs: "Repair tickets",
                     staff: "Staff logins",
                   }[tab],
                 )}
@@ -1092,6 +1103,7 @@ export default function Admin() {
                     >
                       {t("Low stock")}
                     </button>
+                    <button aria-pressed={productFilter === "review"} onClick={() => setProductFilter("review")}>{t("Needs review")} ({needsReview.length})</button>
                   </div>
                   {productFilter === "low-stock" && (
                     <p className="admin-help">
@@ -1126,6 +1138,7 @@ export default function Admin() {
                                   v0: String(p.stockQuantity),
                                 })}
                           </span>
+                          <small>{p.reviewedAt ? `${t("Price and stock checked")}: ${new Date(p.reviewedAt).toLocaleDateString()}` : t("Price and stock have not been reviewed")}</small>
                         </div>
                         <QuickStock
                           product={p}
@@ -1134,6 +1147,7 @@ export default function Admin() {
                           onError={fail}
                         />
                         <div className="admin-product-actions">
+                          <button className="button white" type="button" disabled={!!busy} onClick={() => void api(`/admin/products/${p.id}/review`, { method: "POST" }).then(() => refresh()).catch(fail)}>{t("Mark reviewed")}</button>
                           <button
                             className="icon-button"
                             disabled={!!busy}
@@ -1238,8 +1252,8 @@ export default function Admin() {
                               ],
                               ram: draft.ram || 8,
                               storage: draft.storage || 128,
-                              condition: draft.condition || "Good",
-                              battery: draft.battery ?? 90,
+                              condition: draft.condition,
+                              battery: draft.battery,
                               accessoryCategory:
                                 draft.accessoryCategory || "Mobile Covers",
                             });
@@ -1321,7 +1335,7 @@ export default function Admin() {
                       </>
                     )}
                     {draft.category === "used" && (
-                      <div className="admin-form-row">
+                      <><div className="admin-form-row">
                         <div>
                           <label htmlFor="product-condition">
                             {t("Condition")}
@@ -1329,7 +1343,6 @@ export default function Admin() {
                           <select
                             id="product-condition"
                             value={draft.condition || ""}
-                            required
                             onChange={(e) =>
                               setDraft({
                                 ...draft,
@@ -1352,7 +1365,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <label htmlFor="product-battery">
-                            {t("Battery health (%) *")}
+                            {t("Battery health (%)")}
                           </label>
                           <input
                             id="product-battery"
@@ -1361,7 +1374,6 @@ export default function Admin() {
                             max={100}
                             step={1}
                             value={draft.battery ?? ""}
-                            required
                             onChange={(e) =>
                               setDraft({
                                 ...draft,
@@ -1373,6 +1385,16 @@ export default function Admin() {
                           />
                         </div>
                       </div>
+                      <fieldset className="used-inspection-editor">
+                        <legend>{t("Used-phone inspection")}</legend>
+                        {(["screen", "cameras", "charging", "speakers", "buttons"] as const).map((key) => <label key={key}>{t(key)}
+                          <select value={draft.inspection?.checks?.[key] || "not_checked"} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks, [key]: event.target.value as "not_checked" | "passed" | "issue" }, defects: draft.inspection?.defects || "", included: draft.inspection?.included || "" } })}>
+                            <option value="not_checked">{t("Not checked")}</option><option value="passed">{t("Passed")}</option><option value="issue">{t("Issue found")}</option>
+                          </select>
+                        </label>)}
+                        <label>{t("Known defects")}<textarea maxLength={500} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
+                        <label>{t("Included accessories")}<input maxLength={300} value={draft.inspection?.included || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: draft.inspection?.defects || "", included: event.target.value } })} /></label>
+                      </fieldset></>
                     )}
                   </fieldset>
                   <fieldset className="editor-section">
@@ -1673,6 +1695,8 @@ export default function Admin() {
           {tab === "staff" && role === "owner" && (
             <StaffManager onError={fail} />
           )}
+          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} orders={orders} onStockChanged={refresh} /></div>}
+          {tab === "repairs" && <div id="admin-repairs" role="tabpanel" aria-labelledby="repairs-tab"><AdminRepairs /></div>}
           {tab === "orders" && (
             <section
               id="admin-orders"
@@ -1892,6 +1916,7 @@ export default function Admin() {
                           {order.status === "Completed" && (
                             <p className="summary-note">
                               {t("Order closed. Pickup is complete.")}
+                              {order.handover && <> {t("Handed over by")} {order.handover.by} · {new Date(order.handover.date).toLocaleString()}</>}
                             </p>
                           )}
                           <div className="admin-email-updates">
@@ -1997,8 +2022,8 @@ export default function Admin() {
           value={closingOrder}
           busy={!!busy}
           onCancel={() => setClosingOrder(null)}
-          onConfirm={async () => {
-            if (await updateStatus(closingOrder.order, closingOrder.status))
+          onConfirm={async (pickupReference) => {
+            if (await updateStatus(closingOrder.order, closingOrder.status, pickupReference))
               setClosingOrder(null);
           }}
         />

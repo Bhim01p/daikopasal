@@ -1,0 +1,27 @@
+.billing-panel, .repair-admin-panel { display:grid; gap:18px; }
+.billing-panel label, .repair-ticket-form label, .repair-tracking label { display:grid; gap:7px; font-weight:600; }
+.billing-panel input, .billing-panel select, .repair-ticket-form input, .repair-ticket-form textarea,
+.repair-ticket-list select, .repair-tracking input { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-surface); color:var(--sky-text); }
+.billing-products { display:grid; gap:8px; max-height:360px; overflow:auto; }
+.billing-products label { grid-template-columns:minmax(0,1fr) 80px; align-items:center; padding:8px; border:1px solid var(--sky-border); border-radius:8px; }
+.billing-products input { text-align:center; }
+.billing-list, .repair-ticket-list { display:grid; gap:12px; }
+.billing-list article { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px; border:1px solid var(--sky-border); border-radius:10px; }
+.repair-ticket-form { display:grid; gap:12px; }
+.repair-ticket-list article { padding:16px; border:1px solid var(--sky-border); border-radius:10px; }
+.repair-ticket-list article > div { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.repair-ticket-list code { overflow-wrap:anywhere; }
+.used-inspection-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; border:1px solid var(--sky-border); border-radius:10px; margin-top:18px; padding:16px; }
+.used-inspection-editor legend { font-weight:700; }
+.used-inspection-editor label { display:grid; gap:6px; }
+.used-inspection-editor select, .used-inspection-editor input, .used-inspection-editor textarea { width:100%; }
+.used-condition-report { border:1px solid var(--sky-border); border-radius:12px; padding:18px; margin:18px 0; }
+.used-condition-report h2 { font-size:20px; margin:0 0 10px; }
+.used-condition-report dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.used-condition-report dl div { display:grid; gap:4px; padding:8px; background:var(--sky-background); border-radius:7px; }
+.used-condition-report dt { color:var(--sky-muted); }
+.used-condition-report dd { margin:0; font-weight:700; }
+.repair-tracking { padding-block:40px; }
+.repair-tracking form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; gap:12px; align-items:end; }
+.repair-status-card { margin-top:18px; padding:18px; border:1px solid var(--sky-border); border-radius:10px; }
+@media(max-width:700px) { .repair-tracking form, .used-inspection-editor { grid-template-columns:1fr; } .billing-list article { display:grid; grid-template-columns:1fr auto; } }

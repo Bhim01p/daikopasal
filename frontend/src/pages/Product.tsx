@@ -113,6 +113,13 @@ export default function Product() {
               </div>
             </div>
           )}
+          {product.category === "used" && <section className="used-condition-report">
+            <h2>{t("Inspection report")}</h2>
+            <p>{product.inspection?.inspectedAt ? `${t("Inspected")}: ${new Date(product.inspection.inspectedAt).toLocaleDateString()}` : t("Inspection details have not been recorded yet.")}</p>
+            <dl>{(["screen", "cameras", "charging", "speakers", "buttons"] as const).map((key) => <div key={key}><dt>{t(key)}</dt><dd>{t(product.inspection?.checks?.[key] === "passed" ? "Passed" : product.inspection?.checks?.[key] === "issue" ? "Issue found" : "Not checked")}</dd></div>)}</dl>
+            <p><strong>{t("Known defects")}:</strong> {product.inspection?.defects || t("Not recorded")}</p>
+            <p><strong>{t("Included accessories")}:</strong> {product.inspection?.included || t("Not recorded")}</p>
+          </section>}
           {(product.priceIsEstimate || isSampleProduct(product)) && (
             <div className="sample-note">
               <Info size={17} />

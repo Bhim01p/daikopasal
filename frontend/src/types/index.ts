@@ -30,6 +30,13 @@ export interface Product {
   specs: Record<string, string>;
   condition?: "Like New" | "Excellent" | "Good" | "Fair";
   battery?: number;
+  inspection?: {
+    checks: Record<"screen" | "cameras" | "charging" | "speakers" | "buttons", "not_checked" | "passed" | "issue">;
+    defects: string;
+    included: string;
+    inspectedAt?: string | null;
+  };
+  reviewedAt?: string | null;
   accessoryCategory?: string;
   specVariant?: string;
   specSourceUrl?: string;
@@ -66,6 +73,8 @@ export interface Order {
   language?: "en" | "ne";
   receiptToken?: string;
   accountOrder?: boolean;
+  billIssued?: boolean;
+  handover?: { date: string; by?: string };
   history?: { status: Order["status"]; date: string }[];
   emailNotifications?: {
     id: string;

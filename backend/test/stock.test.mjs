@@ -50,7 +50,7 @@ test("stock reservations are atomic, retries are safe, cancellation returns unit
   const current = async (id) =>
     (await catalogue()).find((product) => product.id === id);
   const status = (id, value) =>
-    request(`/api/admin/orders/${id}`, "PATCH", { status: value }, true);
+    request(`/api/admin/orders/${id}`, "PATCH", { status: value, ...(value === "Completed" ? { pickupReference: id } : {}) }, true);
   const orderBody = (items, total) => ({
     name: "Stock Customer",
     phone: "9806600444",
@@ -209,6 +209,7 @@ test("stock reservations are atomic, retries are safe, cancellation returns unit
     const winner = contenders.find((result) => result.status === 201).data
       .order;
     assert.equal((await current(product.id)).stockQuantity, 0);
+    assert.equal((await status(winner.id, "Ready for pickup")).status, 200);
     assert.equal((await status(winner.id, "Completed")).status, 200);
     assert.equal(
       (await status(winner.id, "Cancelled")).status,

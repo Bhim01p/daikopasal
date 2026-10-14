@@ -473,6 +473,13 @@ export function OrderSuccess({ id }: { id?: string }) {
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
+      {order.billIssued && <button className="button white full" onClick={async () => {
+        const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}/bill`, { credentials: "same-origin", headers: token ? { "X-Order-Token": token } : {} });
+        if (!response.ok) { setReceiptError("Could not download the bill right now."); return; }
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement("a"); link.href = url; link.download = `${order.id}-bill.pdf`; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }}>{t("Download bill PDF")}</button>}
       <section id="order-progress" className="receipt-progress">
         <h2>{t("Order progress")}</h2>
         {order.history && (

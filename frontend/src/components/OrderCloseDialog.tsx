@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useT } from "../context/LanguageContext";
 import type { Order } from "../types";
 export default function OrderCloseDialog({
@@ -10,10 +10,11 @@ export default function OrderCloseDialog({
   value: { order: Order; status: "Completed" | "Cancelled" };
   busy: boolean;
   onCancel: () => void;
-  onConfirm: () => Promise<void>;
+  onConfirm: (pickupReference?: string) => Promise<void>;
 }) {
   const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
+  const [pickupReference, setPickupReference] = useState("");
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
     ref.current?.showModal();
@@ -54,6 +55,12 @@ export default function OrderCloseDialog({
           "A customer email update will be queued. This action cannot be undone.",
         )}
       </p>
+      {value.status === "Completed" && (
+        <label>
+          {t("Enter the customer's order reference to verify handover")}
+          <input value={pickupReference} onChange={(event) => setPickupReference(event.target.value.trim().toUpperCase())} autoComplete="off" />
+        </label>
+      )}
       <div className="button-row">
         <button
           className="button white"
@@ -65,8 +72,8 @@ export default function OrderCloseDialog({
         </button>
         <button
           className="button dark"
-          disabled={busy}
-          onClick={() => void onConfirm()}
+          disabled={busy || (value.status === "Completed" && pickupReference !== value.order.id)}
+          onClick={() => void onConfirm(pickupReference)}
         >
           {t(
             busy

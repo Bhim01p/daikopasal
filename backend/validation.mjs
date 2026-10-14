@@ -161,6 +161,7 @@ export function validateProduct(input, existing) {
     ),
     specs,
     added: existing?.added || Date.now(),
+    reviewedAt: existing?.reviewedAt || null,
   };
   result.specVariant = text(
     input.specVariant ?? existing?.specVariant ?? "",
@@ -239,10 +240,29 @@ export function validateProduct(input, existing) {
     result.specs.Category = input.accessoryCategory;
   }
   if (category === "used") {
-    if (!conditions.includes(input.condition))
-      throw new HttpError(400, "Select a phone condition.");
-    result.condition = input.condition;
-    result.battery = integer(input.battery, "Battery health", 0, 100);
+    if (input.condition !== undefined && input.condition !== "") {
+      if (!conditions.includes(input.condition))
+        throw new HttpError(400, "Select a phone condition.");
+      result.condition = input.condition;
+    }
+    if (input.battery !== undefined && input.battery !== null && input.battery !== "")
+      result.battery = integer(input.battery, "Battery health", 0, 100);
+    const inspection = input.inspection ?? existing?.inspection ?? {};
+    if (!inspection || typeof inspection !== "object" || Array.isArray(inspection))
+      throw new HttpError(400, "Invalid used-phone inspection.");
+    const checks = {};
+    for (const key of ["screen", "cameras", "charging", "speakers", "buttons"]) {
+      const value = inspection.checks?.[key] || "not_checked";
+      if (!["not_checked", "passed", "issue"].includes(value))
+        throw new HttpError(400, "Invalid used-phone inspection status.");
+      checks[key] = value;
+    }
+    result.inspection = {
+      checks,
+      defects: text(inspection.defects || "", "Known defects", 0, 500),
+      included: text(inspection.included || "", "Included accessories", 0, 300),
+      inspectedAt: existing?.inspection?.inspectedAt || null,
+    };
   }
   return result;
 }

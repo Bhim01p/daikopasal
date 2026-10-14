@@ -25,6 +25,12 @@ export default function ReferenceHome() {
       to: "/accessories",
       image: "/assets/catalogue-redmi-buds-6-play.jpg",
     },
+    {
+      title: "Digital meter repair",
+      description: "Bike or vehicle meter trouble? Let us take a look.",
+      to: "/repair",
+      image: "/assets/pulsar-meter-repair.png",
+    },
   ];
   const [index, setIndex] = useState(0);
   const carousel = useRef<HTMLElement>(null);
@@ -54,13 +60,15 @@ export default function ReferenceHome() {
   }, []);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const suppress = useRef(0);
-  const move = (n: number) => setIndex((i) => (i + n + 3) % 3);
+  const paused = useRef(false);
+  const pauseUntil = useRef(0);
+  const move = (n: number) => { pauseUntil.current = Date.now() + 8000; setIndex((i) => (i + n + slides.length) % slides.length); };
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible" && !drag.current)
-        setIndex((i) => (i + 1) % 3);
-    }, 3000);
+      if (document.visibilityState === "visible" && !drag.current && !paused.current && Date.now() > pauseUntil.current)
+        setIndex((i) => (i + 1) % 4);
+    }, 5000);
     return () => window.clearInterval(timer);
   }, []);
   const slide = slides[index];
@@ -73,6 +81,10 @@ export default function ReferenceHome() {
         aria-roledescription="carousel"
         aria-label={t("Shop categories")}
         tabIndex={0}
+        onMouseEnter={() => { paused.current = true; }}
+        onMouseLeave={() => { paused.current = false; }}
+        onFocusCapture={() => { paused.current = true; }}
+        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) paused.current = false; }}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
             e.preventDefault();
@@ -80,7 +92,7 @@ export default function ReferenceHome() {
           }
         }}
         onPointerDown={(e) => {
-          if (e.button === 0) drag.current = { x: e.clientX, y: e.clientY };
+          if (e.button === 0) { drag.current = { x: e.clientX, y: e.clientY }; pauseUntil.current = Date.now() + 8000; }
         }}
         onPointerMove={(e) => {
           const d = drag.current;
@@ -117,10 +129,10 @@ export default function ReferenceHome() {
         }}
       >
         <div
-          className={`hero reference-banner-main ${index === 1 ? "used-slide" : ""}`}
+          className={`hero reference-banner-main ${index === 1 ? "used-slide" : ""} ${index === 3 ? "repair-slide" : ""}`}
           role="group"
           aria-roledescription="slide"
-          aria-label={`${index + 1} / 3: ${t(slide.title)}`}
+          aria-label={`${index + 1} / 4: ${t(slide.title)}`}
         >
           <SafeImage
             className="reference-banner-photo"
@@ -134,7 +146,7 @@ export default function ReferenceHome() {
             <h1>{t(slide.title)}</h1>
             <p>{t(slide.description)}</p>
             <Link className="button dark" to={slide.to}>
-              {t("Explore category")} <ArrowRight size={17} />
+              {t(index === 3 ? "Ask about meter repair" : "Explore category")} <ArrowRight size={17} />
             </Link>
           </div>
         </div>
