@@ -13,11 +13,16 @@ export default function AdminPaymentQr() {
     if (!file) return;
     setUploading(true); setError(""); setSaved(false);
     try {
-      const result = await api<{config: typeof config}>("/admin/payment-config/image", { method: "POST", headers: { "Content-Type": file.type }, body: file });
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 30000);
+      let result: {config: typeof config};
+      try {
+        result = await api<{config: typeof config}>("/admin/payment-config/image", { method: "POST", headers: { "Content-Type": file.type }, body: file, signal: controller.signal });
+      } finally { window.clearTimeout(timeout); }
       setConfig(result.config);
       setSaved(true);
       setTimeout(() => setSaved(false), 3500);
-    } catch (e) { setError(e instanceof Error ? e.message : "Upload failed."); }
+    } catch (e) { setError(e instanceof DOMException && e.name === "AbortError" ? t("Upload timed out. Please try a smaller JPG, PNG, or WebP image.") : e instanceof Error ? e.message : "Upload failed."); }
     finally { setUploading(false); }
   }
   async function save() {
