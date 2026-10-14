@@ -70,6 +70,10 @@ export interface Order {
     | "Completed"
     | "Cancelled";
   fulfillment: "Shop pickup";
+  fulfillmentMethod?: "PICKUP" | "DELIVERY";
+  deliveryFee?: number;
+  deliveryAddress?: Record<string, string> | null;
+  payment?: { method: "ESEWA" | "PAY_AT_SHOP"; status: string; reference?: string; submittedAt?: string; reviewedAt?: string; reviewedBy?: string };
   language?: "en" | "ne";
   receiptToken?: string;
   accountOrder?: boolean;

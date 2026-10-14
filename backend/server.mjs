@@ -391,6 +391,8 @@ export function createApp(options = {}) {
           configured,
         });
       }
+      if (route === "/api/payment-config" && method === "GET")
+        return json(response, 200, { config: store.read().paymentConfig || { qrImage: "", instructions: "", accountName: "" } });
       if (route === "/api/admin/login" && method === "POST") {
         if (!configured)
           throw new HttpError(
@@ -495,6 +497,26 @@ export function createApp(options = {}) {
             store.saveImage ? store : undefined,
           ),
         );
+      if (route === "/api/admin/payment-config" && method === "GET")
+        return json(response, 200, { config: store.read().paymentConfig || { qrImage: "", instructions: "", accountName: "" } });
+      if (route === "/api/admin/payment-config" && method === "PATCH") {
+        if (session(request)?.role !== "owner") throw new HttpError(403, "Only the main admin can manage payment QR settings.");
+        const input = await body(request);
+        const config = {
+          qrImage: typeof input.qrImage === "string" ? input.qrImage.slice(0, 1000) : (store.read().paymentConfig?.qrImage || ""),
+          instructions: typeof input.instructions === "string" ? input.instructions.trim().slice(0, 1000) : (store.read().paymentConfig?.instructions || ""),
+          accountName: typeof input.accountName === "string" ? input.accountName.trim().slice(0, 160) : (store.read().paymentConfig?.accountName || ""),
+        };
+        store.commit({ ...store.read(), paymentConfig: config });
+        return json(response, 200, { config });
+      }
+      if (route === "/api/admin/payment-config/image" && method === "POST") {
+        if (session(request)?.role !== "owner") throw new HttpError(403, "Only the main admin can manage payment QR settings.");
+        const uploaded = await saveProductImage(request, imageDirectory, store.saveImage ? store : undefined);
+        const config = { ...(store.read().paymentConfig || {}), qrImage: uploaded.image };
+        store.commit({ ...store.read(), paymentConfig: config });
+        return json(response, 201, { config });
+      }
       const emailRetry = route.match(/^\/api\/admin\/emails\/([^/]+)\/retry$/);
       if (emailRetry && method === "POST") {
         if (!emailWorker.configured)
@@ -572,6 +594,19 @@ export function createApp(options = {}) {
             }))
             .sort((a, b) => b.date.localeCompare(a.date)),
         });
+      const paymentReview = route.match(/^\/api\/admin\/orders\/([^/]+)\/payment$/);
+      if (paymentReview && method === "PATCH") {
+        if (session(request)?.role !== "owner") throw new HttpError(403, "Only the main admin can verify payments.");
+        const input = await body(request);
+        if (!["PAID", "REJECTED"].includes(input.status)) throw new HttpError(400, "Select verify or reject.");
+        const current = store.read();
+        const order = current.orders.find((item) => item.id === paymentReview[1]);
+        if (!order) throw new HttpError(404, "Order not found.");
+        const payment = { ...(order.payment || {}), status: input.status, reviewedAt: new Date().toISOString(), reviewedBy: session(request).username };
+        const updated = { ...order, payment };
+        store.commit({ ...current, orders: current.orders.map((item) => item.id === order.id ? updated : item) });
+        return json(response, 200, { order: adminOrder(updated) });
+      }
       if (route === "/api/admin/bills" && method === "GET")
         return json(response, 200, { bills: store.read().bills.slice().reverse() });
       if (route === "/api/admin/bills" && method === "POST") {
@@ -651,6 +686,8 @@ export function createApp(options = {}) {
         const current = store.read();
         const order = current.orders.find((o) => o.id === orderStatus[1]);
         if (!order) throw new HttpError(404, "Order not found.");
+        if (order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && input.status !== "Cancelled")
+          throw new HttpError(409, "Verify the QR payment before advancing this order.");
         if (order.status === input.status)
           return json(response, 200, {
             order: {
@@ -848,10 +885,12 @@ export function createApp(options = {}) {
             );
           return { product, quantity: item.quantity };
         });
-        const total = items.reduce(
+        const subtotal = items.reduce(
           (sum, item) => sum + item.product.price * item.quantity,
           0,
         );
+        const deliveryFee = customer.fulfillmentMethod === "DELIVERY" ? 175 : 0;
+        const total = subtotal + deliveryFee;
         if (
           typeof input.expectedTotal !== "number" ||
           input.expectedTotal !== total
@@ -874,7 +913,10 @@ export function createApp(options = {}) {
           date: new Date().toISOString(),
           status: statuses[0],
           history: [{ status: statuses[0], date: new Date().toISOString() }],
-          fulfillment: "Shop pickup",
+          fulfillment: customer.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP",
+          deliveryFee,
+          deliveryAddress: customer.deliveryAddress,
+          payment: { method: customer.paymentMethod, status: customer.paymentMethod === "PAY_AT_SHOP" ? "PENDING" : "PENDING_VERIFICATION" },
           receiptToken: randomBytes(32).toString("hex"),
           requestId: customer.requestId,
           fingerprint,
@@ -901,6 +943,22 @@ export function createApp(options = {}) {
         });
         sendQueuedEmails();
         return json(response, 201, { order: publicOrder(order) });
+      }
+      const paymentSubmit = route.match(/^\/api\/orders\/([^/]+)\/payment$/);
+      if (paymentSubmit && method === "PATCH") {
+        const input = await body(request);
+        const current = store.read();
+        const order = current.orders.find((item) => item.id === paymentSubmit[1]);
+        if (!order || (order.customerId
+          ? customerAuth.session(request)?.customer.id !== order.customerId
+          : !equal(request.headers["x-order-token"] || "", order.receiptToken)))
+          throw new HttpError(404, "Order not found.");
+        if (order.payment?.method !== "ESEWA") throw new HttpError(400, "This order does not use QR payment.");
+        const reference = text(input.reference, "Transaction/reference ID", 3, 120);
+        const payment = { ...order.payment, reference, status: "PENDING_VERIFICATION", submittedAt: new Date().toISOString() };
+        const updated = { ...order, payment };
+        store.commit({ ...current, orders: current.orders.map((item) => item.id === order.id ? updated : item) });
+        return json(response, 200, { order: publicOrder(updated), message: "Payment submitted. We will verify your payment shortly." });
       }
       const receiptRoute = route.match(/^\/api\/orders\/([^/]+)$/);
       if (receiptRoute && method === "GET") {

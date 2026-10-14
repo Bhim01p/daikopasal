@@ -91,6 +91,7 @@ import type { Product, Order, Category } from "../types";
 import { productImages } from "../utils/products";
 import SafeImage from "../components/SafeImage";
 import AdminBilling from "../components/AdminBilling";
+import AdminPaymentQr from "../components/AdminPaymentQr";
 import AdminRepairs from "../components/AdminRepairs";
 const nextActions = {
   "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
@@ -195,6 +196,7 @@ export default function Admin() {
   const previousPath = useRef(location.pathname);
   const restoringPath = useRef(false);
   const [draft, setDraft] = useState<Product>(freshProduct);
+  const [discardPrompt, setDiscardPrompt] = useState(false);
   useEffect(() => {
     if (productEditorOpen)
       document.getElementById("product-editor-title")?.focus();
@@ -285,7 +287,7 @@ export default function Admin() {
   function mayDiscard() {
     return (
       !dirty ||
-      window.confirm(translateCurrent("Discard unsaved product changes?"))
+      window.confirm(translateCurrent("You have unsaved product changes. Leave without saving?"))
     );
   }
   useEffect(() => {
@@ -321,7 +323,7 @@ export default function Admin() {
     if (
       previousPath.current !== location.pathname &&
       dirty &&
-      !window.confirm(t("Discard unsaved product changes?"))
+      !window.confirm(t("You have unsaved product changes. Leave without saving?"))
     ) {
       restoringPath.current = true;
       navigate(previousPath.current, { replace: true });
@@ -1193,7 +1195,7 @@ export default function Admin() {
                     type="button"
                     className="button white inventory-back"
                     disabled={!!busy}
-                    onClick={() => resetDraft()}
+                    onClick={() => dirty ? setDiscardPrompt(true) : resetDraft()}
                   >
                     {t("Back to inventory")}
                   </button>
@@ -1230,6 +1232,7 @@ export default function Admin() {
                         </label>
                         <select
                           id="product-category"
+                          className="admin-category-select"
                           value={draft.category}
                           disabled={busy === "photo"}
                           onChange={(e) => {
@@ -1695,7 +1698,7 @@ export default function Admin() {
           {tab === "staff" && role === "owner" && (
             <StaffManager onError={fail} />
           )}
-          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} orders={orders} onStockChanged={refresh} /></div>}
+          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} orders={orders} onStockChanged={refresh} /><AdminPaymentQr /></div>}
           {tab === "repairs" && <div id="admin-repairs" role="tabpanel" aria-labelledby="repairs-tab"><AdminRepairs /></div>}
           {tab === "orders" && (
             <section
@@ -2028,6 +2031,7 @@ export default function Admin() {
           }}
         />
       )}
+      {discardPrompt && <div className="modal-backdrop" role="presentation"><div className="admin-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="discard-title"><h2 id="discard-title">{t("Leave product editor?")}</h2><p>{t("Your unsaved product changes will be lost.")}</p><div className="button-row"><button className="button white" onClick={() => setDiscardPrompt(false)}>{t("Keep editing")}</button><button className="button dark" onClick={() => { setDiscardPrompt(false); resetDraft(); }}>{t("Leave without saving")}</button></div></div></div>}
     </div>
   );
 }

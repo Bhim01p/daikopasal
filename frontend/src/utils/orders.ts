@@ -102,6 +102,9 @@ export async function createOrder(input: {
   note: string;
   items: { productId: string; quantity: number }[];
   expectedTotal: number;
+  fulfillmentMethod?: "PICKUP" | "DELIVERY";
+  paymentMethod?: "ESEWA" | "PAY_AT_SHOP";
+  deliveryAddress?: Record<string, string>;
   requestId: string;
 }) {
   return (

@@ -37,6 +37,9 @@ export default function Checkout() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"PICKUP" | "DELIVERY">("PICKUP");
+  const [paymentMethod, setPaymentMethod] = useState<"PAY_AT_SHOP" | "ESEWA">("PAY_AT_SHOP");
+  const [deliveryAddress, setDeliveryAddress] = useState({ province: "", district: "", city: "", area: "", address: "", landmark: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const requestId = useRef(crypto.randomUUID());
@@ -63,6 +66,11 @@ export default function Checkout() {
       document.getElementById(`customer-${Object.keys(next)[0]}`)?.focus();
       return;
     }
+    if (fulfillmentMethod === "DELIVERY") {
+      for (const key of ["province", "district", "city", "area", "address"] as const)
+        if (!deliveryAddress[key].trim()) next[key] = "Required for delivery.";
+      if (Object.keys(next).length) { setErrors(next); return; }
+    }
     setSaving(true);
     try {
       const order = await createOrder({
@@ -75,6 +83,9 @@ export default function Checkout() {
         items,
         expectedTotal: total,
         requestId: requestId.current,
+        fulfillmentMethod,
+        paymentMethod,
+        deliveryAddress: fulfillmentMethod === "DELIVERY" ? deliveryAddress : undefined,
       });
       saveOrder(order);
       clear();
@@ -230,6 +241,18 @@ export default function Checkout() {
                 </p>
               </div>
             </div>
+            <fieldset className="payment-panel">
+              <legend>{t("Fulfilment and payment")}</legend>
+              <label><input type="radio" checked={fulfillmentMethod === "PICKUP"} onChange={() => { setFulfillmentMethod("PICKUP"); setPaymentMethod("PAY_AT_SHOP"); }} /> {t("Shop pickup (FREE)")}</label>
+              <label><input type="radio" checked={fulfillmentMethod === "DELIVERY"} onChange={() => { setFulfillmentMethod("DELIVERY"); setPaymentMethod("ESEWA"); }} /> {t("Home delivery (+Rs. 175)")}</label>
+              <label><input type="radio" checked={paymentMethod === "PAY_AT_SHOP"} disabled={fulfillmentMethod === "DELIVERY"} onChange={() => setPaymentMethod("PAY_AT_SHOP")} /> {t("Pay at shop")}</label>
+              <label><input type="radio" checked={paymentMethod === "ESEWA"} onChange={() => setPaymentMethod("ESEWA")} /> {t("Pay now via QR")}</label>
+            </fieldset>
+            {fulfillmentMethod === "DELIVERY" && <div className="delivery-fields">
+              {(["province", "district", "city", "area", "address"] as const).map((key) => <label key={key}>{t(key)} *<input list={`delivery-${key}-options`} autoComplete="off" value={deliveryAddress[key]} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, [key]: e.target.value })} />{key !== "address" && <datalist id={`delivery-${key}-options`}>{(key === "province" ? ["Koshi Province", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"] : key === "district" ? ["Kaski", "Kathmandu", "Lalitpur", "Chitwan", "Rupandehi", "Morang", "Jhapa"] : key === "city" ? ["Pokhara", "Lekhnath", "Kathmandu", "Bharatpur", "Butwal"] : []).map((value) => <option key={value} value={value} />)}</datalist>}</label>)}
+              <label>{t("Nearby landmark (optional)")}<input list="delivery-landmark-options" autoComplete="off" value={deliveryAddress.landmark} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, landmark: e.target.value })} /><datalist id="delivery-landmark-options"><option value="Near the shop" /><option value="Near main road" /></datalist></label>
+              <label>{t("Delivery notes (optional)")}<textarea value={deliveryAddress.notes} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, notes: e.target.value })} /></label>
+            </div>}
             <label htmlFor="order-note">
               {t("Order note ")}
               <span className="optional">{t("(optional)")}</span>
@@ -246,16 +269,20 @@ export default function Checkout() {
             />
             <CancellationPolicy />
             <div className="payment-panel">
-              <strong>{t("Pay at pickup")}</strong>
+              <strong>{fulfillmentMethod === "DELIVERY" ? t("Pay by QR before delivery") : t("Pay at pickup")}</strong>
               <p>
                 {t(
-                  "Arrange payment with the shop at pickup. Online payment is not available.",
+                  fulfillmentMethod === "DELIVERY"
+                    ? "Delivery orders require QR payment. Submit the transaction/reference ID after paying."
+                    : "Arrange payment with the shop at pickup. Online payment is not available.",
                 )}
               </p>
             </div>
             <p className="privacy-note">
               {t(
-                "Your details are shared with the shop to arrange your pickup. You can also send the summary through WhatsApp for pickup confirmation.",
+                fulfillmentMethod === "DELIVERY"
+                  ? "Your details are shared with the shop to arrange delivery and payment verification."
+                  : "Your details are shared with the shop to arrange your pickup. You can also send the summary through WhatsApp for pickup confirmation.",
               )}
             </p>
             {errors.save && (
@@ -270,7 +297,7 @@ export default function Checkout() {
               }
               type="submit"
             >
-              {saving ? t("Saving…") : t("Create pickup order")}
+              {saving ? t("Saving…") : t(fulfillmentMethod === "DELIVERY" ? "Create delivery order" : "Create pickup order")}
               <ArrowRight size={17} />
             </button>
           </form>
@@ -297,8 +324,9 @@ export default function Checkout() {
             </div>
             <div className="summary-line">
               <span>{t("Collection")}</span>
-              <strong>{t("Shop pickup only")}</strong>
+              <strong>{fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup (FREE)")}</strong>
             </div>
+            {fulfillmentMethod === "DELIVERY" && <div className="summary-line"><span>{t("Delivery fee")}</span><strong>{money(175)}</strong></div>}
             <div className="summary-line total">
               <strong>
                 {items.some((item) =>
@@ -311,7 +339,7 @@ export default function Checkout() {
                   ? t("Estimated total")
                   : t("Total")}
               </strong>
-              <strong>{money(total)}</strong>
+              <strong>{money(total + (fulfillmentMethod === "DELIVERY" ? 175 : 0))}</strong>
             </div>
             <p className="summary-note">
               {t(
@@ -340,6 +368,9 @@ export function OrderSuccess({ id }: { id?: string }) {
   const [updatedAt, setUpdatedAt] = useState("");
   const [receiptLoading, setReceiptLoading] = useState(true);
   const [receiptError, setReceiptError] = useState("");
+  const [paymentConfig, setPaymentConfig] = useState<{qrImage:string;instructions:string;accountName:string} | null>(null);
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentMessage, setPaymentMessage] = useState("");
   const token = order?.receiptToken;
   useEffect(() => {
     if (!id || checking) return;
@@ -378,6 +409,7 @@ export function OrderSuccess({ id }: { id?: string }) {
       window.removeEventListener("focus", onFocus);
     };
   }, [id, token, customer?.id, checking]);
+  useEffect(() => { if (order?.payment?.method === "ESEWA") void api<{config:{qrImage:string;instructions:string;accountName:string}}>("/payment-config").then((r) => setPaymentConfig(r.config)).catch(() => {}); }, [order?.payment?.method]);
   const [copied, setCopied] = useState(false);
   if (checking || receiptLoading)
     return (
@@ -473,6 +505,15 @@ export function OrderSuccess({ id }: { id?: string }) {
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
+      {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel">
+        <h2>{t("Pay by QR")}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
+        {paymentConfig?.qrImage && <img src={paymentConfig.qrImage} alt={t("Shop payment QR")} style={{maxWidth:240}} />}
+        {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
+        {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
+        <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
+        <button className="button dark" disabled={!paymentReference.trim()} onClick={async () => { try { const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) }); setOrder(result.order); setPaymentMessage(result.message); } catch (error) { setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment."); } }}>{t("Submit payment")}</button>
+        {paymentMessage && <p role="status">{paymentMessage}</p>}
+      </section>}
       {order.billIssued && <button className="button white full" onClick={async () => {
         const response = await fetch(`/api/orders/${encodeURIComponent(order.id)}/bill`, { credentials: "same-origin", headers: token ? { "X-Order-Token": token } : {} });
         if (!response.ok) { setReceiptError("Could not download the bill right now."); return; }

@@ -124,6 +124,7 @@ export function normalizeStore(current) {
     staffAccounts: current.staffAccounts ?? [],
     bills: current.bills ?? [],
     repairTickets: current.repairTickets ?? [],
+    paymentConfig: current.paymentConfig ?? { qrImage: "", instructions: "", accountName: "" },
   };
   if (
     !Array.isArray(current.customers) ||

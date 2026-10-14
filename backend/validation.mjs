@@ -13,7 +13,13 @@ export const statuses = [
   "Ready for pickup",
   "Completed",
   "Cancelled",
+  "Preparing",
+  "Out for delivery",
+  "Delivered",
 ];
+export const fulfillmentMethods = ["PICKUP", "DELIVERY"];
+export const paymentMethods = ["ESEWA", "PAY_AT_SHOP"];
+export const paymentStatuses = ["PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
 export const accessoryCategories = [
   "Mobile Covers",
   "Chargers",
@@ -298,6 +304,19 @@ export function validateCustomer(input) {
     return { productId, quantity: integer(item.quantity, "Quantity", 1, 10) };
   });
   const requestId = text(input.requestId, "Request reference", 16, 100);
+  const fulfillmentMethod = input.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP";
+  const paymentMethod = input.paymentMethod === "ESEWA" ? "ESEWA" : "PAY_AT_SHOP";
+  if (fulfillmentMethod === "DELIVERY" && paymentMethod !== "ESEWA")
+    throw new HttpError(400, "Delivery orders must use QR or online payment.");
+  const deliveryAddress = input.deliveryAddress;
+  if (fulfillmentMethod === "DELIVERY") {
+    if (!deliveryAddress || typeof deliveryAddress !== "object" || Array.isArray(deliveryAddress))
+      throw new HttpError(400, "Enter your delivery address.");
+    for (const key of ["province", "district", "city", "area", "address"])
+      text(deliveryAddress[key], `Delivery ${key}`, 2, 200);
+    if (deliveryAddress.landmark) text(deliveryAddress.landmark, "Landmark", 0, 200);
+    if (deliveryAddress.notes) text(deliveryAddress.notes, "Delivery notes", 0, 500);
+  }
   return {
     name,
     email,
@@ -306,5 +325,16 @@ export function validateCustomer(input) {
     items,
     requestId,
     language: input.language === "ne" ? "ne" : "en",
+    fulfillmentMethod,
+    paymentMethod,
+    deliveryAddress: fulfillmentMethod === "DELIVERY" ? {
+      province: text(deliveryAddress.province, "Province", 2, 100),
+      district: text(deliveryAddress.district, "District", 2, 100),
+      city: text(deliveryAddress.city, "City / municipality", 2, 120),
+      area: text(deliveryAddress.area, "Area / tole", 2, 160),
+      address: text(deliveryAddress.address, "Full address", 2, 300),
+      ...(deliveryAddress.landmark ? { landmark: text(deliveryAddress.landmark, "Landmark", 0, 200) } : {}),
+      ...(deliveryAddress.notes ? { notes: text(deliveryAddress.notes, "Delivery notes", 0, 500) } : {}),
+    } : null,
   };
 }
