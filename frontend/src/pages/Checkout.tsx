@@ -142,31 +142,21 @@ export default function Checkout() {
             <button className="button dark full" type="button" disabled={saving} onClick={() => void submit({ preventDefault() {} } as FormEvent)}>{saving ? t("Placing order…") : t("Place order")} <ArrowRight size={17} /></button>
           </section>}
           <form className="checkout-form" onSubmit={submit} noValidate>
-            <h2>{t("Customer details")}</h2>
+            {(!customer || !customer.profileComplete) && <h2>{t("Customer details")}</h2>}
             {customer ? (
-              <div className="saved-customer">
-                {customer.profileComplete ? (
-                  <>
-                    <strong>{customer.name}</strong>
-                    <p>{customer.phone}</p>
-                    <p>{customer.email}</p>
-                    <p className="summary-note">
-                      {t("Using your saved profile details.")}
-                    </p>
-                  </>
-                ) : (
+              customer.profileComplete ? null : (
+                <div className="saved-customer">
                   <p>
                     {t(
                       "Complete your name and phone number before placing your order.",
                     )}
                   </p>
                 )}
-                <Link className="text-link" to="/account?edit=1&next=/checkout">
-                  {customer.profileComplete
-                    ? t("Edit saved details")
-                    : t("Complete your profile")}
-                </Link>
-              </div>
+                  <Link className="text-link" to="/account?edit=1&next=/checkout">
+                    {t("Complete your profile")}
+                  </Link>
+                </div>
+              )
             ) : (
               <>
                 <p>
