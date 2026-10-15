@@ -30,6 +30,19 @@ import type { Order } from "../types";
 import { EmptyBag } from "./Cart";
 import { isSampleProduct } from "../utils/products";
 import { useCustomer } from "../context/CustomerContext";
+
+const provinceDistricts: Record<string, string[]> = {
+  "Koshi Province": ["Bhojpur", "Dhankuta", "Ilam", "Jhapa", "Khotang", "Morang", "Okhaldhunga", "Panchthar", "Sankhuwasabha", "Solukhumbu", "Sunsari", "Taplejung", "Terhathum", "Udayapur"],
+  "Madhesh Province": ["Bara", "Dhanusha", "Mahottari", "Parsa", "Rautahat", "Saptari", "Sarlahi", "Siraha"],
+  "Bagmati Province": ["Bhaktapur", "Chitwan", "Dhading", "Dolakha", "Kathmandu", "Kavrepalanchok", "Lalitpur", "Makwanpur", "Nuwakot", "Ramechhap", "Rasuwa", "Sindhuli", "Sindhupalchok"],
+  "Gandaki Province": ["Baglung", "Gorkha", "Kaski", "Lamjung", "Manang", "Mustang", "Myagdi", "Nawalpur", "Parbat", "Syangja", "Tanahun"],
+  "Lumbini Province": ["Arghakhanchi", "Banke", "Bardiya", "Dang", "Gulmi", "Kapilvastu", "Palpa", "Pyuthan", "Rolpa", "Rukum East", "Rupandehi"],
+  "Karnali Province": ["Dailekh", "Dolpa", "Humla", "Jajarkot", "Jumla", "Kalikot", "Mugu", "Rukum West", "Salyan", "Surkhet"],
+  "Sudurpashchim Province": ["Achham", "Baitadi", "Bajhang", "Bajura", "Dadeldhura", "Darchula", "Doti", "Kailali", "Kanchanpur"],
+};
+const districtCities: Record<string, string[]> = {
+  Kaski: ["Pokhara", "Lekhnath"], Kathmandu: ["Kathmandu"], Lalitpur: ["Lalitpur"], Bhaktapur: ["Bhaktapur"], Chitwan: ["Bharatpur"], Rupandehi: ["Butwal", "Bhairahawa"], Morang: ["Biratnagar"], Jhapa: ["Bhadrapur", "Damak"], Sunsari: ["Dharan", "Itahari"], Banke: ["Nepalgunj"], Kanchanpur: ["Mahendranagar"], Kailali: ["Dhangadhi"], Dang: ["Ghorahi", "Tulsipur"], Makwanpur: ["Hetauda"], Syangja: ["Putalibazar"], Tanahun: ["Damauli"], Baglung: ["Baglung"], Gorkha: ["Gorkha"], Lamjung: ["Besisahar"], Nawalpur: ["Kawasoti"], Parbat: ["Kusma"], Myagdi: ["Beni"], Palpa: ["Tansen"], Kapilvastu: ["Taulihawa"], Surkhet: ["Birendranagar"], Salyan: ["Salyan"], Dhanusha: ["Janakpur"], Parsa: ["Birgunj"], Bara: ["Kalaiya"], Saptari: ["Rajbiraj"], Siraha: ["Siraha"], Morang: ["Biratnagar"],
+};
 function CheckoutSteps({ active }: { active: "cart" | "checkout" | "payment" | "tracking" }) {
   const steps = ["cart", "checkout", "payment", "tracking"] as const;
   const labels = { cart: "Cart", checkout: "Delivery & payment", payment: "Payment", tracking: "Tracking" };
@@ -238,7 +251,11 @@ export default function Checkout() {
               <label className="coming-soon"><input type="radio" disabled /><span className="esewa-mark">e</span><span><strong>eSewa</strong><small>{t("Pay securely with eSewa")}</small></span><em>{t("Soon")}</em></label>
             </fieldset>
             {fulfillmentMethod === "DELIVERY" && <div className="delivery-fields">
-              {(["province", "district", "city", "area", "address"] as const).map((key) => <label key={key}>{t(key)} *<input list={`delivery-${key}-options`} autoComplete="off" value={deliveryAddress[key]} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, [key]: e.target.value })} />{key !== "address" && <datalist id={`delivery-${key}-options`}>{(key === "province" ? ["Koshi Province", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"] : key === "district" ? ["Kaski", "Kathmandu", "Lalitpur", "Chitwan", "Rupandehi", "Morang", "Jhapa"] : key === "city" ? ["Pokhara", "Lekhnath", "Kathmandu", "Bharatpur", "Butwal"] : []).map((value) => <option key={value} value={value} />)}</datalist>}</label>)}
+              <label>{t("province")} *<select value={deliveryAddress.province} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, province: e.target.value, district: "", city: "" })}><option value="">{t("Select province")}</option>{Object.keys(provinceDistricts).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              <label>{t("district")} *<select value={deliveryAddress.district} disabled={!deliveryAddress.province} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, district: e.target.value, city: "" })}><option value="">{deliveryAddress.province ? t("Select district") : t("Select province first")}</option>{(provinceDistricts[deliveryAddress.province] || []).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              <label>{t("city")} *<select value={deliveryAddress.city} disabled={!deliveryAddress.district} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, city: e.target.value })}><option value="">{deliveryAddress.district ? t("Select city") : t("Select district first")}</option>{(districtCities[deliveryAddress.district] || []).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+              <label>{t("area")} *<input autoComplete="address-level3" value={deliveryAddress.area} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, area: e.target.value })} /></label>
+              <label>{t("address")} *<input autoComplete="street-address" value={deliveryAddress.address} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, address: e.target.value })} /></label>
               <label>{t("Nearby landmark (optional)")}<input list="delivery-landmark-options" autoComplete="off" value={deliveryAddress.landmark} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, landmark: e.target.value })} /><datalist id="delivery-landmark-options"><option value="Near the shop" /><option value="Near main road" /></datalist></label>
               <label>{t("Delivery notes (optional)")}<textarea value={deliveryAddress.notes} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, notes: e.target.value })} /></label>
             </div>}
