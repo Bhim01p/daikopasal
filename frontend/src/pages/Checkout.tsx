@@ -229,19 +229,6 @@ export default function Checkout() {
                 )}
               </>
             )}
-            <div className="pickup-panel">
-              <MapPin size={22} />
-              <div>
-                <strong>{t("Shop pickup only")}</strong>
-                <p>
-                  {shop.address}
-                  <br />
-                  {t("Open ")}
-                  {t(shop.hours)}
-                  {t(". Confirm a pickup time with the shop.")}
-                </p>
-              </div>
-            </div>
             <fieldset className="payment-panel">
               <legend>{t("Fulfilment and payment")}</legend>
               <label className={fulfillmentMethod === "PICKUP" ? "selected" : ""}><input type="radio" checked={fulfillmentMethod === "PICKUP"} onChange={() => { setFulfillmentMethod("PICKUP"); setPaymentMethod("PAY_AT_SHOP"); }} /><Store size={22} /><span><strong>{t("Shop pickup")}</strong><small>{t("Pick up from our store in Lekhnath")}</small></span></label>
