@@ -89,7 +89,7 @@ export default function Checkout() {
       });
       saveOrder(order);
       clear();
-      navigate(`/order/${order.id}`, { state: { order } });
+      navigate(paymentMethod === "ESEWA" ? `/order/${order.id}/payment` : `/order/${order.id}`, { state: { order } });
       void refresh().catch(() => {});
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) setCustomer(null);
@@ -355,8 +355,9 @@ export default function Checkout() {
     </div>
   );
 }
-export function OrderSuccess({ id }: { id?: string }) {
+export function OrderSuccess({ id, paymentOnly = false }: { id?: string; paymentOnly?: boolean }) {
   const t = useT();
+  const navigate = useNavigate();
   const { customer, checking } = useCustomer();
   const location = useLocation();
   const [order, setOrder] = useState<Order | undefined>(() => {
@@ -410,6 +411,7 @@ export function OrderSuccess({ id }: { id?: string }) {
     };
   }, [id, token, customer?.id, checking]);
   useEffect(() => { if (order?.payment?.method === "ESEWA") void api<{config:{qrImage:string;instructions:string;accountName:string}}>("/payment-config").then((r) => setPaymentConfig(r.config)).catch(() => {}); }, [order?.payment?.method]);
+  useEffect(() => { if (paymentOnly && order?.payment?.status === "PAID") navigate(`/order/${order.id}`, { replace: true }); }, [paymentOnly, order?.payment?.status, order?.id, navigate]);
   const [copied, setCopied] = useState(false);
   if (checking || receiptLoading)
     return (
@@ -449,7 +451,7 @@ export function OrderSuccess({ id }: { id?: string }) {
       </div>
     );
   return (
-    <div className="container success-page">
+    <div className={`container success-page${paymentOnly ? " payment-only-page" : ""}`}>
       <div className="success-icon">
         <Check size={36} />
       </div>
@@ -505,8 +507,8 @@ export function OrderSuccess({ id }: { id?: string }) {
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
-      {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel">
-        <h2>{t("Pay by QR")}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
+      {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
+        <h1>{t("Payment for Order #{{id}}", { id: order.id })}</h1><h2>{t("Amount to pay")}: {money(order.total)}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
         {paymentConfig?.qrImage ? <>
           <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
           <a className="button white payment-qr-download" href={paymentConfig.qrImage} download="machhapuchhree-payment-qr">{t("Save QR to phone")}</a>
@@ -514,7 +516,7 @@ export function OrderSuccess({ id }: { id?: string }) {
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
         {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
         <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
-        <button className="button dark" disabled={!paymentReference.trim()} onClick={async () => { try { const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) }); setOrder(result.order); setPaymentMessage(result.message); } catch (error) { setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment."); } }}>{t("Submit payment")}</button>
+        <button className="button dark" disabled={!paymentReference.trim()} onClick={async () => { try { const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) }); setOrder(result.order); setPaymentMessage(result.message); if (paymentOnly) navigate(`/order/${order.id}`, { replace: true }); } catch (error) { setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment."); } }}>{t("I Have Paid")}</button>
         {paymentMessage && <p role="status">{paymentMessage}</p>}
       </section>}
       {order.billIssued && <button className="button white full" onClick={async () => {

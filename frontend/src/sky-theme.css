@@ -612,6 +612,10 @@ body .checkout-form [role="alert"] {
   border-radius: 8px;
   padding: 10px 12px;
 }
+.payment-only-page > :not(.dedicated-payment-step) { display: none; }
+.payment-only-page .dedicated-payment-step { display: block; max-width: 520px; margin: 24px auto; }
+.payment-only-page .dedicated-payment-step h1 { font-size: clamp(24px, 6vw, 36px); margin: 0 0 14px; }
+.payment-only-page .dedicated-payment-step h2 { margin: 0 0 12px; }
 body .tile-icon {
   background: #1b2b39;
   color: var(--sky-accent);

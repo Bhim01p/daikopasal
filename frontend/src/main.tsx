@@ -132,6 +132,11 @@ function OrderPage() {
   const { customer } = useCustomer();
   return <OrderSuccess key={`${id}-${customer?.id || "guest"}`} id={id} />;
 }
+function PaymentPage() {
+  const { id } = useParams();
+  const { customer } = useCustomer();
+  return <OrderSuccess key={`${id}-${customer?.id || "guest"}-payment`} id={id} paymentOnly />;
+}
 function ProductPage() {
   const { slug } = useParams();
   return <Product key={slug} />;
@@ -183,6 +188,7 @@ function App() {
                       <Route path="account" element={<Account />} />
                       <Route path="my-orders" element={<MyOrders />} />
                       <Route path="order/:id" element={<OrderPage />} />
+                      <Route path="order/:id/payment" element={<PaymentPage />} />
                       <Route path="help" element={<Contact />} />
                       <Route
                         path="contact"

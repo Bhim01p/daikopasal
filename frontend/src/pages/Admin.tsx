@@ -726,6 +726,14 @@ export default function Admin() {
       setBusy("");
     }
   }
+  async function reviewPayment(order: Order, status: "PAID" | "REJECTED") {
+    setBusy(`payment-${order.id}`); setError("");
+    try {
+      const result = await api<{ order: Order }>(`/admin/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", body: JSON.stringify({ status }) });
+      setOrders((current) => current.map((item) => item.id === order.id ? result.order : item));
+      setNotice(status === "PAID" ? "Payment verified." : "Payment rejected.");
+    } catch (error) { fail(error); } finally { setBusy(""); }
+  }
   async function printOrderBill(order: Order) {
     setBusy(`bill-${order.id}`);
     setError("");
@@ -1888,6 +1896,7 @@ export default function Admin() {
                             )}
                             <span>{t("Shop pickup")}</span>
                           </div>
+                          {order.payment?.method === "ESEWA" && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{order.payment.status === "PENDING_VERIFICATION" && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
                           <ul>
                             {order.items.map((item) => (
                               <li key={item.product.id}>
