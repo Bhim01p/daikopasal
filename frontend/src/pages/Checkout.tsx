@@ -55,6 +55,7 @@ export default function Checkout() {
   const { products, refresh } = useProducts();
   const { items, total, clear } = useCart();
   const navigate = useNavigate();
+  const checkoutLocation = useLocation();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -64,7 +65,7 @@ export default function Checkout() {
   const [deliveryAddress, setDeliveryAddress] = useState({ province: "", district: "", city: "", area: "", address: "", landmark: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [reviewing, setReviewing] = useState(false);
+  const [reviewing, setReviewing] = useState(() => checkoutLocation.pathname.endsWith("/review"));
   const requestId = useRef(crypto.randomUUID());
   useEffect(() => {
     requestId.current = crypto.randomUUID();
@@ -96,6 +97,7 @@ export default function Checkout() {
     }
     if (!reviewing) {
       setReviewing(true);
+      navigate("/checkout/review");
       return;
     }
     setSaving(true);
@@ -144,7 +146,7 @@ export default function Checkout() {
       ) : (
         <div className="cart-layout">
           {reviewing && <section className="checkout-review-card">
-            <button type="button" className="review-back" onClick={() => setReviewing(false)}>← {t("Edit checkout")}</button>
+            <button type="button" className="review-back" onClick={() => { setReviewing(false); navigate("/checkout"); }}>← {t("Edit checkout")}</button>
             <h2>{t("Order review")}</h2>
             <div className="review-items">{items.map((i) => { const p = products.find((product) => product.id === i.productId); return p ? <div key={p.id}><span><strong>{p.name}</strong><small>{i.quantity} × {money(p.price)}</small></span><strong>{money(p.price * i.quantity)}</strong></div> : null; })}</div>
             <div className="summary-line"><span>{t("Subtotal")}</span><strong>{money(total)}</strong></div>

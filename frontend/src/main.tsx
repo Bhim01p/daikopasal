@@ -57,7 +57,7 @@ function ProductRouteGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { loading, error, retry } = useProducts();
   const t = useT();
-  const needsCatalogue = ["/shop", "/mobiles", "/second-hand", "/accessories", "/search", "/cart", "/checkout", "/favourites"].includes(pathname) || pathname.startsWith("/product/");
+  const needsCatalogue = ["/shop", "/mobiles", "/second-hand", "/accessories", "/search", "/cart", "/checkout", "/favourites"].includes(pathname) || pathname.startsWith("/product/") || pathname.startsWith("/checkout/");
   if (!needsCatalogue) return children;
   // Keep the route shell interactive while the catalogue request refreshes.
   // ProductContext serves cached products immediately when available.
@@ -186,6 +186,7 @@ function App() {
                       <Route path="product/:slug" element={<ProductPage />} />
                       <Route path="cart" element={<Cart />} />
                       <Route path="checkout" element={<Checkout />} />
+                      <Route path="checkout/review" element={<Checkout />} />
                       <Route path="login" element={<Login />} />
                       <Route path="account" element={<Account />} />
                       <Route path="my-orders" element={<MyOrders />} />
