@@ -7,7 +7,6 @@ import {
   Plus,
   Trash2,
   ArrowRight,
-  MapPin,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../context/ProductContext";
@@ -54,8 +53,7 @@ export default function Cart() {
         <div className="cart-layout">
           <div className="cart-items">
             <p className="muted">
-              {count} {count === 1 ? t("item") : t("items")}{" "}
-              {t(" · Shop pickup")}
+              {count} {count === 1 ? t("item") : t("items")}
             </p>
             {items.map((item) => {
               const p = products.find((p) => p.id === item.productId)!;
@@ -72,9 +70,6 @@ export default function Cart() {
                     <Link to={`/product/${p.slug}`}>
                       <h2>{p.name}</h2>
                     </Link>
-                    <p>
-                      {money(p.price)} {t(" each")}
-                    </p>
                     <div className="quantity small">
                       <button
                         aria-label={t("Decrease {{v0}} quantity", {
@@ -124,10 +119,6 @@ export default function Cart() {
               </span>
               <strong>{money(total)}</strong>
             </div>
-            <div className="summary-line">
-              <span>{t("Collection")}</span>
-              <span>{t("Shop pickup")}</span>
-            </div>
             <div className="summary-line total">
               <strong>{t("Total")}</strong>
               <strong>{money(total)}</strong>
@@ -148,10 +139,6 @@ export default function Cart() {
               {t("Continue to checkout ")}
               <ArrowRight size={17} />
             </Link>
-            <div className="pickup-note">
-              <MapPin size={16} />
-              {t("No delivery · Collect in Lekhnath")}
-            </div>
           </aside>
         </div>
       ) : (
@@ -160,3 +147,5 @@ export default function Cart() {
     </div>
   );
 }
+
+

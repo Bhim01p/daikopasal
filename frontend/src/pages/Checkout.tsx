@@ -149,11 +149,6 @@ export default function Checkout() {
                   </Link>{" "}
                   {t("or continue as a guest.")}
                 </p>
-                <p>
-                  {t(
-                    "We’ll save these details with your pickup order for the shop.",
-                  )}
-                </p>
                 <label htmlFor="customer-name">
                   {t("Full name ")}
                   <span>*</span>
@@ -209,14 +204,9 @@ export default function Checkout() {
                   maxLength={254}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-invalid={!!errors.email}
-                  aria-describedby={errors.email ? "email-error" : "email-help"}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                   required
                 />
-                <p id="email-help" className="summary-note">
-                  {t(
-                    "Use the email address where you want to receive order and pickup updates.",
-                  )}
-                </p>
                 {errors.email && (
                   <p id="email-error" className="field-error">
                     {errors.email}
@@ -234,10 +224,6 @@ export default function Checkout() {
                   {t("Open ")}
                   {t(shop.hours)}
                   {t(". Confirm a pickup time with the shop.")}
-                  <br />
-                  {t(
-                    "Wait for your ready-for-pickup notification before visiting. Bring your order reference when collecting.",
-                  )}
                 </p>
               </div>
             </div>
@@ -268,16 +254,6 @@ export default function Checkout() {
               onChange={(e) => setNote(e.target.value)}
             />
             <CancellationPolicy />
-            <div className="payment-panel">
-              <strong>{fulfillmentMethod === "DELIVERY" ? t("Pay by QR before delivery") : t("Pay at pickup")}</strong>
-              <p>
-                {t(
-                  fulfillmentMethod === "DELIVERY"
-                    ? "Delivery orders require QR payment. Submit the transaction/reference ID after paying."
-                    : "Arrange payment with the shop at pickup. Online payment is not available.",
-                )}
-              </p>
-            </div>
             <p className="privacy-note">
               {t(
                 fulfillmentMethod === "DELIVERY"
@@ -310,9 +286,7 @@ export default function Checkout() {
                 <div key={p.id} className="summary-product">
                   <div>
                     <strong>{p.name}</strong>
-                    <span>
-                      {i.quantity} × {money(p.price)}
-                    </span>
+                    <span>{i.quantity} {i.quantity === 1 ? t("item") : t("items")}</span>
                   </div>
                   <strong>{money(p.price * i.quantity)}</strong>
                 </div>
@@ -321,10 +295,6 @@ export default function Checkout() {
             <div className="summary-line">
               <span>{t("Subtotal")}</span>
               <strong>{money(total)}</strong>
-            </div>
-            <div className="summary-line">
-              <span>{t("Collection")}</span>
-              <strong>{fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup (FREE)")}</strong>
             </div>
             {fulfillmentMethod === "DELIVERY" && <div className="summary-line"><span>{t("Delivery fee")}</span><strong>{money(175)}</strong></div>}
             <div className="summary-line total">
@@ -380,6 +350,28 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
   const [paymentConfigLoading, setPaymentConfigLoading] = useState(false);
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const savePaymentQr = async () => {
+    if (!paymentConfig?.qrImage) return;
+    try {
+      const response = await fetch(paymentConfig.qrImage);
+      const blob = await response.blob();
+      const file = new File([blob], "machhapuchhree-payment-qr.png", { type: blob.type || "image/png" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: "Machhapuchhree payment QR" });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "machhapuchhree-payment-qr.png";
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setPaymentMessage("Could not save the QR image. Please try again.");
+    }
+  };
   const token = order?.receiptToken;
   useEffect(() => {
     if (!id || checking) return;
@@ -533,12 +525,25 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
         {paymentConfigLoading && !paymentConfig?.qrImage && <p className="payment-qr-loading" role="status">{t("Loading payment QR…")}</p>}
         {!paymentConfigLoading && paymentConfig?.qrImage ? <>
           <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
-          <a className="button white payment-qr-download" href={paymentConfig.qrImage} download="machhapuchhree-payment-qr">{t("Save QR to phone")}</a>
+          <button type="button" className="button white payment-qr-download" onClick={savePaymentQr}>{t("Save QR to phone")}</button>
         </> : !paymentConfigLoading && <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
         {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
         <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
-        <button className="button dark" disabled={!paymentReference.trim()} onClick={async () => { try { const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) }); setOrder(result.order); setPaymentMessage(result.message); if (paymentOnly) navigate(`/order/${order.id}`, { replace: true }); } catch (error) { setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment."); } }}>{t("I Have Paid")}</button>
+        <button className="button dark" disabled={paymentSubmitting || paymentReference.trim().length < 3} onClick={async () => {
+          setPaymentSubmitting(true);
+          setPaymentMessage("");
+          try {
+            const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) });
+            setOrder(result.order);
+            setPaymentMessage(result.message);
+            if (paymentOnly) window.setTimeout(() => navigate(`/order/${order.id}`, { replace: true }), 900);
+          } catch (error) {
+            setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment.");
+          } finally {
+            setPaymentSubmitting(false);
+          }
+        }}>{paymentSubmitting ? t("Submitting…") : t("I Have Paid")}</button>
         {paymentMessage && <p role="status">{paymentMessage}</p>}
       </section>}
       {order.billIssued && <button className="button white full" onClick={async () => {
