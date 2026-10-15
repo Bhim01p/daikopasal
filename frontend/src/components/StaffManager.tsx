@@ -230,10 +230,6 @@ export default function StaffManager({
               "Staff can manage orders and inventory. Only the main admin can create or change staff logins.",
             )}
           </p>
-          <label className="staff-permission"><input type="checkbox" checked={draft.paymentQr} onChange={(e) => setDraft({ ...draft, paymentQr: e.target.checked })} /> {t("Can manage payment QR")}</label>
-          <fieldset className="staff-permissions"><legend>{t("Access roles")}</legend>
-            {([['orders','Can manage orders'],['sales','Can view sales'],['billing','Can create bills'],['inventory','Can update inventory'],['repairs','Can manage repair tickets']] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={draft[key]} onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })} /> {t(label)}</label>)}
-          </fieldset>
           {loading ? (
             <p role="status">{t("Loading staff logins…")}</p>
           ) : accounts.length === 0 ? (
@@ -309,6 +305,9 @@ export default function StaffManager({
             <ShieldCheck size={17} />{" "}
             {t("Passwords are stored securely and are never shown again.")}
           </p>
+          <fieldset className="staff-permissions"><legend>{t("Admin access roles")}</legend>
+            {([['orders','Can manage orders'],['sales','Can view sales'],['billing','Can create bills'],['inventory','Can update inventory'],['repairs','Can manage repair tickets'],['paymentQr','Can manage payment QR']] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={draft[key]} onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })} /> {t(label)}</label>)}
+          </fieldset>
           <label htmlFor="staff-name">{t("Staff name")}</label>
           <input
             id="staff-name"
