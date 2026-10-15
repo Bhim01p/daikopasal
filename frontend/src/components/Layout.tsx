@@ -28,7 +28,6 @@ import { useCart } from "../context/CartContext";
 import { useCustomer } from "../context/CustomerContext";
 import { useFavourites } from "../context/FavouritesContext";
 import HeaderDropdown from "./HeaderDropdown";
-import CartDialog from "./CartDialog";
 import AccountDialog from "./AccountDialog";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { ThemeSwitch } from "../context/ThemeContext";
@@ -81,7 +80,6 @@ export default function Layout() {
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
-  const [cartOpen, setCartOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -97,7 +95,6 @@ export default function Layout() {
   useEffect(() => {
     setMenu(false);
     setAccountOpen(false);
-    setCartOpen(false);
     const section = location.hash
       ? document.getElementById(location.hash.slice(1))
       : null;
@@ -105,7 +102,6 @@ export default function Layout() {
     else window.scrollTo({ top: 0, behavior: "instant" });
   }, [location.pathname, location.hash]);
   const showFloatingActions =
-    !cartOpen &&
     !accountOpen &&
     !["/login", "/account", "/cart", "/checkout"].includes(location.pathname) &&
     !location.pathname.startsWith("/order/");
@@ -223,7 +219,6 @@ export default function Layout() {
             >
               <button
                 onClick={() => {
-                  setCartOpen(false);
                   setAccountOpen(true);
                 }}
               >
@@ -231,12 +226,9 @@ export default function Layout() {
               </button>
               <Link to="/my-orders">{t("My orders")}</Link>
             </HeaderDropdown>
-            <button
-              onClick={() => {
-                setAccountOpen(false);
-                setCartOpen(true);
-              }}
-              aria-haspopup="dialog"
+            <Link
+              to="/cart"
+              onClick={() => setAccountOpen(false)}
               className="bag-link"
               aria-label={t("Shopping cart, {{v0}} items", {
                 v0: String(count),
@@ -244,7 +236,7 @@ export default function Layout() {
             >
               <ShoppingBag size={20} />
               <span>{count}</span>
-            </button>
+            </Link>
             <button
               className="icon-button menu-button"
               onClick={() => setMenu(!menu)}
@@ -418,18 +410,14 @@ export default function Layout() {
       </nav>
       {showFloatingActions && (
         <div className="shopping-floating-actions">
-          <button
+          <Link
+            to="/cart"
             className="floating-cart"
             aria-label={t("Shopping cart, {{v0}} items", { v0: String(count) })}
-            aria-haspopup="dialog"
-            onClick={() => {
-              setAccountOpen(false);
-              setCartOpen(true);
-            }}
           >
             <ShoppingBag size={24} />
             <span>{count}</span>
-          </button>
+          </Link>
           <a
             className="floating-whatsapp"
             href={whatsapp()}
@@ -449,7 +437,6 @@ export default function Layout() {
           </button>
         </div>
       )}
-      {cartOpen && <CartDialog onClose={() => setCartOpen(false)} />}
       {accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}
     </>
   );

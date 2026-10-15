@@ -47,6 +47,11 @@ export function createGmailTransport(
           subject: message.subject,
           text: message.text,
           html: message.html,
+          attachments: (message.attachments || []).map((attachment) => ({
+            filename: attachment.filename,
+            content: Buffer.from(attachment.content, "base64"),
+            contentType: attachment.content_type,
+          })),
           replyTo: message.reply_to,
           messageId: `<order-email.${id}@gmail.com>`,
         });

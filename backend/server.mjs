@@ -766,15 +766,29 @@ export function createApp(options = {}) {
             { status: input.status, date: new Date().toISOString() },
           ],
         };
-        const email = createOrderEmail(updated);
         store.commit({
           ...current,
           products,
           orders: current.orders.map((o) => (o.id === order.id ? updated : o)),
-          emailQueue: email
-            ? [...current.emailQueue, email]
-            : current.emailQueue,
+          emailQueue: current.emailQueue,
         });
+        let bill;
+        if (input.status === "Completed") {
+          bill = issueBill(store, { orderId: order.id }, session(request));
+        }
+        const email = createOrderEmail(updated);
+        if (email && bill) {
+          const pdf = await billPdf(bill);
+          email.message.attachments = [{
+            filename: `${bill.id}.pdf`,
+            content: pdf.toString("base64"),
+            content_type: "application/pdf",
+          }];
+        }
+        if (email) {
+          const latest = store.read();
+          store.commit({ ...latest, emailQueue: [...latest.emailQueue, email] });
+        }
         sendQueuedEmails();
         return json(response, 200, {
           order: {

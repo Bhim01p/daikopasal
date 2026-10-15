@@ -537,7 +537,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
             const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) });
             setOrder(result.order);
             setPaymentMessage(result.message);
-            if (paymentOnly) window.setTimeout(() => navigate(`/order/${order.id}`, { replace: true }), 900);
+            if (paymentOnly) window.setTimeout(() => navigate(`/order/${order.id}`, { replace: true, state: { order: result.order } }), 900);
           } catch (error) {
             setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment.");
           } finally {
