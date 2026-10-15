@@ -30,9 +30,15 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
   const [checking, setChecking] = useState(true);
   const [mode, setMode] = useState<Mode>("disabled");
   const [error, setError] = useState("");
+  const lastRefresh = useRef(0);
+  const inFlight = useRef<Promise<void> | null>(null);
   const refresh = useCallback(async () => {
+    if (inFlight.current) return inFlight.current;
+    if (Date.now() - lastRefresh.current < 30000) return;
+    lastRefresh.current = Date.now();
     const current = ++generation.current;
-    try {
+    const request = (async () => {
+      try {
       const result = await api<{ customer: Customer | null; mode: Mode }>(
         "/customer/session",
       );
@@ -44,9 +50,12 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
     } catch {
       if (current === generation.current)
         setError("We could not check your login. Please try again.");
-    } finally {
-      setChecking(false);
-    }
+      } finally {
+        setChecking(false);
+      }
+    })().finally(() => { inFlight.current = null; });
+    inFlight.current = request;
+    return request;
   }, []);
   useEffect(() => {
     void refresh();

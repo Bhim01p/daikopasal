@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import type { Product } from "../types";
@@ -26,10 +27,21 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(readCachedProducts);
   const [loading, setLoading] = useState(() => readCachedProducts().length === 0);
   const [error, setError] = useState("");
+  const lastRefresh = useRef(0);
+  const inFlight = useRef<Promise<void> | null>(null);
   const refresh = useCallback(async () => {
-    const result = await api<{ products: Product[] }>("/products");
-    setProducts(result.products);
-    try { localStorage.setItem(catalogueCacheKey, JSON.stringify(result.products)); } catch { /* cache is optional */ }
+    const now = Date.now();
+    if (inFlight.current) return inFlight.current;
+    if (now - lastRefresh.current < 30000) return;
+    lastRefresh.current = now;
+    const request = api<{ products: Product[] }>("/products")
+      .then((result) => {
+        setProducts(result.products);
+        try { localStorage.setItem(catalogueCacheKey, JSON.stringify(result.products)); } catch { /* cache is optional */ }
+      })
+      .finally(() => { inFlight.current = null; });
+    inFlight.current = request;
+    return request;
   }, []);
   const load = useCallback(async () => {
     setLoading(true);
