@@ -186,7 +186,7 @@ function App() {
                       <Route path="product/:slug" element={<ProductPage />} />
                       <Route path="cart" element={<Cart />} />
                       <Route path="checkout" element={<Checkout />} />
-                      <Route path="checkout/review" element={<Checkout />} />
+                      <Route path="checkout/review/*" element={<Checkout />} />
                       <Route path="login" element={<Login />} />
                       <Route path="account" element={<Account />} />
                       <Route path="my-orders" element={<MyOrders />} />
