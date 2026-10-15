@@ -148,9 +148,6 @@ export default function Checkout() {
           {reviewing && <section className="checkout-review-card">
             <button type="button" className="review-back" onClick={() => { setReviewing(false); navigate("/checkout"); }}>← {t("Edit checkout")}</button>
             <h2>{t("Order review")}</h2>
-            <div className="review-items">{items.map((i) => { const p = products.find((product) => product.id === i.productId); return p ? <div key={p.id}><span><strong>{p.name}</strong><small>{i.quantity} × {money(p.price)}</small></span><strong>{money(p.price * i.quantity)}</strong></div> : null; })}</div>
-            <div className="summary-line"><span>{t("Subtotal")}</span><strong>{money(total)}</strong></div>
-            <div className="summary-line"><span>{t("Delivery charge")}</span><strong>{fulfillmentMethod === "DELIVERY" ? money(175) : t("Free")}</strong></div>
             <div className="summary-line total"><strong>{t("Total")}</strong><strong>{money(total + (fulfillmentMethod === "DELIVERY" ? 175 : 0))}</strong></div>
             <div className="review-choice"><strong>{fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
             <div className="review-choice"><strong>{paymentMethod === "MANUAL_QR" ? t("Pay via QR") : t("Pay at shop")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
