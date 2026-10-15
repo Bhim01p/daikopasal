@@ -95,6 +95,15 @@
   border: 1px solid var(--line);
   min-width: 0;
 }
+.compact-customer-order {
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--surface, #fff);
+}
+.compact-customer-order .customer-order-top { align-items: flex-start; }
+.compact-customer-order .customer-order-top h2 { margin: 0; }
+.compact-customer-order .customer-order-top p { color: var(--muted); }
+.customer-order-count { color: var(--muted); font-size: 14px; margin: 16px 0 8px !important; }
 .customer-order h2 {
   font-size: 22px;
   overflow-wrap: anywhere;

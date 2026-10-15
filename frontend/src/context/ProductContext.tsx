@@ -8,6 +8,13 @@ import {
 } from "react";
 import type { Product } from "../types";
 import { api } from "../utils/api";
+const catalogueCacheKey = "me-catalogue-cache-v1";
+function readCachedProducts(): Product[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(catalogueCacheKey) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
 const ProductContext = createContext<{
   products: Product[];
   loading: boolean;
@@ -16,12 +23,13 @@ const ProductContext = createContext<{
   refresh: () => Promise<void>;
 } | null>(null);
 export function ProductProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(readCachedProducts);
+  const [loading, setLoading] = useState(() => readCachedProducts().length === 0);
   const [error, setError] = useState("");
   const refresh = useCallback(async () => {
     const result = await api<{ products: Product[] }>("/products");
     setProducts(result.products);
+    try { localStorage.setItem(catalogueCacheKey, JSON.stringify(result.products)); } catch { /* cache is optional */ }
   }, []);
   const load = useCallback(async () => {
     setLoading(true);

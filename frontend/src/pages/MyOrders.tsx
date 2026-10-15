@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Package, ArrowRight, RefreshCw } from "lucide-react";
 import { useCustomer } from "../context/CustomerContext";
 import { api, ApiError } from "../utils/api";
-import { money, shopDirections } from "../data/shop";
+import { money } from "../data/shop";
 import type { Order } from "../types";
 import { readOrders } from "../utils/orders";
 
@@ -144,16 +144,6 @@ export default function MyOrders() {
     (order) =>
       filter === "all" || (filter === "past" ? isPast(order) : !isPast(order)),
   );
-  const guidance: Record<Order["status"], string> = {
-    "Awaiting shop confirmation":
-      "The shop will review your order and confirm pickup details.",
-    Confirmed:
-      "Your order is confirmed. We’ll update its status when it is ready.",
-    "Ready for pickup":
-      "Ready to collect. Bring your order reference to the shop.",
-    Completed: "Pickup complete. Your receipt is saved with this order.",
-    Cancelled: "This order is closed. Contact the shop if you have a question.",
-  };
   return (
     <div className="container account-page">
       <div className="my-orders-heading">
@@ -255,7 +245,7 @@ export default function MyOrders() {
       )}
       <div className="customer-orders">
         {shownOrders?.map((order) => (
-          <article className="customer-order" key={order.id}>
+          <article className="customer-order compact-customer-order" key={order.id}>
             <div className="customer-order-top">
               <div>
                 <h2>{order.id}</h2>
@@ -277,35 +267,16 @@ export default function MyOrders() {
                 {t(order.status)}
               </span>
             </div>
-            <p className="customer-order-guidance">
-              {t(guidance[order.status])}
-            </p>
-            <ul>
-              {order.items.map(({ product, quantity }) => (
-                <li key={product.id}>
-                  {product.name}
-                  <span> × {quantity}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="customer-order-count">{t("{{count}} items", { count: order.items.reduce((sum, item) => sum + item.quantity, 0) })}</p>
             <div className="customer-order-bottom">
               <div>
                 <strong>{money(order.total)}</strong>
                 <p>{t("Shop pickup")}</p>
-                <a
-                  className="text-link"
-                  href={shopDirections}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {t("Directions to the shop")}
-                </a>
               </div>
               <Link className="button dark" to={`/order/${order.id}`}>
                 {t("View order")}
                 <ArrowRight size={18} />
               </Link>
-              {order.billIssued && <a className="button white" href={`/api/orders/${encodeURIComponent(order.id)}/bill`} download>{t("Download bill PDF")}</a>}
             </div>
           </article>
         ))}

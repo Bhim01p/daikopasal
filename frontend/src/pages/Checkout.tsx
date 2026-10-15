@@ -362,14 +362,22 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
   const location = useLocation();
   const [order, setOrder] = useState<Order | undefined>(() => {
     const receipt = (location.state as { order?: Order } | null)?.order;
-    return receipt && !receipt.accountOrder && receipt.id === id
+    return receipt && receipt.id === id
       ? receipt
-      : readOrders().find((o) => o.id === id && !o.accountOrder);
+      : readOrders().find((o) => o.id === id);
   });
   const [updatedAt, setUpdatedAt] = useState("");
   const [receiptLoading, setReceiptLoading] = useState(true);
   const [receiptError, setReceiptError] = useState("");
-  const [paymentConfig, setPaymentConfig] = useState<{qrImage:string;instructions:string;accountName:string} | null>(null);
+  const [paymentConfig, setPaymentConfig] = useState<{qrImage:string;instructions:string;accountName:string} | null>(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("me-payment-config") || "null");
+      return cached && typeof cached === "object" ? cached : null;
+    } catch {
+      return null;
+    }
+  });
+  const [paymentConfigLoading, setPaymentConfigLoading] = useState(false);
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const token = order?.receiptToken;
@@ -410,10 +418,23 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       window.removeEventListener("focus", onFocus);
     };
   }, [id, token, customer?.id, checking]);
-  useEffect(() => { if (order?.payment?.method === "ESEWA") void api<{config:{qrImage:string;instructions:string;accountName:string}}>("/payment-config").then((r) => setPaymentConfig(r.config)).catch(() => {}); }, [order?.payment?.method]);
+  useEffect(() => {
+    if (order?.payment?.method !== "ESEWA") return;
+    let active = true;
+    setPaymentConfigLoading(true);
+    void api<{config:{qrImage:string;instructions:string;accountName:string}}>("/payment-config")
+      .then((r) => {
+        if (!active) return;
+        setPaymentConfig(r.config);
+        try { localStorage.setItem("me-payment-config", JSON.stringify(r.config)); } catch { /* cache is optional */ }
+      })
+      .catch(() => {})
+      .finally(() => { if (active) setPaymentConfigLoading(false); });
+    return () => { active = false; };
+  }, [order?.payment?.method]);
   useEffect(() => { if (paymentOnly && order?.payment?.status === "PAID") navigate(`/order/${order.id}`, { replace: true }); }, [paymentOnly, order?.payment?.status, order?.id, navigate]);
   const [copied, setCopied] = useState(false);
-  if (checking || receiptLoading)
+  if ((checking && !order) || (receiptLoading && !order))
     return (
       <div className="container empty-state" role="status">
         {t("Opening your order…")}
@@ -509,10 +530,11 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       </a>
       {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
         <h1>{t("Payment for Order #{{id}}", { id: order.id })}</h1><h2>{t("Amount to pay")}: {money(order.total)}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
-        {paymentConfig?.qrImage ? <>
+        {paymentConfigLoading && !paymentConfig?.qrImage && <p className="payment-qr-loading" role="status">{t("Loading payment QR…")}</p>}
+        {!paymentConfigLoading && paymentConfig?.qrImage ? <>
           <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
           <a className="button white payment-qr-download" href={paymentConfig.qrImage} download="machhapuchhree-payment-qr">{t("Save QR to phone")}</a>
-        </> : <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
+        </> : !paymentConfigLoading && <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
         {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
         <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
