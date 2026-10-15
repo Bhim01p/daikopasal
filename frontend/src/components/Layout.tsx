@@ -29,6 +29,7 @@ import { useCustomer } from "../context/CustomerContext";
 import { useFavourites } from "../context/FavouritesContext";
 import HeaderDropdown from "./HeaderDropdown";
 import AccountDialog from "./AccountDialog";
+import CartDialog from "./CartDialog";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { ThemeSwitch } from "../context/ThemeContext";
 const links = [
@@ -81,6 +82,7 @@ export default function Layout() {
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
   const [accountOpen, setAccountOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const shoppingPage =
@@ -226,9 +228,9 @@ export default function Layout() {
               </button>
               <Link to="/my-orders">{t("My orders")}</Link>
             </HeaderDropdown>
-            <Link
-              to="/cart"
-              onClick={() => setAccountOpen(false)}
+            <button
+              type="button"
+              onClick={() => { setAccountOpen(false); setCartOpen(true); }}
               className="bag-link"
               aria-label={t("Shopping cart, {{v0}} items", {
                 v0: String(count),
@@ -236,7 +238,7 @@ export default function Layout() {
             >
               <ShoppingBag size={20} />
               <span>{count}</span>
-            </Link>
+            </button>
             <button
               className="icon-button menu-button"
               onClick={() => setMenu(!menu)}
@@ -410,14 +412,15 @@ export default function Layout() {
       </nav>
       {showFloatingActions && (
         <div className="shopping-floating-actions">
-          <Link
-            to="/cart"
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
             className="floating-cart"
             aria-label={t("Shopping cart, {{v0}} items", { v0: String(count) })}
           >
             <ShoppingBag size={24} />
             <span>{count}</span>
-          </Link>
+          </button>
           <a
             className="floating-whatsapp"
             href={whatsapp()}
@@ -438,6 +441,7 @@ export default function Layout() {
         </div>
       )}
       {accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}
+      {cartOpen && <CartDialog onClose={() => setCartOpen(false)} />}
     </>
   );
 }
