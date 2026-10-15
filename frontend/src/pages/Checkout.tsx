@@ -151,7 +151,6 @@ export default function Checkout() {
                       "Complete your name and phone number before placing your order.",
                     )}
                   </p>
-                )}
                   <Link className="text-link" to="/account?edit=1&next=/checkout">
                     {t("Complete your profile")}
                   </Link>
