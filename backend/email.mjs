@@ -30,6 +30,8 @@ const descriptions = {
     "Your order is ready to collect. Please bring your order reference when visiting the shop.",
   Completed:
     "Your pickup order has been marked completed. Thank you for shopping with us.",
+  Delivered:
+    "Your delivery order has been completed. Thank you for shopping with us.",
   Cancelled:
     "Your order has been cancelled. Contact the shop if you have any questions.",
 };

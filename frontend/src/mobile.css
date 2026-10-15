@@ -849,6 +849,14 @@
   .contact-form h2 {
     font-size: 25px;
   }
+  .checkout-stepper {
+    justify-content: flex-start;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    font-size: 10px;
+  }
+  .checkout-stepper span:not(:last-child)::after { margin-left: 1px; }
   .checkout-form > p,
   .contact-form > p {
     font-size: 15px;

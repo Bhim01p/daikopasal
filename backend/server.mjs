@@ -38,6 +38,7 @@ import {
   validateCustomer,
   statuses,
 } from "./validation.mjs";
+import { createPayment, paymentProvider, updatePayment } from "./payments.mjs";
 
 function staffPermissionForRoute(route) {
   if (route.startsWith("/api/admin/orders")) return "orders";
@@ -615,7 +616,9 @@ export function createApp(options = {}) {
         const current = store.read();
         const order = current.orders.find((item) => item.id === paymentReview[1]);
         if (!order) throw new HttpError(404, "Order not found.");
-        const payment = { ...(order.payment || {}), status: input.status, reviewedAt: new Date().toISOString(), reviewedBy: session(request).username };
+        if (paymentProvider(order.payment) !== "MANUAL_QR")
+          throw new HttpError(409, "Only manual QR payments can be verified by an admin.");
+        const payment = updatePayment(order.payment || {}, { status: input.status, verificationType: "ADMIN", verifiedAt: new Date().toISOString(), verifiedBy: session(request).username, reviewedAt: new Date().toISOString(), reviewedBy: session(request).username });
         const updated = { ...order, payment };
         store.commit({ ...current, orders: current.orders.map((item) => item.id === order.id ? updated : item) });
         return json(response, 200, { order: adminOrder(updated) });
@@ -724,7 +727,7 @@ export function createApp(options = {}) {
         const current = store.read();
         const order = current.orders.find((o) => o.id === orderStatus[1]);
         if (!order) throw new HttpError(404, "Order not found.");
-        if (order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && input.status !== "Cancelled")
+        if (["MANUAL_QR", "ESEWA"].includes(paymentProvider(order.payment)) && order.payment.status !== "PAID" && input.status !== "Cancelled")
           throw new HttpError(409, "Verify the QR payment before advancing this order.");
         if (order.status === input.status)
           return json(response, 200, {
@@ -759,7 +762,7 @@ export function createApp(options = {}) {
         const updated = {
           ...order,
           status: input.status,
-          ...(input.status === "Completed" ? { handover: { date: new Date().toISOString(), by: session(request).username } } : {}),
+          ...(["Completed", "Delivered"].includes(input.status) ? { handover: { date: new Date().toISOString(), by: session(request).username } } : {}),
           ...(releaseStock ? { stockReserved: false } : {}),
           history: [
             ...(order.history || [{ status: order.status, date: order.date }]),
@@ -773,7 +776,7 @@ export function createApp(options = {}) {
           emailQueue: current.emailQueue,
         });
         let bill;
-        if (input.status === "Completed") {
+        if (["Completed", "Delivered"].includes(input.status)) {
           bill = issueBill(store, { orderId: order.id }, session(request));
         }
         const email = createOrderEmail(updated);
@@ -968,12 +971,14 @@ export function createApp(options = {}) {
           fulfillment: customer.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP",
           deliveryFee,
           deliveryAddress: customer.deliveryAddress,
-          payment: { method: customer.paymentMethod, status: customer.paymentMethod === "PAY_AT_SHOP" ? "PENDING" : "PENDING_VERIFICATION" },
+          payment: createPayment({ orderId: `pending`, method: customer.paymentMethod, amount: total }),
           receiptToken: randomBytes(32).toString("hex"),
           requestId: customer.requestId,
           fingerprint,
           stockReserved: true,
         };
+        order.payment.orderId = order.id;
+        if (order.payment.method !== "PAY_AT_SHOP") order.payment.status = "PENDING_VERIFICATION";
         store.commit({
           ...current,
           products: current.products.map((product) => {
@@ -1005,9 +1010,9 @@ export function createApp(options = {}) {
           ? customerAuth.session(request)?.customer.id !== order.customerId
           : !equal(request.headers["x-order-token"] || "", order.receiptToken)))
           throw new HttpError(404, "Order not found.");
-        if (order.payment?.method !== "ESEWA") throw new HttpError(400, "This order does not use QR payment.");
+        if (paymentProvider(order.payment) !== "MANUAL_QR") throw new HttpError(400, "This order does not use manual QR payment.");
         const reference = text(input.reference, "Transaction/reference ID", 3, 120);
-        const payment = { ...order.payment, reference, status: "PENDING_VERIFICATION", submittedAt: new Date().toISOString() };
+        const payment = updatePayment(order.payment, { reference, customerReference: reference, status: "PENDING_VERIFICATION", verificationType: "ADMIN", submittedAt: new Date().toISOString() });
         const updated = { ...order, payment };
         store.commit({ ...current, orders: current.orders.map((item) => item.id === order.id ? updated : item) });
         return json(response, 200, { order: publicOrder(updated), message: "Payment submitted. We will verify your payment shortly." });

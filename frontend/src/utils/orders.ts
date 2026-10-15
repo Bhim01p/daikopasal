@@ -103,7 +103,7 @@ export async function createOrder(input: {
   items: { productId: string; quantity: number }[];
   expectedTotal: number;
   fulfillmentMethod?: "PICKUP" | "DELIVERY";
-  paymentMethod?: "ESEWA" | "PAY_AT_SHOP";
+  paymentMethod?: "MANUAL_QR" | "PAY_AT_SHOP";
   deliveryAddress?: Record<string, string>;
   requestId: string;
 }) {
@@ -114,3 +114,4 @@ export async function createOrder(input: {
     })
   ).order;
 }
+

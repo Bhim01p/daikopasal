@@ -18,7 +18,7 @@ export const statuses = [
   "Delivered",
 ];
 export const fulfillmentMethods = ["PICKUP", "DELIVERY"];
-export const paymentMethods = ["ESEWA", "PAY_AT_SHOP"];
+export const paymentMethods = ["PAY_AT_SHOP", "MANUAL_QR", "ESEWA"];
 export const paymentStatuses = ["PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
 export const accessoryCategories = [
   "Mobile Covers",
@@ -305,8 +305,8 @@ export function validateCustomer(input) {
   });
   const requestId = text(input.requestId, "Request reference", 16, 100);
   const fulfillmentMethod = input.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP";
-  const paymentMethod = input.paymentMethod === "ESEWA" ? "ESEWA" : "PAY_AT_SHOP";
-  if (fulfillmentMethod === "DELIVERY" && paymentMethod !== "ESEWA")
+  const paymentMethod = ["MANUAL_QR", "ESEWA"].includes(input.paymentMethod) ? input.paymentMethod : "PAY_AT_SHOP";
+  if (fulfillmentMethod === "DELIVERY" && !["MANUAL_QR", "ESEWA"].includes(paymentMethod))
     throw new HttpError(400, "Delivery orders must use QR or online payment.");
   const deliveryAddress = input.deliveryAddress;
   if (fulfillmentMethod === "DELIVERY") {

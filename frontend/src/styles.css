@@ -1274,6 +1274,40 @@ textarea {
 .contact-form h2 {
   font-size: 23px;
 }
+.checkout-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 auto 24px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.checkout-stepper span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.checkout-stepper span:not(:last-child)::after {
+  content: "→";
+  margin-left: 4px;
+  color: var(--line);
+}
+.checkout-stepper b {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e7ecec;
+  color: var(--muted);
+  font-size: 10px;
+}
+.checkout-stepper .active { color: var(--teal); font-weight: 700; }
+.checkout-stepper .active b { background: var(--teal); color: white; }
+.payment-only-page .checkout-stepper { margin-top: 0; }
 .checkout-form > p,
 .contact-form > p {
   font-size: 12px;

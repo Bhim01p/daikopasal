@@ -73,7 +73,7 @@ export interface Order {
   fulfillmentMethod?: "PICKUP" | "DELIVERY";
   deliveryFee?: number;
   deliveryAddress?: Record<string, string> | null;
-  payment?: { method: "ESEWA" | "PAY_AT_SHOP"; status: string; reference?: string; submittedAt?: string; reviewedAt?: string; reviewedBy?: string };
+  payment?: { orderId?: string; method: "MANUAL_QR" | "PAY_AT_SHOP" | "ESEWA"; status: string; amount?: number; currency?: string; provider?: string; reference?: string; customerReference?: string; providerTransactionId?: string; verificationType?: "ADMIN" | "GATEWAY"; verifiedAt?: string; verifiedBy?: string; createdAt?: string; updatedAt?: string; submittedAt?: string; reviewedAt?: string; reviewedBy?: string };
   language?: "en" | "ne";
   receiptToken?: string;
   accountOrder?: boolean;
@@ -90,3 +90,4 @@ export interface Order {
     error?: string;
   }[];
 }
+

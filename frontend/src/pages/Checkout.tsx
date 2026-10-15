@@ -26,6 +26,11 @@ import type { Order } from "../types";
 import { EmptyBag } from "./Cart";
 import { isSampleProduct } from "../utils/products";
 import { useCustomer } from "../context/CustomerContext";
+function CheckoutSteps({ active }: { active: "cart" | "checkout" | "payment" | "tracking" }) {
+  const steps = ["cart", "checkout", "payment", "tracking"] as const;
+  const labels = { cart: "Cart", checkout: "Delivery & payment", payment: "Payment", tracking: "Tracking" };
+  return <nav className="checkout-stepper" aria-label="Checkout progress">{steps.map((step, index) => <span key={step} className={steps.indexOf(active) >= index ? "active" : ""}><b>{index + 1}</b>{labels[step]}</span>)}</nav>;
+}
 export default function Checkout() {
   const t = useT();
   const { language } = useLanguage();
@@ -38,7 +43,7 @@ export default function Checkout() {
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"PICKUP" | "DELIVERY">("PICKUP");
-  const [paymentMethod, setPaymentMethod] = useState<"PAY_AT_SHOP" | "ESEWA">("PAY_AT_SHOP");
+  const [paymentMethod, setPaymentMethod] = useState<"PAY_AT_SHOP" | "MANUAL_QR">("PAY_AT_SHOP");
   const [deliveryAddress, setDeliveryAddress] = useState({ province: "", district: "", city: "", area: "", address: "", landmark: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -89,7 +94,7 @@ export default function Checkout() {
       });
       saveOrder(order);
       clear();
-      navigate(paymentMethod === "ESEWA" ? `/order/${order.id}/payment` : `/order/${order.id}`, { state: { order } });
+      navigate(paymentMethod === "MANUAL_QR" ? `/order/${order.id}/payment` : `/order/${order.id}`, { state: { order } });
       void refresh().catch(() => {});
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) setCustomer(null);
@@ -106,6 +111,7 @@ export default function Checkout() {
   return (
     <div className="container standard-page">
       <span className="eyebrow">{t("Collect your next upgrade")}</span>
+      <CheckoutSteps active="checkout" />
       <h1>
         {customer?.profileComplete
           ? t("Review your pickup order.")
@@ -230,9 +236,9 @@ export default function Checkout() {
             <fieldset className="payment-panel">
               <legend>{t("Fulfilment and payment")}</legend>
               <label><input type="radio" checked={fulfillmentMethod === "PICKUP"} onChange={() => { setFulfillmentMethod("PICKUP"); setPaymentMethod("PAY_AT_SHOP"); }} /> {t("Shop pickup (FREE)")}</label>
-              <label><input type="radio" checked={fulfillmentMethod === "DELIVERY"} onChange={() => { setFulfillmentMethod("DELIVERY"); setPaymentMethod("ESEWA"); }} /> {t("Home delivery (+Rs. 175)")}</label>
+              <label><input type="radio" checked={fulfillmentMethod === "DELIVERY"} onChange={() => { setFulfillmentMethod("DELIVERY"); setPaymentMethod("MANUAL_QR"); }} /> {t("Home delivery (+Rs. 175)")}</label>
               <label><input type="radio" checked={paymentMethod === "PAY_AT_SHOP"} disabled={fulfillmentMethod === "DELIVERY"} onChange={() => setPaymentMethod("PAY_AT_SHOP")} /> {t("Pay at shop")}</label>
-              <label><input type="radio" checked={paymentMethod === "ESEWA"} onChange={() => setPaymentMethod("ESEWA")} /> {t("Pay now via QR")}</label>
+              <label><input type="radio" checked={paymentMethod === "MANUAL_QR"} onChange={() => setPaymentMethod("MANUAL_QR")} /> {t("Pay now via QR")}</label>
             </fieldset>
             {fulfillmentMethod === "DELIVERY" && <div className="delivery-fields">
               {(["province", "district", "city", "area", "address"] as const).map((key) => <label key={key}>{t(key)} *<input list={`delivery-${key}-options`} autoComplete="off" value={deliveryAddress[key]} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, [key]: e.target.value })} />{key !== "address" && <datalist id={`delivery-${key}-options`}>{(key === "province" ? ["Koshi Province", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"] : key === "district" ? ["Kaski", "Kathmandu", "Lalitpur", "Chitwan", "Rupandehi", "Morang", "Jhapa"] : key === "city" ? ["Pokhara", "Lekhnath", "Kathmandu", "Bharatpur", "Butwal"] : []).map((value) => <option key={value} value={value} />)}</datalist>}</label>)}
@@ -351,6 +357,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const isManualQr = order?.payment?.method === "MANUAL_QR" || (order?.payment?.method === "ESEWA" && !order.payment.provider);
   const savePaymentQr = async () => {
     if (!paymentConfig?.qrImage) return;
     try {
@@ -411,7 +418,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
     };
   }, [id, token, customer?.id, checking]);
   useEffect(() => {
-    if (order?.payment?.method !== "ESEWA") return;
+    if (!isManualQr) return;
     let active = true;
     setPaymentConfigLoading(true);
     void api<{config:{qrImage:string;instructions:string;accountName:string}}>("/payment-config")
@@ -423,7 +430,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       .catch(() => {})
       .finally(() => { if (active) setPaymentConfigLoading(false); });
     return () => { active = false; };
-  }, [order?.payment?.method]);
+  }, [isManualQr]);
   useEffect(() => { if (paymentOnly && order?.payment?.status === "PAID") navigate(`/order/${order.id}`, { replace: true }); }, [paymentOnly, order?.payment?.status, order?.id, navigate]);
   const [copied, setCopied] = useState(false);
   if ((checking && !order) || (receiptLoading && !order))
@@ -508,6 +515,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
         {order.id}
         <span>{t(order.status)}</span>
       </div>
+      {!paymentOnly && <CheckoutSteps active="tracking" />}
       {updatedAt && (
         <p className="summary-note">
           {t("Last refreshed:")}{" "}
@@ -520,7 +528,8 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
-      {order.payment?.method === "ESEWA" && order.payment.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
+      {isManualQr && order.payment?.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
+        <CheckoutSteps active="payment" />
         <h1>{t("Payment for Order #{{id}}", { id: order.id })}</h1><h2>{t("Amount to pay")}: {money(order.total)}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
         {paymentConfigLoading && !paymentConfig?.qrImage && <p className="payment-qr-loading" role="status">{t("Loading payment QR…")}</p>}
         {!paymentConfigLoading && paymentConfig?.qrImage ? <>
@@ -677,3 +686,4 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
     </div>
   );
 }
+

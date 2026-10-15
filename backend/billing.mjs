@@ -24,8 +24,8 @@ export function issueBill(store, input, actor) {
   if (orderId) {
     const order = current.orders.find((item) => item.id === orderId);
     if (!order) throw new HttpError(404, "Order not found.");
-    if (order.status !== "Completed")
-      throw new HttpError(409, "Complete pickup before issuing this bill.");
+    if (!['Completed', 'Delivered'].includes(order.status))
+      throw new HttpError(409, "Complete the order before issuing this bill.");
     lines = order.items.map(({ product, quantity }) => ({
       productId: product.id,
       name: product.name,

@@ -1744,7 +1744,7 @@ export default function Admin() {
           {tab === "sales" && <section className="admin-panel admin-sales-page" id="admin-sales" role="tabpanel" aria-labelledby="sales-tab">
             <div className="admin-sales-heading"><div><span className="eyebrow">{t("Shop admin")} / {t("Sales")}</span><h2>{t("Sales")}</h2></div><div className="sales-periods">{([["today", "Today"], ["7days", "7 Days"], ["month", "This Month"], ["all", "All Time"]] as const).map(([value, label]) => <button key={value} className={salesRange === value ? "active" : ""} onClick={() => setSalesRange(value)}>{t(label)}</button>)}<button className="button dark" onClick={() => setTab("billing")}>＋ {t("Record shop sale")}</button></div></div>
             <div className="sales-summary-cards"><div><span>{t("Total sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Website sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Shop sales")}</span><strong>{money(0)}</strong></div></div>
-            <div className="admin-sales-history"><div className="admin-panel-title"><h3>{t("Recent sales")}</h3></div>{salesOrders.map((order) => <div className="admin-sales-row" key={order.id}><span><strong>#{order.id}</strong><small>{new Date(order.date).toLocaleString()} · {t("Website")}</small></span><span>{order.name}</span><span>{order.payment?.method === "ESEWA" ? "eSewa" : t("Pay at shop")}</span><strong>{money(order.total)}</strong><button className="button white" onClick={() => setSelectedOrderId(order.id)}>{t("View")}</button></div>)}{!salesOrders.length && <p>{t("No completed sales in this period.")}</p>}</div>
+            <div className="admin-sales-history"><div className="admin-panel-title"><h3>{t("Recent sales")}</h3></div>{salesOrders.map((order) => <div className="admin-sales-row" key={order.id}><span><strong>#{order.id}</strong><small>{new Date(order.date).toLocaleString()} · {t("Website")}</small></span><span>{order.name}</span><span>{order.payment?.method === "MANUAL_QR" ? t("Manual QR") : order.payment?.method === "ESEWA" ? "eSewa" : t("Pay at shop")}</span><strong>{money(order.total)}</strong><button className="button white" onClick={() => setSelectedOrderId(order.id)}>{t("View")}</button></div>)}{!salesOrders.length && <p>{t("No completed sales in this period.")}</p>}</div>
           </section>}
           {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} onStockChanged={refresh} /></div>}
           {tab === "qr" && <div id="admin-payment-qr" role="tabpanel" aria-labelledby="payment-qr-tab"><AdminPaymentQr /></div>}
@@ -1896,7 +1896,7 @@ export default function Admin() {
                             )}
                             <span>{t("Shop pickup")}</span>
                           </div>
-                          {order.payment?.method === "ESEWA" && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{order.payment.status === "PENDING_VERIFICATION" && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
+                          {order.payment && ["MANUAL_QR", "ESEWA"].includes(order.payment.method) && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{order.payment.status === "PENDING_VERIFICATION" && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
                           <ul>
                             {order.items.map((item) => (
                               <li key={item.product.id}>
@@ -2114,3 +2114,6 @@ export default function Admin() {
     </div>
   );
 }
+
+
+
