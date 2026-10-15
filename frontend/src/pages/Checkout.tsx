@@ -11,6 +11,10 @@ import {
   MessageCircle,
   Copy,
   ArrowUpRight,
+  Store,
+  Truck,
+  WalletCards,
+  QrCode,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../context/ProductContext";
@@ -47,6 +51,7 @@ export default function Checkout() {
   const [deliveryAddress, setDeliveryAddress] = useState({ province: "", district: "", city: "", area: "", address: "", landmark: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
   const requestId = useRef(crypto.randomUUID());
   useEffect(() => {
     requestId.current = crypto.randomUUID();
@@ -75,6 +80,10 @@ export default function Checkout() {
       for (const key of ["province", "district", "city", "area", "address"] as const)
         if (!deliveryAddress[key].trim()) next[key] = "Required for delivery.";
       if (Object.keys(next).length) { setErrors(next); return; }
+    }
+    if (!reviewing) {
+      setReviewing(true);
+      return;
     }
     setSaving(true);
     try {
@@ -109,7 +118,7 @@ export default function Checkout() {
     }
   }
   return (
-    <div className="container standard-page">
+    <div className={`container standard-page order-flow-page${reviewing ? " checkout-review-mode" : ""}`}>
       <span className="eyebrow">{t("Collect your next upgrade")}</span>
       <CheckoutSteps active="checkout" />
       <h1>
@@ -121,6 +130,17 @@ export default function Checkout() {
         <EmptyBag />
       ) : (
         <div className="cart-layout">
+          {reviewing && <section className="checkout-review-card">
+            <button type="button" className="review-back" onClick={() => setReviewing(false)}>← {t("Edit checkout")}</button>
+            <h2>{t("Order review")}</h2>
+            <div className="review-items">{items.map((i) => { const p = products.find((product) => product.id === i.productId); return p ? <div key={p.id}><span><strong>{p.name}</strong><small>{i.quantity} × {money(p.price)}</small></span><strong>{money(p.price * i.quantity)}</strong></div> : null; })}</div>
+            <div className="summary-line"><span>{t("Subtotal")}</span><strong>{money(total)}</strong></div>
+            <div className="summary-line"><span>{t("Delivery charge")}</span><strong>{fulfillmentMethod === "DELIVERY" ? money(175) : t("Free")}</strong></div>
+            <div className="summary-line total"><strong>{t("Total")}</strong><strong>{money(total + (fulfillmentMethod === "DELIVERY" ? 175 : 0))}</strong></div>
+            <div className="review-choice"><strong>{fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
+            <div className="review-choice"><strong>{paymentMethod === "MANUAL_QR" ? t("Pay via QR") : t("Pay at shop")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
+            <button className="button dark full" type="button" disabled={saving} onClick={() => void submit({ preventDefault() {} } as FormEvent)}>{saving ? t("Placing order…") : t("Place order")} <ArrowRight size={17} /></button>
+          </section>}
           <form className="checkout-form" onSubmit={submit} noValidate>
             <h2>{t("Customer details")}</h2>
             {customer ? (
@@ -235,10 +255,11 @@ export default function Checkout() {
             </div>
             <fieldset className="payment-panel">
               <legend>{t("Fulfilment and payment")}</legend>
-              <label><input type="radio" checked={fulfillmentMethod === "PICKUP"} onChange={() => { setFulfillmentMethod("PICKUP"); setPaymentMethod("PAY_AT_SHOP"); }} /> {t("Shop pickup (FREE)")}</label>
-              <label><input type="radio" checked={fulfillmentMethod === "DELIVERY"} onChange={() => { setFulfillmentMethod("DELIVERY"); setPaymentMethod("MANUAL_QR"); }} /> {t("Home delivery (+Rs. 175)")}</label>
-              <label><input type="radio" checked={paymentMethod === "PAY_AT_SHOP"} disabled={fulfillmentMethod === "DELIVERY"} onChange={() => setPaymentMethod("PAY_AT_SHOP")} /> {t("Pay at shop")}</label>
-              <label><input type="radio" checked={paymentMethod === "MANUAL_QR"} onChange={() => setPaymentMethod("MANUAL_QR")} /> {t("Pay now via QR")}</label>
+              <label className={fulfillmentMethod === "PICKUP" ? "selected" : ""}><input type="radio" checked={fulfillmentMethod === "PICKUP"} onChange={() => { setFulfillmentMethod("PICKUP"); setPaymentMethod("PAY_AT_SHOP"); }} /><Store size={22} /><span><strong>{t("Shop pickup")}</strong><small>{t("Pick up from our store in Lekhnath")}</small></span></label>
+              <label className={fulfillmentMethod === "DELIVERY" ? "selected" : ""}><input type="radio" checked={fulfillmentMethod === "DELIVERY"} onChange={() => { setFulfillmentMethod("DELIVERY"); setPaymentMethod("MANUAL_QR"); }} /><Truck size={22} /><span><strong>{t("Home delivery")}</strong><small>{t("We’ll deliver to your address")}</small></span></label>
+              <label className={paymentMethod === "PAY_AT_SHOP" ? "selected" : ""}><input type="radio" checked={paymentMethod === "PAY_AT_SHOP"} disabled={fulfillmentMethod === "DELIVERY"} onChange={() => setPaymentMethod("PAY_AT_SHOP")} /><WalletCards size={22} /><span><strong>{t("Pay at shop")}</strong><small>{t("Pay when you collect your order")}</small></span></label>
+              <label className={paymentMethod === "MANUAL_QR" ? "selected" : ""}><input type="radio" checked={paymentMethod === "MANUAL_QR"} onChange={() => setPaymentMethod("MANUAL_QR")} /><QrCode size={22} /><span><strong>{t("Pay via QR")}</strong><small>{t("Scan QR and pay now")}</small></span></label>
+              <label className="coming-soon"><input type="radio" disabled /><span className="esewa-mark">e</span><span><strong>eSewa</strong><small>{t("Pay securely with eSewa")}</small></span><em>{t("Soon")}</em></label>
             </fieldset>
             {fulfillmentMethod === "DELIVERY" && <div className="delivery-fields">
               {(["province", "district", "city", "area", "address"] as const).map((key) => <label key={key}>{t(key)} *<input list={`delivery-${key}-options`} autoComplete="off" value={deliveryAddress[key]} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, [key]: e.target.value })} />{key !== "address" && <datalist id={`delivery-${key}-options`}>{(key === "province" ? ["Koshi Province", "Madhesh Province", "Bagmati Province", "Gandaki Province", "Lumbini Province", "Karnali Province", "Sudurpashchim Province"] : key === "district" ? ["Kaski", "Kathmandu", "Lalitpur", "Chitwan", "Rupandehi", "Morang", "Jhapa"] : key === "city" ? ["Pokhara", "Lekhnath", "Kathmandu", "Bharatpur", "Butwal"] : []).map((value) => <option key={value} value={value} />)}</datalist>}</label>)}
@@ -279,7 +300,7 @@ export default function Checkout() {
               }
               type="submit"
             >
-              {saving ? t("Saving…") : t(fulfillmentMethod === "DELIVERY" ? "Create delivery order" : "Create pickup order")}
+              {saving ? t("Saving…") : t("Continue to review")}
               <ArrowRight size={17} />
             </button>
           </form>
@@ -356,6 +377,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
   const [paymentConfigLoading, setPaymentConfigLoading] = useState(false);
   const [paymentReference, setPaymentReference] = useState("");
   const [paymentMessage, setPaymentMessage] = useState("");
+  const [paymentSubmitted, setPaymentSubmitted] = useState(false);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const isManualQr = order?.payment?.method === "MANUAL_QR" || (order?.payment?.method === "ESEWA" && !order.payment.provider);
   const savePaymentQr = async () => {
@@ -471,7 +493,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       </div>
     );
   return (
-    <div className={`container success-page${paymentOnly ? " payment-only-page" : ""}`}>
+    <div className={`container success-page order-flow-page${paymentOnly ? " payment-only-page" : ""}`}>
       <div className="success-icon">
         <Check size={36} />
       </div>
@@ -528,9 +550,29 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
-      {isManualQr && order.payment?.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
+      {!paymentOnly && isManualQr && !["PAID", "REJECTED"].includes(order.payment?.status || "") && <Link className="button dark full" to={`/order/${order.id}/payment`}>Complete payment <ArrowRight size={17} /></Link>}
+      {!paymentOnly && order.payment?.status === "REJECTED" && <section className="payment-state-card rejected-payment-state">
+        <div className="payment-state-icon"><span>×</span></div>
+        <h2>{t("Payment rejected")}</h2>
+        <p>{t("Your payment could not be verified. You can submit a new payment.")}</p>
+        <Link className="button dark full" to={`/order/${order.id}/payment`}>{t("Submit new payment")} <ArrowRight size={17} /></Link>
+        <Link className="button white full" to={`/order/${order.id}`}>{t("Back to order")}</Link>
+      </section>}
+      {!paymentOnly && order.status === "Completed" && <section className="payment-state-card completed-order-state">
+        <div className="payment-state-icon"><Check size={30} /></div>
+        <h2>{t("Order completed")}</h2>
+        <p>{t("Your order has been completed. Thank you for shopping with us!")}</p>
+      </section>}
+      {paymentOnly && paymentSubmitted && <section className="payment-panel dedicated-payment-step payment-submitted-state">
+        <div className="payment-state-icon"><Check size={30} /></div>
+        <h1>{t("Payment submitted")}</h1>
+        <p>{t("We have received your payment reference and it is under verification.")}</p>
+        <div className="payment-reference-card"><span>{t("Order number")}</span><strong>{order.id}</strong><span>{t("Amount")}</span><strong>{money(order.total)}</strong></div>
+        <button className="button dark full" onClick={() => navigate(`/order/${order.id}`, { replace: true, state: { order } })}>{t("Go to order tracking")} <ArrowRight size={17} /></button>
+      </section>}
+      {paymentOnly && !paymentSubmitted && isManualQr && order.payment?.status !== "PAID" && <section className="payment-panel dedicated-payment-step">
         <CheckoutSteps active="payment" />
-        <h1>{t("Payment for Order #{{id}}", { id: order.id })}</h1><h2>{t("Amount to pay")}: {money(order.total)}</h2><p>{t("Pay the exact order total, then submit your transaction/reference ID. We will verify it shortly.")}</p>
+        <h1>{t("Pay with QR")}</h1><p>{t("Scan the QR using your banking or eSewa app.")}</p>
         {paymentConfigLoading && !paymentConfig?.qrImage && <p className="payment-qr-loading" role="status">{t("Loading payment QR…")}</p>}
         {!paymentConfigLoading && paymentConfig?.qrImage ? <>
           <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
@@ -538,15 +580,19 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
         </> : !paymentConfigLoading && <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}
         {paymentConfig?.instructions && <p>{paymentConfig.instructions}</p>}
+        <div className="payment-order-details"><span>{t("Order number")}<strong>{order.id}</strong></span><span>{t("Amount to pay")}<strong>{money(order.total)}</strong></span></div>
+        <h3 className="payment-after-heading">{t("After payment")}</h3>
+        <ol className="payment-instructions"><li>{t("Pay using the QR.")}</li><li>{t("Enter your transaction/reference ID below.")}</li><li>{t("Tap I Have Paid.")}</li></ol>
         <input value={paymentReference} placeholder={t("Transaction/reference ID")} onChange={(e) => setPaymentReference(e.target.value)} />
         <button className="button dark" disabled={paymentSubmitting || paymentReference.trim().length < 3} onClick={async () => {
           setPaymentSubmitting(true);
           setPaymentMessage("");
+          setPaymentSubmitted(false);
           try {
             const result = await api<{order: Order; message: string}>(`/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", headers: token ? { "X-Order-Token": token } : {}, body: JSON.stringify({ reference: paymentReference.trim() }) });
             setOrder(result.order);
             setPaymentMessage(result.message);
-            if (paymentOnly) window.setTimeout(() => navigate(`/order/${order.id}`, { replace: true, state: { order: result.order } }), 900);
+            setPaymentSubmitted(true);
           } catch (error) {
             setPaymentMessage(error instanceof Error ? error.message : "Could not submit payment.");
           } finally {
