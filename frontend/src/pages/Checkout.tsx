@@ -58,7 +58,7 @@ export default function Checkout() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [note, setNote] = useState("");
+  const [note] = useState("");
   const [fulfillmentMethod, setFulfillmentMethod] = useState<"PICKUP" | "DELIVERY">("PICKUP");
   const [paymentMethod, setPaymentMethod] = useState<"PAY_AT_SHOP" | "MANUAL_QR">("PAY_AT_SHOP");
   const [deliveryAddress, setDeliveryAddress] = useState({ province: "", district: "", city: "", area: "", address: "", landmark: "", notes: "" });
