@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useProducts } from "./ProductContext";
 const key = "me-favourites-v1";
 function read() {
   try {
@@ -21,6 +22,7 @@ const Context = createContext<{ ids: string[]; toggle: (id: string) => void }>({
   toggle: () => {},
 });
 export function FavouritesProvider({ children }: { children: ReactNode }) {
+  const { products } = useProducts();
   const [ids, setIds] = useState<string[]>(read);
   useEffect(() => {
     try {
@@ -29,6 +31,11 @@ export function FavouritesProvider({ children }: { children: ReactNode }) {
       /* Session-only when storage is unavailable. */
     }
   }, [ids]);
+  useEffect(() => {
+    if (!products.length) return;
+    const valid = new Set(products.map((product) => product.id));
+    setIds((current) => current.filter((id) => valid.has(id)));
+  }, [products]);
   useEffect(() => {
     const sync = (e: StorageEvent) => {
       if (e.key === key) setIds(read());
