@@ -165,7 +165,7 @@ export default function Admin() {
       ? "orders"
       : parts[0] === "billing"
         ? "billing"
-      : parts[0] === "payment-qr"
+      : (parts[0] === "payment-qr" || parts[0] === "qr")
         ? "qr"
         : parts[0] === "repairs"
           ? "repairs"
@@ -186,7 +186,7 @@ export default function Admin() {
         ? "/not-admin"
         : value === "products"
           ? "/not-admin/inventory"
-          : `/not-admin/${value}`,
+          : `/not-admin/${value === "qr" ? "payment-qr" : value}`,
     );
   }
   function setInventoryCategory(value: "all" | Category) {
