@@ -259,28 +259,7 @@ export default function Checkout() {
               <label>{t("Nearby landmark (optional)")}<input list="delivery-landmark-options" autoComplete="off" value={deliveryAddress.landmark} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, landmark: e.target.value })} /><datalist id="delivery-landmark-options"><option value="Near the shop" /><option value="Near main road" /></datalist></label>
               <label>{t("Delivery notes (optional)")}<textarea value={deliveryAddress.notes} onChange={(e) => setDeliveryAddress({ ...deliveryAddress, notes: e.target.value })} /></label>
             </div>}
-            <label htmlFor="order-note">
-              {t("Order note ")}
-              <span className="optional">{t("(optional)")}</span>
-            </label>
-            <textarea
-              id="order-note"
-              rows={4}
-              maxLength={1000}
-              placeholder={t(
-                "A preferred pickup time or a question about your order…",
-              )}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
             <CancellationPolicy />
-            <p className="privacy-note">
-              {t(
-                fulfillmentMethod === "DELIVERY"
-                  ? "Your details are shared with the shop to arrange delivery and payment verification."
-                  : "Your details are shared with the shop to arrange your pickup. You can also send the summary through WhatsApp for pickup confirmation.",
-              )}
-            </p>
             {errors.save && (
               <p className="field-error" role="alert">
                 {errors.save}
