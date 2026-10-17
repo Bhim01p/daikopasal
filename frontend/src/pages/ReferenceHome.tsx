@@ -146,7 +146,7 @@ export default function ReferenceHome() {
           <SafeImage
             className="reference-banner-photo"
             src={slide.image}
-            alt=""
+            alt={t(slide.title)}
             fetchPriority="high"
             draggable={false}
           />

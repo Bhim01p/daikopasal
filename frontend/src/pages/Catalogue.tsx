@@ -3,7 +3,7 @@ import { useT } from "../context/LanguageContext";
 import { normalizeDigits } from "../../../shared/locale.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowRight } from "lucide-react";
 import { useProducts } from "../context/ProductContext";
 import { accessoryCategories } from "../data/categories";
 import type { Category } from "../types";
@@ -118,6 +118,7 @@ export default function Catalogue({ category }: { category?: Category }) {
     <>
       <div className="container catalogue-layout">
         <div className="catalogue-results">
+          <nav className="breadcrumb" aria-label={t("Breadcrumb") }><Link to="/">{t("Home")}</Link><ArrowRight size={12} /><span>{t(title)}</span></nav>
           <div className="catalogue-heading">
             <h1>{t(title)}</h1>
           </div>

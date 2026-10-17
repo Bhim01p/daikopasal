@@ -7,4 +7,4 @@ Disallow: /not-admin
 Disallow: /login
 Disallow: /account
 Disallow: /my-orders
-# Add the public sitemap URL after choosing a production domain.
+Sitemap: https://machhapuchhreeelectronics.vercel.app/sitemap.xml

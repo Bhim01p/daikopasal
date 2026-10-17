@@ -26,7 +26,7 @@ export default function CategoryNav({ cards = false }: { cards?: boolean }) {
     >
       {shopCategories.map((category) => (
         <NavLink key={category.to} to={category.to}>
-          {cards && <img src={category.image} alt="" />}
+          {cards && <img src={category.image} alt={t(category.label)} />}
           <span>{t(category.label)}</span>
         </NavLink>
       ))}

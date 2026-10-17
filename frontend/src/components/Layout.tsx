@@ -52,7 +52,7 @@ export function Brand() {
       <img
         className="brand-logo"
         src="/assets/logo.png"
-        alt=""
+        alt={shop.name}
         width="52"
         height="52"
       />

@@ -100,6 +100,24 @@ function Meta() {
           ? "Shop Admin"
           : titles[pathname] || "Page Not Found";
     document.title = `${t(title)} | ${shop.name}`;
+    const publicOrigin = "https://machhapuchhreeelectronics.vercel.app";
+    const canonicalPath = pathname === "/" ? "" : pathname;
+    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
+    canonical.href = `${publicOrigin}${canonicalPath}`;
+    const setMeta = (selector: string, attribute: "name" | "property", content: string) => {
+      let element = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${selector}"]`);
+      if (!element) { element = document.createElement("meta"); element.setAttribute(attribute, selector); document.head.appendChild(element); }
+      element.content = content;
+    };
+    const description = p ? (language === "ne" && p.descriptionNe ? p.descriptionNe : p.description) : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand phones, accessories and repair services.`;
+    setMeta("description", "name", description);
+    setMeta("og:title", "property", document.title);
+    setMeta("og:description", "property", description);
+    setMeta("og:url", "property", canonical.href);
+    setMeta("og:type", "property", p ? "product" : "website");
+    setMeta("twitter:title", "name", document.title);
+    setMeta("twitter:description", "name", description);
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute(
