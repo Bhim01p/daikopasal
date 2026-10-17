@@ -1,6 +1,6 @@
 # Production Readiness Plan
 
-Progress: 68%
+Progress: 84%
 
 ## Phase 1 — SEO & routing
 - [x] Unique route-aware page titles
@@ -13,12 +13,12 @@ Progress: 68%
 
 ## Phase 3 — Accessibility & semantic HTML
 - [x] Meaningful image alt text
-- [~] Heading hierarchy and basic accessibility review
+- [x] Heading hierarchy and basic accessibility review
 - [x] Branded 404 page
 
 ## Phase 4 — Mobile/UI production polish
 - [~] Fix obvious public mobile layout issues
-- [~] Remove temporary public content
+- [x] Remove temporary public content
 
 ## Phase 5 — Performance & console cleanup
 - [x] Review source-map and bundle configuration
