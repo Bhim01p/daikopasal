@@ -25,7 +25,7 @@ function destination(value: string | null) {
   return value &&
     /^\/(checkout|my-orders|account|repair|order\/[a-zA-Z0-9-]+)$/.test(value)
     ? value
-    : "/account";
+    : "/";
 }
 export function Login({
   embedded = false,

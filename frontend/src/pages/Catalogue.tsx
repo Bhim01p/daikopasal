@@ -116,13 +116,12 @@ export default function Catalogue({ category }: { category?: Category }) {
   ].filter(Boolean).length;
   return (
     <>
-      <div className="container catalogue-layout">
+      <div className={`container catalogue-layout${!category ? " catalogue-search-page" : ""}`}>
         <div className="catalogue-results">
           <nav className="breadcrumb" aria-label={t("Breadcrumb") }><Link to="/">{t("Home")}</Link><ArrowRight size={12} /><span>{t(title)}</span></nav>
           <div className="catalogue-heading">
             <h1>{t(title)}</h1>
           </div>
-          <CategoryNav />
           <div className="catalogue-controls">
             <button
               ref={filterButton}
@@ -173,6 +172,7 @@ export default function Catalogue({ category }: { category?: Category }) {
                 </button>
               </div>
             </div>
+            <CategoryNav />
             <label className="stock-filter">
               <input
                 type="checkbox"

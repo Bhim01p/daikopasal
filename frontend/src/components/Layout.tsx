@@ -104,8 +104,9 @@ export default function Layout() {
       "/search",
     ].includes(location.pathname) || location.pathname.startsWith("/product/");
   useEffect(() => {
-    const nextQuery = location.pathname === "/search" ? new URLSearchParams(location.search).get("q") || "" : "";
-    setQuery(nextQuery);
+    const keepsSearch = ["/search", "/mobiles", "/second-hand", "/accessories"].includes(location.pathname);
+    const nextQuery = keepsSearch ? new URLSearchParams(location.search).get("q") || "" : "";
+    if (nextQuery || !keepsSearch) setQuery(nextQuery);
   }, [location.pathname, location.search]);
   useEffect(() => {
     setMenu(false);

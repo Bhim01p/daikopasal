@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useT } from "../context/LanguageContext";
 export const shopCategories = [
   {
@@ -19,13 +19,15 @@ export const shopCategories = [
 ];
 export default function CategoryNav({ cards = false }: { cards?: boolean }) {
   const t = useT();
+  const location = useLocation();
+  const activeQuery = new URLSearchParams(location.search).get("q") || "";
   return (
     <nav
       className={cards ? "shop-category-cards" : "shop-category-switch"}
       aria-label={t("Shop categories")}
     >
       {shopCategories.map((category) => (
-        <NavLink key={category.to} to={category.to}>
+        <NavLink key={category.to} to={activeQuery ? `${category.to}?q=${encodeURIComponent(activeQuery)}` : category.to}>
           {cards && <img src={category.image} alt={t(category.label)} />}
           <span>{t(category.label)}</span>
         </NavLink>
