@@ -98,6 +98,8 @@ body, #root { min-height: 100dvh; background: var(--sky-background); }
 .login-language .language-switch select { width: auto; min-width: 104px; max-width: 150px; padding-inline: 10px 26px; }
 .login-language { display: none; }
 
+.mobile-clear-filters { display: none; }
+
 .repair-section-photo {
   display: block;
   width: 100%;
@@ -109,6 +111,68 @@ body, #root { min-height: 100dvh; background: var(--sky-background); }
 }
 
 @media (max-width: 767px) {
+  /* Keep catalogue products directly below one toolbar and a results line. */
+  :root body .catalogue-layout { padding-top: 8px; }
+  .catalogue-results > .breadcrumb { display: none; }
+  .catalogue-results > .catalogue-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  :root body .catalogue-controls {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    margin: 0;
+  }
+  :root body .catalogue-controls .sort-label {
+    grid-column: auto;
+    width: 100%;
+    max-width: 190px;
+    min-width: 0;
+    justify-self: end;
+  }
+  :root body .catalogue-controls .sort-label select {
+    width: 100%;
+    max-width: none;
+    height: 44px;
+    min-height: 44px;
+    padding: 6px 28px 6px 10px;
+    font-size: 13px;
+  }
+  :root body .catalogue-controls .catalogue-filter-button {
+    height: 44px;
+    min-height: 44px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  :root body .catalogue-results > .result-count {
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 2px 0 6px;
+    min-height: 32px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  .catalogue-results > .result-count > span,
+  .catalogue-results > .active-filters { display: none; }
+  .catalogue-results .mobile-clear-filters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 4px 0 4px 8px;
+    border: 0;
+    background: transparent;
+    color: var(--sky-text);
+    font-size: 12px;
+  }
   html, body, #root { max-width: 100%; overflow-x: clip; }
   .login-language { display: flex; justify-content: flex-end; margin-bottom: 18px; }
   .compare-page { width: 100%; min-width: 0; overflow-x: clip; }

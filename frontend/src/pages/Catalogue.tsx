@@ -302,6 +302,11 @@ export default function Catalogue({ category }: { category?: Category }) {
             {result.length} {result.length === 1 ? t("product") : t("products")}{" "}
             {query && t("matching “{{query}}”", { query })}
             <span>{t("Shop pickup available")}</span>
+            {active && (
+              <button className="mobile-clear-filters" onClick={reset}>
+                {t("Clear all ")}<X size={14} />
+              </button>
+            )}
           </div>
           {query &&
             referencePhones.some((p) =>
