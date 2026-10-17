@@ -411,6 +411,16 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
     };
   }, [id, token, customer?.id, checking]);
   useEffect(() => {
+    const clearAccountReceipt = () => {
+      if (order?.accountOrder) {
+        setOrder(undefined);
+        navigate("/login", { replace: true });
+      }
+    };
+    window.addEventListener("customer-logout", clearAccountReceipt);
+    return () => window.removeEventListener("customer-logout", clearAccountReceipt);
+  }, [navigate, order?.accountOrder]);
+  useEffect(() => {
     if (!isManualQr) return;
     let active = true;
     setPaymentConfigLoading(true);
@@ -545,8 +555,8 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
         <CheckoutSteps active="payment" />
         <h1>{t("Pay with QR")}</h1><p>{t("Scan the QR using your banking or eSewa app.")}</p>
         {paymentConfigLoading && !paymentConfig?.qrImage && <p className="payment-qr-loading" role="status">{t("Loading payment QR…")}</p>}
-        {!paymentConfigLoading && paymentConfig?.qrImage ? <>
-          <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} />
+        {paymentConfig?.qrImage ? <>
+          <img className="payment-qr-image" src={paymentConfig.qrImage} alt={t("Shop payment QR")} decoding="async" fetchPriority="high" />
           <button type="button" className="button white payment-qr-download" onClick={savePaymentQr}>{t("Save QR to phone")}</button>
         </> : !paymentConfigLoading && <p className="payment-qr-missing" role="status">{t("The shop payment QR is not available yet. Please contact the shop before paying.")}</p>}
         {paymentConfig?.accountName && <p><strong>{paymentConfig.accountName}</strong></p>}

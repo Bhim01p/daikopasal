@@ -66,6 +66,7 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await api("/customer/logout", { method: "POST", body: "{}" });
     setCustomer(null);
+    window.dispatchEvent(new Event("customer-logout"));
   }
   return (
     <Context.Provider

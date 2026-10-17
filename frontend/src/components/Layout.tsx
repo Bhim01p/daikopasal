@@ -32,6 +32,13 @@ import AccountDialog from "./AccountDialog";
 import CartDialog from "./CartDialog";
 import WhatsAppIcon from "./WhatsAppIcon";
 import { ThemeSwitch } from "../context/ThemeContext";
+const searchHistoryKey = "me-search-history-v1";
+function readSearchHistory() {
+  try {
+    const value = JSON.parse(localStorage.getItem(searchHistoryKey) || "[]");
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").slice(0, 8) : [];
+  } catch { return []; }
+}
 const links = [
   ["/", "Home"],
   ["/mobiles", "New phones"],
@@ -81,6 +88,8 @@ export default function Layout() {
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
+  const [searchHistory, setSearchHistory] = useState<string[]>(readSearchHistory);
+  const [searchFocused, setSearchFocused] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
@@ -94,6 +103,10 @@ export default function Layout() {
       "/accessories",
       "/search",
     ].includes(location.pathname) || location.pathname.startsWith("/product/");
+  useEffect(() => {
+    const nextQuery = location.pathname === "/search" ? new URLSearchParams(location.search).get("q") || "" : "";
+    setQuery(nextQuery);
+  }, [location.pathname, location.search]);
   useEffect(() => {
     setMenu(false);
     setAccountOpen(false);
@@ -175,7 +188,12 @@ export default function Layout() {
               role="search"
               onSubmit={(event) => {
                 event.preventDefault();
-                navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+                const value = query.trim();
+                if (!value) return;
+                const nextHistory = [value, ...searchHistory.filter((item) => item.toLowerCase() !== value.toLowerCase())].slice(0, 8);
+                setSearchHistory(nextHistory);
+                try { localStorage.setItem(searchHistoryKey, JSON.stringify(nextHistory)); } catch { /* optional cache */ }
+                navigate(`/search?q=${encodeURIComponent(value)}`);
               }}
             >
               <label className="sr-only" htmlFor="header-query">
@@ -184,12 +202,17 @@ export default function Layout() {
               <input
                 id="header-query"
                 value={query}
+                onFocus={() => setSearchFocused(true)}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={t("Search products…")}
               />
               <button type="submit" aria-label={t("Search the shop")}>
                 <Search size={21} />
               </button>
+              {searchFocused && searchHistory.length > 0 && <div className="search-history" onMouseLeave={() => setSearchFocused(false)}>
+                <div className="search-history-heading"><strong>{t("Recent searches")}</strong><button type="button" onClick={() => { setSearchHistory([]); localStorage.removeItem(searchHistoryKey); }}>{t("Clear all")}</button></div>
+                {searchHistory.map((item) => <div className="search-history-item" key={item}><button type="button" onClick={() => { setQuery(item); setSearchFocused(false); navigate(`/search?q=${encodeURIComponent(item)}`); }}>{item}</button><button type="button" aria-label={t("Delete search {{v0}}", { v0: item })} onClick={() => { const next = searchHistory.filter((entry) => entry !== item); setSearchHistory(next); localStorage.setItem(searchHistoryKey, JSON.stringify(next)); }}><X size={14} /></button></div>)}
+              </div>}
             </form>
           )}
           <div className="nav-tools">

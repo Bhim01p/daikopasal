@@ -40,8 +40,16 @@ export function FavouritesProvider({ children }: { children: ReactNode }) {
     const sync = (e: StorageEvent) => {
       if (e.key === key) setIds(read());
     };
+    const clearOnLogout = () => {
+      setIds([]);
+      try { localStorage.removeItem(key); } catch { /* Session-only when storage is unavailable. */ }
+    };
     window.addEventListener("storage", sync);
-    return () => window.removeEventListener("storage", sync);
+    window.addEventListener("customer-logout", clearOnLogout);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("customer-logout", clearOnLogout);
+    };
   }, []);
   return (
     <Context.Provider

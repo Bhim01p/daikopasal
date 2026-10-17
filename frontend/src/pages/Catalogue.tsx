@@ -124,36 +124,6 @@ export default function Catalogue({ category }: { category?: Category }) {
           </div>
           <CategoryNav />
           <div className="catalogue-controls">
-            <div className="search-input">
-              <Search size={17} />
-              <label className="sr-only" htmlFor="catalogue-search">
-                {t("Search products")}
-              </label>
-              <input
-                id="catalogue-search"
-                value={query}
-                onChange={(e) => {
-                  const next = new URLSearchParams(params);
-                  e.target.value
-                    ? next.set("q", e.target.value)
-                    : next.delete("q");
-                  setParams(next, { replace: true });
-                }}
-                placeholder={t("Search products or brands…")}
-              />
-              {query && (
-                <button
-                  onClick={() => {
-                    const next = new URLSearchParams(params);
-                    next.delete("q");
-                    setParams(next, { replace: true });
-                  }}
-                  aria-label={t("Clear search")}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
             <button
               ref={filterButton}
               aria-label={t("Filter")}
