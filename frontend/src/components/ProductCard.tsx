@@ -7,6 +7,7 @@ import WhatsAppIcon from "./WhatsAppIcon";
 import type { Product } from "../types";
 import { money, shop, whatsapp } from "../data/shop";
 import { useCart } from "../context/CartContext";
+import { useEffect, useRef, useState } from "react";
 import { isIllustration, productImageSource } from "../utils/products";
 export function ProductImage({
   product,
@@ -18,7 +19,7 @@ export function ProductImage({
   const t = useT();
   return (
     <div
-      className={`product-visual ${className}`}
+      className={`product-visual ${isIllustration(product) ? "product-visual-placeholder" : ""} ${className}`}
       style={{ backgroundColor: product.color + "24" }}
     >
       <SafeImage
@@ -35,8 +36,13 @@ export function ProductImage({
 export default function ProductCard({ product }: { product: Product }) {
   const t = useT();
   const { add } = useCart();
+  const [added, setAdded] = useState(false);
+  const addedTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => {
+    if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
+  }, []);
   return (
-    <article className="product-card">
+    <article className={`product-card${isIllustration(product) ? " product-card-placeholder" : ""}`}>
       <ProductTools product={product} />
       <Link to={`/product/${product.slug}`} className="product-image-link">
         <ProductImage product={product} />
@@ -58,10 +64,14 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="product-spec">
           {product.category === "accessory"
             ? t(product.accessoryCategory)
-            : t("{{v0}}{{v1}} GB storage", {
-                v0: String(product.ram ? `${product.ram} GB RAM · ` : ""),
-                v1: String(product.storage),
-              })}
+            : product.storage === undefined
+              ? product.ram === undefined
+                ? t("Specifications not recorded")
+                : t("{{v0}} GB RAM", { v0: String(product.ram) })
+              : t("{{v0}}{{v1}} GB storage", {
+                  v0: String(product.ram ? `${product.ram} GB RAM · ` : ""),
+                  v1: String(product.storage),
+                })}
         </p>
         {product.category === "used" && product.battery !== undefined && (
           <p className="product-spec">
@@ -84,11 +94,16 @@ export default function ProductCard({ product }: { product: Product }) {
           <button
             className="add-button"
             disabled={!product.available}
-            onClick={() => add(product.id)}
+            onClick={() => {
+              add(product.id);
+              setAdded(true);
+              if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
+              addedTimer.current = window.setTimeout(() => setAdded(false), 1400);
+            }}
             aria-label={t("Add {{v0}} to cart", { v0: String(product.name) })}
           >
             <Plus size={19} />
-            <span>{t("Add to cart")}</span>
+            <span>{added ? t("Added to cart") : t("Add to cart")}</span>
           </button>
         </div>
         <div className="card-links">

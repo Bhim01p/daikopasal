@@ -22,6 +22,12 @@ export const paymentMethods = ["PAY_AT_SHOP", "MANUAL_QR", "ESEWA"];
 // PENDING_VERIFICATION remains accepted for orders created before the canonical
 // VERIFICATION_PENDING status was introduced.
 export const paymentStatuses = ["PENDING", "VERIFICATION_PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
+function variantKeyFor(ram, storage) {
+  const parts = [];
+  if (ram !== undefined) parts.push(`${ram}gb`);
+  if (storage !== undefined) parts.push(`${storage}gb`);
+  return parts.length ? parts.join("-") : "unspecified";
+}
 export const accessoryCategories = [
   "Mobile Covers",
   "Chargers",
@@ -171,6 +177,12 @@ export function validateProduct(input, existing) {
     added: existing?.added || Date.now(),
     reviewedAt: existing?.reviewedAt || null,
   };
+  if (category === "used" && !existing && !images.some((value) => /^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(value)))
+    throw new HttpError(400, "Upload at least one actual device photo for a used phone.");
+  const catalogueDeviceId = category === "new" ? input.catalogueDeviceId ?? existing?.catalogueDeviceId : undefined;
+  if (catalogueDeviceId !== undefined) {
+    result.catalogueDeviceId = text(catalogueDeviceId, "Catalogue device ID", 1, 160);
+  }
   result.specVariant = text(
     input.specVariant ?? existing?.specVariant ?? "",
     "Model variant",
@@ -244,6 +256,7 @@ export function validateProduct(input, existing) {
     }
     if (input.ram !== undefined) result.ram = integer(input.ram, "RAM", 1, 64);
     if (result.ram) result.specs.RAM = `${result.ram} GB`;
+    if (result.catalogueDeviceId) result.variantKey = variantKeyFor(result.ram, result.storage);
   } else {
     delete result.specs.RAM;
     delete result.specs.Storage;
@@ -264,7 +277,7 @@ export function validateProduct(input, existing) {
     if (!inspection || typeof inspection !== "object" || Array.isArray(inspection))
       throw new HttpError(400, "Invalid used-phone inspection.");
     const checks = {};
-    for (const key of ["screen", "cameras", "charging", "speakers", "buttons"]) {
+    for (const key of ["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"]) {
       const value = inspection.checks?.[key] || "not_checked";
       if (!["not_checked", "passed", "issue"].includes(value))
         throw new HttpError(400, "Invalid used-phone inspection status.");

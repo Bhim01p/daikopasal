@@ -96,6 +96,13 @@ function adminOrder(order) {
   const { receiptToken, ...receipt } = publicOrder(order);
   return { ...receipt, ...(order.handover ? { handover: order.handover } : {}) };
 }
+function validateCatalogueGrouping(product) {
+  if (!product.catalogueDeviceId) return product;
+  if (product.category !== "new") throw new HttpError(400, "Catalogue grouping is only available for new phones.");
+  const known = adminPhoneCatalogue().some((phone) => phone.deviceId === product.catalogueDeviceId);
+  if (!known) throw new HttpError(400, "Select a valid catalogue device.");
+  return product;
+}
 function publicRepairTicket(ticket) {
   return { id: ticket.id, device: ticket.device, status: ticket.status,
     history: ticket.history.map(({ status, date }) => ({ status, date })) };
@@ -839,7 +846,7 @@ export function createApp(options = {}) {
         });
       }
       if (route === "/api/admin/products" && method === "POST") {
-        const product = validateProduct(await body(request));
+        const product = validateCatalogueGrouping(validateProduct(await body(request)));
         product.id = randomUUID();
         product.reviewedAt = new Date().toISOString();
         if (product.inspection && (Object.values(product.inspection.checks).some((value) => value !== "not_checked") || product.inspection.defects || product.inspection.included))
@@ -911,7 +918,7 @@ export function createApp(options = {}) {
           });
           return json(response, 200, { ok: true });
         }
-        const updated = validateProduct(input, product);
+        const updated = validateCatalogueGrouping(validateProduct(input, product));
         if (updated.price !== product.price || updated.stockQuantity !== product.stockQuantity)
           updated.reviewedAt = new Date().toISOString();
         if (updated.inspection && JSON.stringify(updated.inspection) !== JSON.stringify(product.inspection))

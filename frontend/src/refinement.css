@@ -1168,6 +1168,23 @@ html[lang="ne"] h3 {
 .catalogue-mode-switch { margin: 0 0 18px; }
 .accessory-simple .accessory-hide { display:none; }
 .admin-editor { position:relative; }
+.product-variant-selector { margin: 18px 0 20px; padding: 14px 16px; border: 1px solid var(--line, #e5dfe1); border-radius: 12px; }
+.used-photo-trust { margin: 10px 0 0; color: #13795b; font-size: 13px; font-weight: 700; }
+.used-trust-summary { margin: 18px 0; padding: 16px; border: 1px solid var(--line, #e5dfe1); border-radius: 12px; }
+.used-trust-summary h2 { margin: 0 0 12px; font-size: 18px; }
+.used-trust-summary dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; margin: 0; }
+.used-trust-summary dl div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line, #e5dfe1); padding: 6px 0; }
+.used-trust-summary dt { color: var(--muted, #6b7280); }
+.used-trust-summary dd { margin: 0; font-weight: 600; text-align: right; }
+@media (max-width: 640px) { .used-trust-summary dl { grid-template-columns: 1fr; } }
+.product-variant-selector h2 { margin: 0 0 12px; font-size: 16px; }
+.product-variant-row { display:flex; align-items:center; gap:14px; margin-top:10px; }
+.product-variant-row > span { min-width:62px; color:var(--muted, #6b7280); font-size:14px; }
+.product-variant-options { display:flex; flex-wrap:wrap; gap:8px; }
+.product-variant-options button { min-height:38px; padding:7px 12px; border:1px solid var(--line, #e5dfe1); border-radius:8px; background:transparent; color:inherit; cursor:pointer; }
+.product-variant-options button.selected { border-color:#c8102e; color:#c8102e; font-weight:700; }
+.product-variant-options button:disabled { opacity:.55; cursor:not-allowed; }
+@media (max-width: 640px) { .product-variant-row { align-items:flex-start; flex-direction:column; gap:7px; } }
 .admin-editor-close { position:sticky; top:12px; z-index:5; display:block; margin:0 0 -40px auto; width:42px; height:42px; border-radius:999px; font-size:24px; line-height:1; color:#fff; border:1px solid #c8102e; background:#c8102e; box-shadow:0 4px 12px rgba(126, 8, 30, .22); }
 .admin-editor-close:hover { color:#fff; background:#a90d28; }
 .catalogue-mode-switch .button { flex:1; }

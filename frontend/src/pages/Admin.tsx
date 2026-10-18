@@ -715,6 +715,14 @@ export default function Admin() {
       const catalogueDraft = selectedCatalogue && catalogueMode === "catalogue"
         ? { ...draft, brand: selectedCatalogue.brand, name: selectedCatalogue.model, ram: selectedCatalogue.ram ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]) : undefined), storage: selectedCatalogue.storage ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1]) : undefined), catalogueDeviceId: selectedCatalogue.deviceId }
         : draft;
+      if (catalogueDraft.category === "used") {
+        if (!catalogueDraft.condition) throw new Error("Select a condition grade for this used phone.");
+        if (catalogueDraft.battery === undefined || !Number.isInteger(catalogueDraft.battery) || catalogueDraft.battery < 0 || catalogueDraft.battery > 100)
+          throw new Error("Enter battery health from 0 to 100 for this used phone.");
+        if (!productImages(catalogueDraft).some((image) => image.startsWith("/api/images/upload-")))
+          throw new Error("Upload at least one actual device photo for this used phone.");
+        if ((catalogueDraft.stockQuantity || 0) > 1 && !window.confirm(t("Use stock above 1 only when the used phones are genuinely interchangeable in condition, battery, photos, accessories, defects, and price."))) return;
+      }
       const specs: Record<string, string> = {};
       for (const row of specRows) {
         if (!row.name.trim() && !row.value.trim()) continue;
@@ -1412,6 +1420,7 @@ export default function Admin() {
                             setDraft({
                               ...draft,
                               category,
+                              stockQuantity: !draft.id && category === "used" ? 1 : draft.stockQuantity,
                               image,
                               images: [
                                 image,
@@ -1532,6 +1541,7 @@ export default function Admin() {
                               ),
                             )}
                           </select>
+                          <small>{t("Like New: minimal wear · Excellent: minor wear · Good: visible normal wear · Fair: noticeable wear and disclosed issues")}</small>
                         </div>
                         <div>
                           <label htmlFor="product-battery">
@@ -1557,13 +1567,13 @@ export default function Admin() {
                       </div>
                       <fieldset className="used-inspection-editor">
                         <legend>{t("Used-phone inspection")}</legend>
-                        {(["screen", "cameras", "charging", "speakers", "buttons"] as const).map((key) => <label key={key}>{t(key)}
-                          <select value={draft.inspection?.checks?.[key] || "not_checked"} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks, [key]: event.target.value as "not_checked" | "passed" | "issue" }, defects: draft.inspection?.defects || "", included: draft.inspection?.included || "" } })}>
+                        {(["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"] as const).map((key) => <label key={key}>{t(key)}
+                          <select value={draft.inspection?.checks?.[key] || "not_checked"} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks, [key]: event.target.value as "not_checked" | "passed" | "issue" }, defects: draft.inspection?.defects || "", included: draft.inspection?.included || "" } })}>
                             <option value="not_checked">{t("Not checked")}</option><option value="passed">{t("Passed")}</option><option value="issue">{t("Issue found")}</option>
                           </select>
                         </label>)}
-                        <label>{t("What changed in this phone?")}<textarea maxLength={500} placeholder={t("Describe scratches, replaced parts, repairs, or other changes")} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
-                        <label>{t("Included accessories")}<input maxLength={300} value={draft.inspection?.included || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: draft.inspection?.defects || "", included: event.target.value } })} /></label>
+                        <label>{t("What changed in this phone?")}<textarea maxLength={500} placeholder={t("Describe scratches, replaced parts, repairs, or other changes")} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
+                        <label>{t("Included accessories")}<input maxLength={300} value={draft.inspection?.included || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks }, defects: draft.inspection?.defects || "", included: event.target.value } })} /></label>
                       </fieldset></div>
                     )}
                   </fieldset>

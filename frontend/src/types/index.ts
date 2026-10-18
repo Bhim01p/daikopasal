@@ -17,6 +17,8 @@ export interface Product {
   price: number;
   ram?: number;
   storage?: number;
+  catalogueDeviceId?: string;
+  variantKey?: string;
   image: string;
   images?: string[];
   catalogueImage?: { url: string; deviceId: string; attributionRequired: boolean; sourceUrl: string; license: string; images?: { url: string; sourceUrl?: string; license?: string; attributionRequired?: boolean; position?: number }[] };
@@ -34,7 +36,7 @@ export interface Product {
   condition?: "Like New" | "Excellent" | "Good" | "Fair";
   battery?: number;
   inspection?: {
-    checks: Record<"screen" | "cameras" | "charging" | "speakers" | "buttons", "not_checked" | "passed" | "issue">;
+    checks: Record<string, "not_checked" | "passed" | "issue">;
     defects: string;
     included: string;
     inspectedAt?: string | null;

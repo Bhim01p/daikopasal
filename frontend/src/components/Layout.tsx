@@ -271,7 +271,7 @@ export default function Layout() {
               })}
             >
               <ShoppingBag size={20} />
-              <span>{count}</span>
+              <span key={count} className="cart-count-badge">{count}</span>
             </button>
             <button
               className="icon-button menu-button"
@@ -453,7 +453,7 @@ export default function Layout() {
             aria-label={t("Shopping cart, {{v0}} items", { v0: String(count) })}
           >
             <ShoppingBag size={24} />
-            <span>{count}</span>
+            <span key={count} className="cart-count-badge">{count}</span>
           </button>
           <a
             className="floating-whatsapp"

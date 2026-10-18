@@ -28,6 +28,8 @@ export default function ReferenceHome() {
   ];
   const [index, setIndex] = useState(0);
   const carousel = useRef<HTMLElement>(null);
+  const heroVisual = useRef<HTMLDivElement>(null);
+  const tiltFrame = useRef<number | null>(null);
   useEffect(() => {
     const section = carousel.current;
     if (!section) return;
@@ -89,6 +91,16 @@ export default function ReferenceHome() {
         }}
         onPointerMove={(e) => {
           if (e.pointerType === "touch") return;
+          if (window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)").matches && heroVisual.current) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            if (tiltFrame.current) cancelAnimationFrame(tiltFrame.current);
+            tiltFrame.current = requestAnimationFrame(() => {
+              heroVisual.current?.style.setProperty("--hero-tilt-x", `${(-y * 4).toFixed(2)}deg`);
+              heroVisual.current?.style.setProperty("--hero-tilt-y", `${(x * 6).toFixed(2)}deg`);
+            });
+          }
           const d = drag.current;
           if (
             d &&
@@ -112,6 +124,10 @@ export default function ReferenceHome() {
         }}
         onPointerCancel={() => {
           drag.current = null;
+          if (heroVisual.current) { heroVisual.current.style.setProperty("--hero-tilt-x", "0deg"); heroVisual.current.style.setProperty("--hero-tilt-y", "0deg"); }
+        }}
+        onPointerLeave={() => {
+          if (heroVisual.current) { heroVisual.current.style.setProperty("--hero-tilt-x", "0deg"); heroVisual.current.style.setProperty("--hero-tilt-y", "0deg"); }
         }}
         onTouchStart={(e) => {
           const touch = e.touches[0];
@@ -143,13 +159,15 @@ export default function ReferenceHome() {
           aria-roledescription="slide"
           aria-label={`${index + 1} / ${slides.length}: ${t(slide.title)}`}
         >
-          <SafeImage
-            className="reference-banner-photo"
-            src={slide.image}
-            alt={t(slide.title)}
-            fetchPriority="high"
-            draggable={false}
-          />
+          <div ref={heroVisual} className="reference-banner-visual">
+            <SafeImage
+              className="reference-banner-photo"
+              src={slide.image}
+              alt={t(slide.title)}
+              fetchPriority="high"
+              draggable={false}
+            />
+          </div>
           <div className="hero-copy">
             <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
             <h1>{t(slide.title)}</h1>

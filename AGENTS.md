@@ -251,3 +251,93 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: Existing billing APIs, stock limits, totals, issue/print flow, PDF links, and bill history remain in use. No backend or database changes.
 - **Known issues**: Manual visual QA is still recommended on desktop and phone widths.
 - **Recommended next step**: Test adding multiple products, quantity limits, clear/remove, issue-and-print, and Open PDF on desktop/mobile.
+
+### Entry: 2026-10-18 - GPT/Codex (Product Detail Motion Phase 3)
+- **Agent**: GPT/Codex
+- **Task completed**: Added scoped Product Detail/Product Gallery motion: guarded desktop pointer depth, image transition states, thumbnail feedback, mobile pressed states, reduced-motion handling, and brief add-to-cart acknowledgement.
+- **Files changed**: `frontend/src/components/ProductGallery.tsx`, `frontend/src/pages/Product.tsx`, `frontend/src/product-gallery.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Product detail gallery preserves existing image priority, swipe/keyboard behavior, attribution, loading, and placeholder handling while adding restrained Phase 3 motion.
+- **Known issues**: Manual visual QA is recommended across desktop/mobile and reduced-motion settings.
+- **Recommended next step**: Review the Phase 3 product detail page visually before starting any later motion phase.
+
+### Entry: 2026-10-18 - GPT/Codex (Storefront Product Grid Motion Phase 4)
+- **Agent**: GPT/Codex
+- **Task completed**: Refined shared ProductCard interaction across storefront grids by reusing Phase 2 card motion, suppressing placeholder image movement, and adding restrained action press/favorite/add-to-cart feedback.
+- **Files changed**: `frontend/src/components/ProductCard.tsx`, `frontend/src/ruby-theme.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Shop, category, search, favourites, and related-product grids use the same calm card behavior without pointer tracking or continuous motion. Image priority and action logic remain unchanged.
+- **Known issues**: Manual visual QA is recommended at requested mobile widths, both themes, and reduced-motion settings.
+- **Recommended next step**: Review Phase 4 storefront cards visually before starting Phase 5.
+
+### Entry: 2026-10-18 - GPT/Codex (Customer Storefront Micro-interactions Phase 5)
+- **Agent**: GPT/Codex
+- **Task completed**: Added restrained storefront feedback for cart count changes, shared press/focus states, search focus, quantity disabled states, and reduced-motion behavior.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `frontend/src/ruby-theme.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Customer navigation, search, cart, buttons, quantity controls, favorites/compare controls, and form-focused controls now share consistent lightweight feedback without changing logic or adding dependencies.
+- **Known issues**: Manual visual QA remains recommended across themes, languages, mobile, keyboard, and reduced-motion settings.
+- **Recommended next step**: Review Phase 5 interactions visually before starting Phase 6.
+
+### Entry: 2026-10-18 - GPT/Codex (Motion System Final Audit Phase 6+7)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited Phases 1–5 for mobile, accessibility, reduced-motion, consistency, performance, and regression risks; simplified gallery rendering by removing blanket `will-change` and preventing placeholder scaling.
+- **Files changed**: `frontend/src/product-gallery.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Touch input remains isolated from pointer tilt, reduced-motion rules preserve content and state indicators, gallery placeholders stay static, and no new dependencies or motion systems were added.
+- **Known issues**: Manual browser QA is still recommended at 320–768px, both themes, EN/NE, keyboard, and reduced-motion settings.
+- **Recommended next step**: Freeze the current 2.5D/motion system after manual visual review.
+
+### Entry: 2026-10-18 - GPT/Codex (Storefront Discovery Improvement)
+- **Agent**: GPT/Codex
+- **Task completed**: Improved client-side Shop/Search discovery with dynamic RAM/storage options, URL-synced filters and sorting, expanded product-facing search coverage, dynamic price presets, and name/brand sorting.
+- **Files changed**: `frontend/src/pages/Catalogue.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: New, used, accessory, and search views retain their existing routes and now restore applicable discovery state from shared URLs without backend or catalogue changes.
+- **Known issues**: Manual browser QA is recommended for refresh/back/forward and mobile filter behavior across all categories.
+- **Recommended next step**: Verify shared URLs and filter combinations manually before beginning variant-selection work.
+
+### Entry: 2026-10-18 - GPT/Codex (Product Grouping Identity Foundation Phase 1)
+- **Agent**: GPT/Codex
+- **Task completed**: Added optional `catalogueDeviceId` and server-derived deterministic `variantKey` metadata for new-phone catalogue products while keeping independent store products authoritative.
+- **Files changed**: `frontend/src/types/index.ts`, `backend/validation.mjs`, `backend/server.mjs`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; backend syntax checks passed; `git diff --check` passed; backend suite attempted with 30 passing and 17 environment/storage-permission failures unrelated to this change.
+- **Result**: Catalogue-created new phones retain validated device grouping metadata and RAM/storage configuration keys. Manual, used, accessory, and existing products remain backward-compatible; Cart, Checkout, Orders, Payment, Search/Filter, Favorites, Compare, images, and frozen motion were not changed.
+- **Known issues**: Full backend suite is blocked in this sandbox by EPERM rename failures under the Windows temp package path and EACCES localhost fixture failures.
+- **Recommended next step**: Manually create two new-phone products from the same catalogue device with different variants and verify metadata before implementing related-product grouping.
+
+### Entry: 2026-10-18 - GPT/Codex (Product Grouping + Variant Selector Phase 2+3)
+- **Agent**: GPT/Codex
+- **Task completed**: Added exact `catalogueDeviceId` grouping for related new-phone products and a customer-facing RAM/storage selector on Product Detail. The selector uses only real, unambiguous store products, preserves independent product pricing/stock/images, supports storage-only variants, and labels out-of-stock variants without navigating to nonexistent combinations.
+- **Files changed**: `frontend/src/pages/Product.tsx`, `frontend/src/utils/productVariants.ts`, `frontend/src/refinement.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; `git diff --check` passed; backend syntax checks passed. Existing Vite dynamic-import warnings remain.
+- **Result**: New phones sharing an exact catalogue device ID can switch between real RAM/storage variants via existing product URLs. Used phones, accessories, products without grouping metadata, cart/checkout/orders, catalogue data, images, and frozen motion remain unchanged.
+- **Known issues**: Manual browser QA is still recommended for multi-variant, out-of-stock, storage-only, mobile, and back/forward navigation cases.
+- **Recommended next step**: Perform final QA for Phase 2+3, then freeze catalogue grouping work before any later phase.
+
+### Entry: 2026-10-18 - GPT/Codex (Product Variant System Phase 4 Final QA)
+- **Agent**: GPT/Codex
+- **Task completed**: Completed targeted final QA of the Phase 1–3 product variant system. Confirmed exact new-phone grouping, deterministic metadata, real-product slug navigation, duplicate safety, independent price/stock/image behavior, cart identity, and unchanged used/accessory behavior. No confirmed regression required an application fix.
+- **Files changed**: `AGENTS.md` only during Phase 4; the Phase 2+3 implementation remains in `frontend/src/pages/Product.tsx`, `frontend/src/utils/productVariants.ts`, and `frontend/src/refinement.css`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend syntax checks passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: PRODUCT VARIANT SYSTEM — FROZEN. Independent store products, exact `catalogueDeviceId` grouping, deterministic `variantKey`, Product Detail RAM/storage selector, existing slug navigation, product-specific price/stock/images, product-ID Cart/Checkout/Orders, independent used phones/accessories, no parent/variant collection/migration, and no named color variants are preserved.
+- **Known issues**: Browser QA remains recommended for real multi-variant data, mobile widths, back/forward navigation, out-of-stock states, cart coexistence, EN/NE, and light/dark themes.
+- **Recommended next step**: No further variant-system changes; only fix confirmed regressions if reported.
+
+### Entry: 2026-10-18 - GPT/Codex (Used Phone Phase 1+2)
+- **Agent**: GPT/Codex
+- **Task completed**: Added used-listing safety and trust improvements while keeping used phones as independent products. New used listings require an actual uploaded device photo, condition, valid battery health, and receive a stock-above-one confirmation. Expanded inspection checks to body, microphone, biometrics, network/SIM, and Wi-Fi/Bluetooth; Product Detail now shows explicit passed/issue/not-checked states and distinguishes actual photos from reference imagery.
+- **Files changed**: `backend/validation.mjs`, `frontend/src/types/index.ts`, `frontend/src/pages/Admin.tsx`, `frontend/src/components/ProductGallery.tsx`, `frontend/src/pages/Product.tsx`, `frontend/src/refinement.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend syntax checks passed; used-phone billing/inspection tests passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Used phones remain product-ID based and isolated from the frozen variant, discovery, motion, catalogue-image, cart, checkout, order, and payment systems. Legacy used listings remain readable; new Admin saves are gated when trust fields or actual photos are missing.
+- **Known issues**: Legacy records without actual photos can still be edited through direct legacy API paths for backward compatibility; the Admin editor blocks normal saves until a real photo is added. Full browser QA remains for mobile, dark mode, EN/NE, and real/reference image presentation.
+- **Recommended next step**: Run Used Phone Phase 3 final QA; do not start unrelated features during that QA.
+
+### Entry: 2026-10-18 - GPT/Codex (Used Phone Phase 3 Final QA)
+- **Agent**: GPT/Codex
+- **Task completed**: Completed final regression QA for the used-phone safety/trust work. Fixed a confirmed legacy-data display bug where missing storage rendered as `undefined GB`; cards and Product Detail now show a neutral missing-specification fallback. Verified independent used-product identity, photo gating/reference transparency, stock handling, condition/battery validation, expanded inspection states, defect/accessory disclosure, and isolation from new-phone variants.
+- **Files changed**: `frontend/src/components/ProductCard.tsx`, `frontend/src/pages/Product.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend syntax checks passed; used-phone billing/inspection tests passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: USED PHONE SYSTEM — FROZEN. Used phones remain independent product-ID listings; actual-device photos are gated for new listings, legacy reference images are labeled, stock defaults to 1 with deliberate stock-above-one confirmation, condition/battery/inspection data is validated and transparent, and Cart/Checkout/Orders remain unchanged.
+- **Known issues**: Browser QA remains recommended for real/reference image switching, mobile widths, EN/NE, light/dark, and complete purchase flow. No confirmed application blocker remains.
+- **Recommended next step**: Only address confirmed used-phone regressions or explicitly approved future features. Do not start the Repair Request System in this handoff.

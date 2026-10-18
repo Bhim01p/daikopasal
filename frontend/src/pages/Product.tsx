@@ -1,6 +1,6 @@
 import { useT } from "../context/LanguageContext";
 import { useLanguage } from "../context/LanguageContext";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import ProductGallery from "../components/ProductGallery";
 import WhatsAppIcon from "../components/WhatsAppIcon";
 import NotFound from "./NotFound";
 import { isSampleProduct, purchaseLimit } from "../utils/products";
+import { findVariantProduct, getVariantGroup } from "../utils/productVariants";
 export default function Product() {
   const t = useT();
   const { language } = useLanguage();
@@ -28,12 +29,36 @@ export default function Product() {
   const { slug } = useParams();
   const product = products.find((p) => p.slug === slug);
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const addedTimer = useRef<number | undefined>(undefined);
   const { add } = useCart();
   const navigate = useNavigate();
-  useEffect(() => setQuantity(1), [slug]);
+  useEffect(() => {
+    setQuantity(1);
+    setAdded(false);
+    return () => {
+      if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
+    };
+  }, [slug]);
+  const variantGroup = useMemo(() => product ? getVariantGroup(products, product) : null, [products, product]);
+  const [selectedRam, setSelectedRam] = useState<number | undefined>(undefined);
+  const [selectedStorage, setSelectedStorage] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    setSelectedRam(product?.ram);
+    setSelectedStorage(product?.storage);
+  }, [product?.id, product?.ram, product?.storage]);
   if (!product) return <NotFound />;
   const maximum = purchaseLimit(product);
   const selectedQuantity = Math.min(quantity, Math.max(1, maximum));
+  const chooseVariant = (ram?: number, storage?: number) => {
+    if (!variantGroup) return;
+    const next = findVariantProduct(variantGroup, ram, storage);
+    if (next) navigate(`/product/${next.slug}`);
+    else {
+      setSelectedRam(ram);
+      setSelectedStorage(storage);
+    }
+  };
   return (
     <div className="container product-page">
       <div className="breadcrumb">
@@ -82,6 +107,35 @@ export default function Product() {
               </small>
             )}
           </div>
+          {variantGroup && (
+            <section className="product-variant-selector" aria-label={t("Choose a variant")}>
+              <h2>{t("Choose a variant")}</h2>
+              {variantGroup.ramValues.length > 1 && (
+                <div className="product-variant-row">
+                  <span>{t("RAM")}</span>
+                  <div className="product-variant-options">
+                    {variantGroup.ramValues.map((ram) => {
+                      const candidate = findVariantProduct(variantGroup, ram, selectedStorage);
+                      const hasRam = variantGroup.products.some((item) => item.ram === ram);
+                      return <button key={ram} type="button" className={selectedRam === ram ? "selected" : ""} disabled={!hasRam} aria-pressed={selectedRam === ram} onClick={() => chooseVariant(ram, candidate ? selectedStorage : undefined)}>{ram} GB</button>;
+                    })}
+                  </div>
+                </div>
+              )}
+              {variantGroup.storageValues.length > 1 && (
+                <div className="product-variant-row">
+                  <span>{t("Storage")}</span>
+                  <div className="product-variant-options">
+                    {variantGroup.storageValues.map((storage) => {
+                      const candidate = findVariantProduct(variantGroup, selectedRam, storage) || findVariantProduct(variantGroup, undefined, storage);
+                      const available = variantGroup.products.some((item) => item.storage === storage && (selectedRam === undefined || item.ram === selectedRam));
+                      return <button key={storage} type="button" className={selectedStorage === storage ? "selected" : ""} disabled={!available} aria-pressed={selectedStorage === storage} onClick={() => chooseVariant(candidate?.ram, storage)}>{storage} GB{candidate && !candidate.available ? ` · ${t("Out of stock")}` : ""}</button>;
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
           <p>
             {language === "ne"
               ? product.catalogueDescription?.ne || product.descriptionNe || product.description
@@ -114,7 +168,7 @@ export default function Product() {
               <div>
                 <span>{t("Storage")}</span>
                 <strong>
-                  {product.storage} {t(" GB")}
+                  {product.storage === undefined ? t("Not recorded") : `${product.storage}${t(" GB")}`}
                 </strong>
               </div>
               <div>
@@ -123,11 +177,19 @@ export default function Product() {
               </div>
             </div>
           )}
+          {product.category === "used" && product.inspection && (
+            <section className="used-trust-summary" aria-label={t("Inspection")}>
+              <h2>{t("Inspection")}</h2>
+              <dl>{["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"].map((key) => {
+                const status = product.inspection?.checks?.[key] || "not_checked";
+                return <div key={key}><dt>{t(key)}</dt><dd>{status === "passed" ? `✓ ${t("Passed")}` : status === "issue" ? `⚠ ${t("Issue found")}` : `○ ${t("Not checked")}`}</dd></div>;
+              })}</dl>
+            </section>
+          )}
           {product.category === "used" && <section className="used-condition-report">
             <h2>{t("Inspection report")}</h2>
             <p>{product.inspection?.inspectedAt ? `${t("Inspected")}: ${new Date(product.inspection.inspectedAt).toLocaleDateString()}` : t("Inspection details have not been recorded yet.")}</p>
-            <dl>{(["screen", "cameras", "charging", "speakers", "buttons"] as const).map((key) => <div key={key}><dt>{t(key)}</dt><dd>{t(product.inspection?.checks?.[key] === "passed" ? "Passed" : product.inspection?.checks?.[key] === "issue" ? "Issue found" : "Not checked")}</dd></div>)}</dl>
-            <p><strong>{t("Known defects")}:</strong> {product.inspection?.defects || t("Not recorded")}</p>
+            <p><strong>{t("Known Changes / Defects")}:</strong> {product.inspection?.defects || t("Not recorded")}</p>
             <p><strong>{t("Included accessories")}:</strong> {product.inspection?.included || t("Not recorded")}</p>
           </section>}
           {(product.priceIsEstimate || isSampleProduct(product)) && (
@@ -163,10 +225,15 @@ export default function Product() {
             <button
               className="button dark"
               disabled={!product.available}
-              onClick={() => add(product.id, selectedQuantity)}
+              onClick={() => {
+                add(product.id, selectedQuantity);
+                setAdded(true);
+                if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
+                addedTimer.current = window.setTimeout(() => setAdded(false), 1600);
+              }}
             >
               <ShoppingBag size={17} />
-              {t("Add to cart")}
+              {added ? t("Added to cart") : t("Add to cart")}
             </button>
           </div>
           <div className="button-row detail-actions">
