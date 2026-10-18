@@ -14,10 +14,11 @@ import { fileURLToPath } from "node:url";
 import { createStore, defaultStorePath } from "./store.mjs";
 import { stateMap } from "./state-map.mjs";
 import { bufferedResponse } from "./buffered-response.mjs";
-import { saveProductImage } from "./images.mjs";
+import { saveProductImage, readImageUpload } from "./images.mjs";
+import { uploadPhoneCatalogueBuffer } from "./phone-catalogue-images.mjs";
 import { publicStaff, saveStaff } from "./staff.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
-import { publicReferencePhones, adminPhoneCatalogue } from "./phone-reference.mjs";
+import { publicReferencePhones, adminPhoneCatalogue, catalogueSpecsForProduct } from "./phone-reference.mjs";
 import { issueBill, billPdf } from "./billing.mjs";
 import {
   createCustomerAuth,
@@ -41,6 +42,7 @@ import {
 import { createPayment, paymentProvider, updatePayment } from "./payments.mjs";
 import { catalogueImageForProduct } from "./catalogue-images.mjs";
 import { catalogueDescriptionForProduct } from "./phone-descriptions.mjs";
+import { effectiveCatalogue, readCatalogueOverrides, saveCatalogueOverride, resetCatalogueOverride } from "./catalogue-overrides.mjs";
 
 function staffPermissionForRoute(route) {
   if (route.startsWith("/api/admin/orders")) return "orders";
@@ -228,7 +230,7 @@ export function createApp(options = {}) {
       if (route === "/api/health" && method === "GET")
         return json(response, 200, { ok: true });
       if (route === "/api/products" && method === "GET")
-        return json(response, 200, { products: store.read().products.map((product) => ({ ...product, catalogueImage: catalogueImageForProduct(product), catalogueDescription: product.category === "new" ? catalogueDescriptionForProduct(product) : undefined })) });
+        return json(response, 200, { products: store.read().products.map((product) => ({ ...product, catalogueImage: catalogueImageForProduct(product), catalogueDescription: product.category === "new" ? catalogueDescriptionForProduct(product) : undefined, catalogueSpecs: product.category === "new" ? catalogueSpecsForProduct(product) : undefined })) });
       if (route === "/api/reference-phones" && method === "GET")
         return json(response, 200, {
           phones: publicReferencePhones(store.read()),
@@ -474,8 +476,40 @@ export function createApp(options = {}) {
       const requiredStaffPermission = staffPermissionForRoute(route);
       if (requiredStaffPermission && session(request)?.role !== "owner" && !session(request)?.permissions?.[requiredStaffPermission])
         throw new HttpError(403, "Your staff role does not allow this area.");
-      if (route === "/api/admin/phone-catalogue" && method === "GET")
-        return json(response, 200, { phones: adminPhoneCatalogue().map((phone) => { const gallery = catalogueImageForProduct({ category: "new", brand: phone.brand, name: phone.model }); return { ...phone, catalogueImage: gallery?.url || "", catalogueImageCount: gallery?.images?.length || 0 }; }) });
+      if (route === "/api/admin/phone-catalogue" && method === "GET") {
+        const overrides = await readCatalogueOverrides(store);
+        const phones = await effectiveCatalogue(store, adminPhoneCatalogue());
+        return json(response, 200, { phones: phones.map((phone) => { const gallery = catalogueImageForProduct({ category: "new", brand: phone.brand, name: phone.model }); const images = overrides[phone.deviceId]?.images || gallery?.images || []; const variants = phones.filter((item) => item.deviceId === phone.deviceId).map((item) => ({ ram: item.ram, storage: item.storage })); return { ...phone, variants, hasOverride: !!overrides[phone.deviceId], catalogueImage: images[0]?.url || "", catalogueImages: images, catalogueImageCount: images.length }; }) });
+      }
+      const catalogueOverrideRoute = route.match(/^\/api\/admin\/phone-catalogue\/([^/]+)(?:\/reset(?:-field)?)?$/);
+      if (catalogueOverrideRoute && ["PATCH", "POST"].includes(method)) {
+        const deviceId = decodeURIComponent(catalogueOverrideRoute[1]);
+        if (!adminPhoneCatalogue().some((phone) => phone.deviceId === deviceId)) throw new HttpError(404, "Catalogue device not found.");
+        const isReset = route.includes("/reset");
+        const input = await body(request);
+        if (isReset) await resetCatalogueOverride(store, deviceId, input.field);
+        else await saveCatalogueOverride(store, deviceId, input, session(request)?.username);
+        return json(response, 200, { ok: true });
+      }
+      const catalogueImageRoute = route.match(/^\/api\/admin\/phone-catalogue\/([^/]+)\/images(?:\/(\d+))?$/);
+      if (catalogueImageRoute && ["POST", "PATCH", "DELETE"].includes(method)) {
+        const deviceId = decodeURIComponent(catalogueImageRoute[1]);
+        if (!adminPhoneCatalogue().some((phone) => phone.deviceId === deviceId)) throw new HttpError(404, "Catalogue device not found.");
+        const overrides = await readCatalogueOverrides(store); const current = overrides[deviceId]?.images || [];
+        if (method === "POST") {
+          const requestedPosition = catalogueImageRoute[2] ? Number(catalogueImageRoute[2]) : undefined;
+          if (requestedPosition && (requestedPosition < 1 || requestedPosition > 3)) throw new HttpError(400, "Image position is invalid.");
+          if (!requestedPosition && current.length >= 3) throw new HttpError(400, "A catalogue device can have at most three images.");
+          const { data } = await readImageUpload(request, 5); const position = requestedPosition || current.length + 1;
+          const uploaded = await uploadPhoneCatalogueBuffer(deviceId, data, position, Boolean(requestedPosition));
+          const replacement = { url: uploaded.secure_url, publicId: uploaded.public_id, position, sourceUrl: "", license: "Admin-uploaded catalogue asset", attributionRequired: false, sourceRightsStatus: "admin_upload" };
+          const images = [...current.filter((image) => image.position !== position), replacement].sort((a, b) => a.position - b.position);
+          await saveCatalogueOverride(store, deviceId, { images }, session(request)?.username); return json(response, 201, { images });
+        }
+        const position = Number(catalogueImageRoute[2]); if (!Number.isInteger(position) || position < 1 || position > 3) throw new HttpError(400, "Image position is invalid.");
+        if (method === "DELETE") { const images = current.filter((image) => image.position !== position).map((image, index) => ({ ...image, position: index + 1 })); await saveCatalogueOverride(store, deviceId, { images }, session(request)?.username); return json(response, 200, { images }); }
+        const input = await body(request); const images = current.filter((image) => image.position !== position); const target = current.find((image) => image.position === position); if (!target) throw new HttpError(404, "Catalogue image not found."); const ordered = [target, ...images].map((image, index) => ({ ...image, position: index + 1 })); await saveCatalogueOverride(store, deviceId, { images: ordered }, session(request)?.username); return json(response, 200, { images: ordered });
+      }
       if (
         route === "/api/admin/staff" ||
         route.startsWith("/api/admin/staff/")

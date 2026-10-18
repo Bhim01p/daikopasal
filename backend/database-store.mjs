@@ -48,6 +48,12 @@ export function createDatabaseStore(
         name text primary key, data jsonb not null,
         created_at timestamptz not null default now()
       )`;
+        await sql`create table if not exists ${sql(schema)}.catalogue_overrides (
+        device_id text primary key,
+        override_data jsonb not null,
+        updated_at timestamptz not null default now(),
+        updated_by text
+      )`;
         await sql`insert into ${sql(schema)}.store (id, data)
         values (1, ${sql.json(seedStore([]))}) on conflict (id) do nothing`;
       })().catch((error) => {
@@ -111,6 +117,22 @@ export function createDatabaseStore(
       const tx = snapshot().tx;
       await tx`insert into ${tx(schema)}.catalogue_backups (name, data)
         values (${name}, ${tx.json(data)})`;
+    },
+    async readCatalogueOverrides() {
+      const tx = snapshot().tx;
+      const rows = await tx`select device_id, override_data, updated_at, updated_by from ${tx(schema)}.catalogue_overrides`;
+      return Object.fromEntries(rows.map((row) => [row.device_id, { ...row.override_data, updatedAt: row.updated_at, updatedBy: row.updated_by }]));
+    },
+    async saveCatalogueOverride(deviceId, data, updatedBy) {
+      const tx = snapshot().tx;
+      await tx`insert into ${tx(schema)}.catalogue_overrides (device_id, override_data, updated_by) values (${deviceId}, ${tx.json(data)}, ${updatedBy || null}) on conflict (device_id) do update set override_data = excluded.override_data, updated_by = excluded.updated_by, updated_at = now()`;
+      return data;
+    },
+    async deleteCatalogueOverride(deviceId, field) {
+      const tx = snapshot().tx;
+      if (!field) { await tx`delete from ${tx(schema)}.catalogue_overrides where device_id = ${deviceId}`; return; }
+      await tx`update ${tx(schema)}.catalogue_overrides set override_data = override_data - ${field}, updated_at = now() where device_id = ${deviceId}`;
+      await tx`delete from ${tx(schema)}.catalogue_overrides where device_id = ${deviceId} and override_data = '{}'::jsonb`;
     },
     async close() {
       await sql.end({ timeout: 5 });

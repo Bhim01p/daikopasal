@@ -5,6 +5,8 @@ import { useT } from "../context/LanguageContext";
 import type { ReferencePhone } from "../data/referencePhones";
 import { api } from "../utils/api";
 import { money } from "../data/shop";
+import { productImageSource } from "../utils/products";
+import SafeImage from "../components/SafeImage";
 export default function Compare() {
   const t = useT();
   const { products } = useProducts();
@@ -64,6 +66,7 @@ export default function Compare() {
         available: p.available,
         estimated: p.priceIsEstimate === true,
         origin: "Shop specifications",
+        image: productImageSource(p),
       })),
   ];
   const first = models.find((p) => p.id === params.get("first"));
@@ -219,6 +222,7 @@ export default function Compare() {
                   <th scope="col">{t("Specification")}</th>
                   {[first, second].map((p) => (
                     <th scope="col" key={p.id}>
+                      {"image" in p && p.image ? <SafeImage className="comparison-phone-image" src={p.image} alt={`${p.brand} ${p.name}`} /> : null}
                       <strong>{p.name}</strong>
                       <small>{p.variant}</small>
                       <small>{t(p.origin)}</small>

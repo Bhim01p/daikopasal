@@ -160,6 +160,23 @@
 .admin-editor {
   scroll-margin-top: 20px;
 }
+.admin-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(16 18 24 / 48%);
+  backdrop-filter: blur(3px);
+}
+.admin-editor-overlay > .admin-editor {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  margin: 0;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 22%);
+}
 .admin-editor label,
 .admin-login label,
 .admin-order label {
@@ -189,6 +206,16 @@
   align-items: center;
   gap: 11px;
   min-height: 44px;
+}
+@media (max-width: 640px) {
+  .admin-editor-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+  .admin-editor-overlay > .admin-editor {
+    max-height: 100vh;
+    border-radius: 0;
+  }
 }
 .admin-check input {
   width: 21px;

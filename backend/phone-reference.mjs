@@ -239,3 +239,14 @@ export function adminPhoneCatalogue() {
     return { deviceId: raw.device_id, brand: raw.brand, model: raw.model, variant: variantLabel(raw.region || "Global", raw.ram_gb, raw.storage_gb), ram: raw.ram_gb ? Number(raw.ram_gb) : undefined, storage: raw.storage_gb ? Number(raw.storage_gb) : undefined, specs, sourceUrl: (raw.source_urls || "").split("|")[0] };
   });
 }
+
+export function catalogueSpecsForProduct(product) {
+  const rows = adminPhoneCatalogue().filter((phone) =>
+    phone.brand.toLowerCase() === String(product.brand || "").toLowerCase() &&
+    phone.model.toLowerCase() === String(product.name || "").toLowerCase(),
+  );
+  const matching = rows.find((phone) => phone.ram === product.ram && phone.storage === product.storage)
+    || rows.find((phone) => phone.storage === product.storage)
+    || rows[0];
+  return matching ? { specs: matching.specs, sourceUrl: matching.sourceUrl } : undefined;
+}

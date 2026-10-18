@@ -21,6 +21,7 @@ export interface Product {
   images?: string[];
   catalogueImage?: { url: string; deviceId: string; attributionRequired: boolean; sourceUrl: string; license: string; images?: { url: string; sourceUrl?: string; license?: string; attributionRequired?: boolean; position?: number }[] };
   catalogueDescription?: { en: string; ne: string; deviceId: string };
+  catalogueSpecs?: { specs: Record<string, string>; sourceUrl?: string };
   color: string;
   available: boolean;
   stockQuantity: number | null;

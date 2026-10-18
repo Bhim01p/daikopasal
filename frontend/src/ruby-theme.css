@@ -1322,3 +1322,4 @@ body :is(input, select, textarea) {
   :root body .home-carousel .repair-slide .hero-copy p,
   :root body .home-carousel .repair-slide .hero-copy .eyebrow { color: #fff; }
 }
+.comparison-phone-image { display:block; width:88px; height:88px; object-fit:contain; margin:0 auto 8px; border-radius:8px; background:var(--sky-background); }

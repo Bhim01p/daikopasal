@@ -9,6 +9,16 @@ export async function saveProductImage(
   storage,
   { avatar = false } = {},
 ) {
+  const { type, data } = await readImageUpload(request, storage ? 4 : 5);
+  const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+  const name = `${avatar ? "avatar" : "upload"}-${randomUUID()}.${extensions[type]}`;
+  if (storage) return storage.saveImage(name, type, data);
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(path.join(directory, name), data, { flag: "wx" });
+  return { image: `/api/images/${name}` };
+}
+
+export async function readImageUpload(request, maxMB = 5) {
   const type = request.headers["content-type"]?.split(";")[0];
   const extensions = {
     "image/png": "png",
@@ -17,11 +27,11 @@ export async function saveProductImage(
   };
   if (!extensions[type])
     throw new HttpError(415, "Choose a JPG, PNG, or WebP photo.");
-  const limit = (avatar ? 2 : storage ? 4 : 5) * 1024 * 1024;
+  const limit = maxMB * 1024 * 1024;
   if (Number(request.headers["content-length"]) > limit)
     throw new HttpError(
       413,
-      `Photo must be ${avatar ? 2 : storage ? 4 : 5} MB or smaller.`,
+      `Photo must be ${maxMB} MB or smaller.`,
     );
   const chunks = [];
   let bytes = 0;
@@ -30,7 +40,7 @@ export async function saveProductImage(
     if (bytes > limit)
       throw new HttpError(
         413,
-        `Photo must be ${avatar ? 2 : storage ? 4 : 5} MB or smaller.`,
+        `Photo must be ${maxMB} MB or smaller.`,
       );
     chunks.push(chunk);
   }
@@ -57,9 +67,5 @@ export async function saveProductImage(
       400,
       "This file does not match the selected photo format.",
     );
-  const name = `${avatar ? "avatar" : "upload"}-${randomUUID()}.${extensions[type]}`;
-  if (storage) return storage.saveImage(name, type, data);
-  mkdirSync(directory, { recursive: true });
-  writeFileSync(path.join(directory, name), data, { flag: "wx" });
-  return { image: `/api/images/${name}` };
+  return { type, data };
 }

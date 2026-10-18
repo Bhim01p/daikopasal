@@ -26,7 +26,7 @@ import {
   ReceiptText,
   Wrench,
 } from "lucide-react";
-type AdminTab = "dashboard" | "products" | "orders" | "staff" | "billing" | "qr" | "repairs" | "sales";
+type AdminTab = "dashboard" | "products" | "catalogue" | "orders" | "staff" | "billing" | "qr" | "repairs" | "sales";
 const adminSections = [
   {
     value: "dashboard",
@@ -95,6 +95,7 @@ import SafeImage from "../components/SafeImage";
 import AdminBilling from "../components/AdminBilling";
 import AdminPaymentQr from "../components/AdminPaymentQr";
 import AdminRepairs from "../components/AdminRepairs";
+import AdminPhoneCatalogue from "../components/AdminPhoneCatalogue";
 const nextActions = {
   "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
   Confirmed: ["Ready for pickup", "Ready for pickup"],
@@ -185,6 +186,8 @@ export default function Admin() {
         ? "sales"
       : parts[0] === "staff"
         ? "staff"
+      : parts[0] === "phone-catalogue"
+        ? "catalogue"
         : inventoryCategory !== "all" || parts[0] === "inventory"
           ? "products"
           : "dashboard";
@@ -198,7 +201,7 @@ export default function Admin() {
         ? "/not-admin"
         : value === "products"
           ? "/not-admin/inventory"
-          : `/not-admin/${value === "qr" ? "payment-qr" : value}`,
+          : `/not-admin/${value === "qr" ? "payment-qr" : value === "catalogue" ? "phone-catalogue" : value}`,
     );
   }
   function setInventoryCategory(value: "all" | Category) {
@@ -231,6 +234,7 @@ export default function Admin() {
   const [catalogueImageFilter, setCatalogueImageFilter] = useState<"all" | 3 | 2 | 1 | 0>("all");
   const [catalogueSearch, setCatalogueSearch] = useState("");
   const [catalogueAdvancedOpen, setCatalogueAdvancedOpen] = useState(false);
+  const [cataloguePickerOpen, setCataloguePickerOpen] = useState(false);
   const [discardPrompt, setDiscardPrompt] = useState(false);
   const [salesRange, setSalesRange] = useState<"today" | "7days" | "month" | "all">("today");
   useEffect(() => {
@@ -238,7 +242,7 @@ export default function Admin() {
       document.getElementById("product-editor-title")?.focus();
   }, [productEditorOpen]);
   useEffect(() => {
-    if (!user || !productEditorOpen || draft.category !== "new" || cataloguePhones.length) return;
+    if (!user || !productEditorOpen || !(draft.category === "new" || draft.category === "used") || cataloguePhones.length) return;
     void api<{ phones: CataloguePhone[] }>("/admin/phone-catalogue")
       .then((result) => setCataloguePhones(result.phones))
       .catch(fail);
@@ -399,7 +403,7 @@ export default function Admin() {
       return;
     }
     const next = product
-      ? { ...product, specs: { ...product.specs } }
+      ? { ...product, images: product.images?.length ? [...product.images] : [product.image], specs: { ...product.specs } }
       : {
           ...freshProduct(),
           category:
@@ -502,6 +506,7 @@ export default function Admin() {
     setCatalogueImageFilter("all");
     setCatalogueSearch("");
     setCatalogueAdvancedOpen(false);
+    setCataloguePickerOpen(false);
     setSpecRows(initialSpecs);
     setBaseline(draftKey(next, initialSpecs));
   }
@@ -976,6 +981,7 @@ export default function Admin() {
                     sales: "Sales",
                     repairs: "Repair tickets",
                     staff: "Staff logins",
+                    catalogue: "Phone Catalogue",
                   }[tab],
                 )}
               </h1>
@@ -1086,6 +1092,7 @@ export default function Admin() {
               {t(notice)}
             </div>
           )}
+          {tab === "catalogue" && <AdminPhoneCatalogue onError={fail} />}
           {tab === "products" && (
             <div
               id="admin-products"
@@ -1287,8 +1294,9 @@ export default function Admin() {
                 </section>
               )}
               {productEditorOpen && (
+                <div className="admin-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="product-editor-title">
                 <form
-                  className={`admin-panel admin-editor${!draft.id && draft.category === "new" && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
+                  className={`admin-panel admin-editor${!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${draft.category === "accessory" ? " accessory-simple" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
                   id="product-editor"
                   onSubmit={saveProduct}
                   noValidate
@@ -1301,10 +1309,19 @@ export default function Admin() {
                   >
                     {t("Back to inventory")}
                   </button>
+                  <button
+                    type="button"
+                    className="icon-button admin-editor-close"
+                    aria-label={t("Close editor")}
+                    disabled={!!busy}
+                    onClick={() => dirty ? setDiscardPrompt(true) : resetDraft()}
+                  >
+                    ×
+                  </button>
                   <h2 id="product-editor-title" tabIndex={-1}>
                     {draft.id ? t("Edit product") : t("Add a product")}
                   </h2>
-                  {!draft.id && draft.category === "new" && (
+                  {!draft.id && (draft.category === "new" || draft.category === "used") && (
                     <div className="admin-form-row catalogue-mode-switch" role="group" aria-label={t("New phone source")}>
                       <button type="button" className={`button ${catalogueMode === "catalogue" ? "dark" : "white"}`} onClick={() => { setCatalogueMode("catalogue"); setCatalogueFilled(false); }}>{t("Use Catalogue")}</button>
                       <button type="button" className={`button ${catalogueMode === "manual" ? "dark" : "white"}`} onClick={() => setCatalogueMode("manual")}>{t("Add Manually")}</button>
@@ -1316,7 +1333,7 @@ export default function Admin() {
                     <input
                       id="product-name"
                       value={draft.name}
-                      readOnly={catalogueMode === "catalogue" && catalogueFilled}
+                      readOnly={!draft.id && catalogueMode === "catalogue" && catalogueFilled}
                       maxLength={100}
                       minLength={2}
                       required={!!draft.id || catalogueMode !== "catalogue"}
@@ -1328,14 +1345,17 @@ export default function Admin() {
                     <input
                       id="product-brand"
                       value={draft.brand}
-                      readOnly={catalogueMode === "catalogue" && catalogueFilled}
+                      readOnly={!draft.id && catalogueMode === "catalogue" && catalogueFilled}
                       maxLength={60}
                       required={!!draft.id || catalogueMode !== "catalogue"}
                       onChange={(e) =>
                         setDraft({ ...draft, brand: e.target.value })
                       }
                     />
-                    {!draft.id && draft.category === "new" && catalogueMode === "catalogue" && (
+                    {!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" && (
+                      <button type="button" className="button white catalogue-picker-toggle" onClick={() => setCataloguePickerOpen((open) => !open)}>{cataloguePickerOpen ? t("Hide phone catalogue") : t("Choose phone from catalogue")}</button>
+                    )}
+                    {!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" && cataloguePickerOpen && (
                       <fieldset className="catalogue-autofill editor-section">
                         <legend>{t("Fill from phone catalogue")}</legend>
                         <div className="admin-filter-bar catalogue-image-filters" aria-label={t("Filter catalogue phones by image count")}>
@@ -1358,7 +1378,7 @@ export default function Admin() {
                         {!catalogueCards.length && <p className="admin-empty">{t("No catalogue phones match this filter.")}</p>}
                         {catalogueModel && (() => { const phone = catalogueModels.find((item) => item.model === catalogueModel); const count = phone?.catalogueImageCount || 0; return <p className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}>{count >= 3 ? "3+ Photos" : count === 1 ? "1 Photo" : `${count} Photos`}</p>; })()}
                         <label htmlFor="catalogue-variant">{t("Catalogue variant")}</label>
-                        <select id="catalogue-variant" value={catalogueVariant} disabled={!catalogueModel} onChange={(event) => { setCatalogueVariant(event.target.value); const selected = uniqueCatalogueVariants.find((phone) => phone.variant === event.target.value); if (selected) { setDraft((current) => ({ ...current, brand: selected.brand, name: selected.model, ram: selected.ram, storage: selected.storage, image: "/assets/phone.svg", images: ["/assets/phone.svg"], description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}` })); setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...Object.entries(selected.specs).filter(([name]) => name !== "RAM" && name !== "Storage").map(([name, value]) => ({ name, value }))]); setCatalogueFilled(true); } }}>
+                        <select id="catalogue-variant" value={catalogueVariant} disabled={!catalogueModel} onChange={(event) => { setCatalogueVariant(event.target.value); const selected = uniqueCatalogueVariants.find((phone) => phone.variant === event.target.value); if (selected) { setDraft((current) => ({ ...current, brand: selected.brand, name: selected.model, ram: selected.ram, storage: selected.storage, image: "/assets/phone.svg", images: ["/assets/phone.svg"], description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}` })); setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...Object.entries(selected.specs).filter(([name]) => name !== "RAM" && name !== "Storage").map(([name, value]) => ({ name, value }))]); setCatalogueFilled(true); setCataloguePickerOpen(false); } }}>
                           <option value="">{t("Choose a RAM/storage variant")}</option>
                           {uniqueCatalogueVariants.map((phone) => <option key={`${phone.deviceId}-${phone.variant}`} value={phone.variant}>{phone.variant}</option>)}
                         </select>
@@ -1485,7 +1505,7 @@ export default function Admin() {
                       </>
                     )}
                     {draft.category === "used" && (
-                      <><div className="admin-form-row">
+                      <div className="used-phone-details"><div className="admin-form-row">
                         <div>
                           <label htmlFor="product-condition">
                             {t("Condition")}
@@ -1542,9 +1562,9 @@ export default function Admin() {
                             <option value="not_checked">{t("Not checked")}</option><option value="passed">{t("Passed")}</option><option value="issue">{t("Issue found")}</option>
                           </select>
                         </label>)}
-                        <label>{t("Known defects")}<textarea maxLength={500} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
+                        <label>{t("What changed in this phone?")}<textarea maxLength={500} placeholder={t("Describe scratches, replaced parts, repairs, or other changes")} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
                         <label>{t("Included accessories")}<input maxLength={300} value={draft.inspection?.included || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", buttons: "not_checked", ...draft.inspection?.checks }, defects: draft.inspection?.defects || "", included: event.target.value } })} /></label>
-                      </fieldset></>
+                      </fieldset></div>
                     )}
                   </fieldset>
                   <fieldset className="editor-section catalogue-advanced">
@@ -1607,18 +1627,23 @@ export default function Admin() {
                       )}
                     </span>
                     <div className="admin-photo-grid">
-                      {productImages(draft).map((image, index, photos) => (
+                      {productImages(draft).map((image, index, photos) => {
+                        const cataloguePreview = image === "/assets/phone.svg" ? draft.catalogueImage?.url : undefined;
+                        const displayImage = cataloguePreview || image;
+                        return (
                         <div className="admin-photo-tile" key={image}>
                           <SafeImage
-                            src={image}
+                            src={displayImage}
                             alt={t("Product photo {{v0}} preview", {
                               v0: String(index + 1),
                             })}
                           />
                           <strong>
-                            {index === 0
-                              ? t("Cover photo")
-                              : t("Photo {{v0}}", { v0: String(index + 1) })}
+                            {cataloguePreview
+                              ? t("Catalogue image preview")
+                              : index === 0
+                                ? t("Cover photo")
+                                : t("Photo {{v0}}", { v0: String(index + 1) })}
                           </strong>
                           <button
                             type="button"
@@ -1654,7 +1679,8 @@ export default function Admin() {
                             {t("Remove")}
                           </button>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </fieldset>
                   <fieldset className="editor-section catalogue-store-details">
@@ -1665,8 +1691,8 @@ export default function Admin() {
                     <p className="summary-note">✓ {t("Specifications automatically loaded from catalogue")}<br />✓ {t("Catalogue image automatically connected")}</p>
                     <button type="button" className="button white" onClick={() => setCatalogueAdvancedOpen((open) => !open)}>{catalogueAdvancedOpen ? t("Hide catalogue details") : t("View / edit catalogue details")}</button>
                   </fieldset>
-                  <div className="catalogue-advanced catalogue-advanced"><ProductFinanceEditor draft={draft} onChange={setDraft} /></div>
-                  <fieldset className="editor-section catalogue-advanced">
+                  <div className="catalogue-advanced catalogue-advanced accessory-hide"><ProductFinanceEditor draft={draft} onChange={setDraft} /></div>
+                  <fieldset className="editor-section catalogue-advanced accessory-hide">
                     <legend>{t("Descriptions & specifications")}</legend>
                     <label htmlFor="product-description">
                       {t("English description *")}
@@ -1765,7 +1791,7 @@ export default function Admin() {
                       {t("Add specification")}
                     </button>
                   </fieldset>
-                  <fieldset className="editor-section catalogue-advanced">
+                  <fieldset className="editor-section catalogue-advanced accessory-hide">
                     <legend>{t("Price & stock")}</legend>
                     <div>
                       <label htmlFor="product-price">
@@ -1851,6 +1877,7 @@ export default function Admin() {
                     )}
                   </div>
                 </form>
+                </div>
               )}
             </div>
           )}
@@ -2230,6 +2257,12 @@ export default function Admin() {
     </div>
   );
 }
+
+
+
+
+
+
 
 
 

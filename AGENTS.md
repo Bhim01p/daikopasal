@@ -170,3 +170,84 @@ This file serves as the shared project context and handoff log between coding ag
   4. `vercel.json` functions configuration includes only `backend/seed/**` and may need `data/**` for serverless phone catalogue lookups.
   5. Batch 1 phone image pipeline is paused with 10 Apple devices (20 webpage candidates recorded in `image_candidates.json` marked `needs_manual_review` awaiting direct image URL validation).
 - **Recommended next step**: Await user instruction on next priority (e.g., resolving test/dependency inconsistencies or proceeding with a specific task).
+
+### Entry: 2026-10-18 - GPT/Codex (Inventory Product Editing)
+- **Agent**: GPT/Codex
+- **Task completed**: Existing inventory product editing now always permits saved products to edit catalogue-derived name and brand fields, in addition to existing specifications, RAM/storage, descriptions, pricing, stock, and photos.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` (frontend TypeScript and Vite production build passed; only existing dynamic-import warnings remain).
+- **Result**: Admin can edit a product after catalogue creation without being blocked by stale catalogue autofill read-only state. Existing catalogue creation flow remains unchanged.
+- **Known issues**: None identified for this change.
+- **Recommended next step**: Verify one catalogue-created product in Admin inventory, edit a specification and photo, save, then refresh and confirm persistence.
+
+### Entry: 2026-10-18 - GPT/Codex (Inventory Edit Photo Hydration)
+- **Agent**: GPT/Codex
+- **Task completed**: Normalized the selected inventory product draft so its saved cover image is always present in the editable photo list, even when the API/cache returns only the legacy `image` field.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: Existing product photos now appear in Admin edit mode and remain removable/reorderable through the current controls.
+- **Known issues**: None identified.
+- **Recommended next step**: Verify a newly created product, reopen Edit, and confirm its cover photo appears before testing remove/add photo actions.
+
+### Entry: 2026-10-18 - GPT/Codex (Used Phone Catalogue Autofill)
+- **Agent**: GPT/Codex
+- **Task completed**: Extended the existing catalogue selection flow to new and used phone creation. Added a used-phone field for documenting what changed, using the existing validated inspection defect storage.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; only existing Vite dynamic-import warnings remain.
+- **Result**: Admin can choose Use Catalogue for a used phone, select a model/variant, autofill specs and generic image fallback, then enter condition, battery health, changes, photos, price and stock. Manual used-phone creation remains available.
+- **Known issues**: None identified for this change.
+- **Recommended next step**: Test one used phone with catalogue autofill and one manual used phone, including the changes field and real photos.
+
+### Entry: 2026-10-18 - GPT/Codex (Catalogue Preview in Product Editor)
+- **Agent**: GPT/Codex
+- **Task completed**: Product edit photo tiles now preview the linked catalogue image when the saved product still uses the generic phone placeholder.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: Catalogue fallback images are visible during editing without being copied into the product-specific image list or changing image priority.
+- **Known issues**: None identified.
+- **Recommended next step**: Reopen the affected product editor and verify the catalogue image appears under Photos.
+
+### Entry: 2026-10-18 - GPT/Codex (Used Phone Changes Field Visibility)
+- **Agent**: GPT/Codex
+- **Task completed**: Made the used-phone condition, battery, inspection, and “What changed in this phone?” text area visible in the compact catalogue-assisted add flow.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `frontend/src/refinement.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: Admin can enter customer-facing changes such as display replacement, battery changes, scratches, repairs, and other flaws before saving a used phone.
+- **Known issues**: None identified.
+- **Recommended next step**: Add a used phone using catalogue mode and confirm the changes text appears in the saved product details.
+
+### Entry: 2026-10-18 - GPT/Codex (Catalogue Editor Close Flash)
+- **Agent**: GPT/Codex
+- **Task completed**: Prevented the Phone Catalogue editor Close/Cancel controls from submitting the surrounding form during modal dismissal.
+- **Files changed**: `frontend/src/components/AdminPhoneCatalogue.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: Closing the catalogue editor now cancels and unmounts cleanly without a transient product-editor submission/navigation state.
+- **Known issues**: None identified.
+- **Recommended next step**: Refresh Admin and close a catalogue edit modal once to verify the transition.
+
+### Entry: 2026-10-18 - GPT/Codex (Used Condition Visibility)
+- **Agent**: GPT/Codex
+- **Task completed**: Ensured the used-phone condition and inspection block is visible in the compact catalogue-assisted add form.
+- **Files changed**: `frontend/src/refinement.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: Used-phone creation now visibly asks for condition, battery health, inspection checks, and customer-facing changes.
+- **Known issues**: None identified.
+- **Recommended next step**: Refresh the admin page and open Add Used Phone to verify the condition selector appears.
+
+### Entry: 2026-10-18 - GPT/Codex (Admin Editor Close and Accessory Simplification)
+- **Agent**: GPT/Codex
+- **Task completed**: Added a top-right close button to product editors and simplified accessory editing by hiding duplicate advanced price/stock/specification sections while retaining name, category/type, price, stock, and photos.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `frontend/src/refinement.css`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` passed; existing Vite dynamic-import warnings remain.
+- **Result**: All product editor variants have an accessible close control; accessory entry no longer asks for price and stock twice.
+- **Known issues**: None identified.
+- **Recommended next step**: Verify accessory add/edit on desktop and mobile, then verify close button on new, used, and accessory forms.
+
+### Entry: 2026-10-18 - GPT/Codex (Billing POS UI)
+- **Agent**: GPT/Codex
+- **Task completed**: Redesigned only the Admin Billing page into a responsive POS-style workspace with customer card, searchable product selection, current bill sidebar, compact quantity controls, totals, and structured issued bills.
+- **Files changed**: `frontend/src/components/AdminBilling.tsx`, `frontend/src/operations.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; existing Vite dynamic-import warnings remain.
+- **Result**: Existing billing APIs, stock limits, totals, issue/print flow, PDF links, and bill history remain in use. No backend or database changes.
+- **Known issues**: Manual visual QA is still recommended on desktop and phone widths.
+- **Recommended next step**: Test adding multiple products, quantity limits, clear/remove, issue-and-print, and Open PDF on desktop/mobile.

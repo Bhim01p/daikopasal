@@ -87,6 +87,16 @@ export default function Product() {
               ? product.catalogueDescription?.ne || product.descriptionNe || product.description
               : product.catalogueDescription?.en || product.description}
           </p>
+          {(product.category === "new" || product.category === "accessory") && (
+            <section className="detail-highlights" aria-label={t("Product details")}>
+              <h2>{t("Product details")}</h2>
+              <dl>
+                {product.ram !== undefined && <div><dt>{t("RAM")}</dt><dd>{product.ram} GB</dd></div>}
+                {product.storage !== undefined && <div><dt>{t("Storage")}</dt><dd>{product.storage} GB</dd></div>}
+                {Object.entries({ ...product.catalogueSpecs?.specs, ...product.specs }).filter(([key]) => !["RAM", "Storage", "Warranty"].includes(key)).map(([key, value]) => <div key={key}><dt>{t(key)}</dt><dd>{t(value)}</dd></div>)}
+              </dl>
+            </section>
+          )}
           {product.category === "used" && (
             <div className="condition-grid">
               <div>
@@ -194,10 +204,10 @@ export default function Product() {
       </div>
       <section className="specifications">
         <h2>{t("The details, at a glance.")}</h2>
-        {product.specSourceUrl && (
+        {(product.specSourceUrl || product.catalogueSpecs?.sourceUrl) && (
           <a
             className="text-link"
-            href={product.specSourceUrl}
+            href={product.specSourceUrl || product.catalogueSpecs?.sourceUrl}
             target="_blank"
             rel="noreferrer"
           >
@@ -205,7 +215,7 @@ export default function Product() {
           </a>
         )}
         <dl>
-          {Object.entries(product.specs).map(([key, value]) => (
+          {Object.entries({ ...product.catalogueSpecs?.specs, ...product.specs }).map(([key, value]) => (
             <div key={key}>
               <dt>{t(key)}</dt>
               <dd>{t(value)}</dd>
