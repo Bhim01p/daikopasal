@@ -50,8 +50,10 @@ import { ThemeProvider } from "./context/ThemeContext";
 function RouteLoading() {
   const t = useT();
   return (
-    <div className="container empty-state" role="status">
-      {t("Opening the shop…")}
+    <div className="container route-loading" role="status" aria-live="polite">
+      <div className="route-loading-line route-loading-line-wide" />
+      <div className="route-loading-line" />
+      <span>{t("Opening the shop…")}</span>
     </div>
   );
 }

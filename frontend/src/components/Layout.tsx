@@ -286,7 +286,9 @@ export default function Layout() {
         </div>
       </header>
       <main id="main">
-        <Outlet />
+        <div className="route-page-enter" key={location.pathname}>
+          <Outlet />
+        </div>
       </main>
       <footer>
         <div className="container footer-grid">

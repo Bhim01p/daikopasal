@@ -1,4 +1,10 @@
 /* Burgundy storefront, shared with admin. Both themes use the same components. */
+:root {
+  --motion-fast: 160ms;
+  --motion-medium: 240ms;
+  --motion-page: 340ms;
+  --ease-standard: cubic-bezier(.2,.8,.2,1);
+}
 :root:not([data-theme="dark"]) {
   --sky-background: #faf8f8;
   --sky-surface: #fff;
@@ -26,6 +32,70 @@
 body {
   background: var(--sky-background);
   color: var(--sky-text);
+}
+.route-page-enter {
+  animation: route-page-enter var(--motion-page) var(--ease-standard) both;
+}
+.route-loading {
+  min-height: 42vh;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 12px;
+  color: var(--sky-muted);
+}
+.route-loading-line {
+  width: min(68%, 420px);
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sky-border) 72%, var(--sky-surface));
+  animation: route-loading-pulse 1.1s ease-in-out infinite alternate;
+}
+.route-loading-line-wide { width: min(88%, 680px); height: 24px; }
+@keyframes route-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes route-loading-pulse {
+  from { opacity: .55; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-page-enter, .route-loading-line { animation: none; }
+}
+@media (hover: none), (pointer: coarse) {
+  .route-page-enter { animation-duration: 260ms; }
+}
+
+/* Scoped premium depth: storefront cards and hero surfaces only. */
+@media (hover: hover) and (pointer: fine) {
+  :root body .product-card {
+    perspective: 900px;
+    transform-style: preserve-3d;
+    isolation: isolate;
+  }
+  :root body .product-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--ruby-solid) 14%, transparent), transparent 42%);
+    opacity: 0;
+    transition: opacity var(--motion-medium) var(--ease-standard);
+  }
+  :root body .product-card:hover::before,
+  :root body .product-card:focus-within::before { opacity: 1; }
+  :root body .product-card:hover { transform: translateY(-4px) rotateX(.7deg); }
+  :root body .product-card:hover .product-visual { transform: translateZ(8px); }
+  :root body .product-card:hover .product-visual img { transform: translateY(-6px) scale(1.045); filter: drop-shadow(0 14px 12px rgba(30, 18, 24, .16)); }
+  :root body .product-card > * { position: relative; z-index: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root body .product-card:hover { transform: none; }
+  :root body .product-card:hover .product-visual { transform: none; }
+  :root body .product-card:hover .product-visual img { transform: none; filter: none; }
 }
 body .container {
   max-width: 1240px;

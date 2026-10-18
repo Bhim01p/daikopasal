@@ -440,3 +440,23 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: Fixed the confirmed hardcoded customer-facing “Complete payment” label so it follows the existing translation system and added its Nepali translation. Existing dark-mode token architecture, QR light presentation, product image surfaces, language persistence, theme persistence, and business logic were preserved.
 - **Known issues**: Browser verification remains deferred; static review found no additional confirmed dark-mode defect safe to change without visual confirmation. Existing Vite dynamic/static import warnings remain.
 - **Recommended next step**: Perform the final manual combined dark-mode + Nepali browser QA at mobile and desktop widths.
+
+### Entry: 2026-10-18 - GPT/Codex (Premium Motion + Perceived-Speed Upgrade)
+- **Agent**: GPT/Codex
+- **Task completed**: Reopened the existing selective motion system for a scoped upgrade. Added shared motion timing tokens, a lightweight public route entrance, and a stable Suspense loading structure with reduced-motion handling.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `frontend/src/main.tsx`, `frontend/src/ruby-theme.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: Public navigation now gets an immediate, subtle opacity/vertical entrance keyed by pathname. Lazy-route fallback keeps the shell stable with lightweight animated lines and no artificial delay. Existing hero, card, gallery, cart, checkout, payment, repair, Admin, theme, language, and reduced-motion behavior remains intact.
+- **Known issues**: Browser/manual visual QA remains outstanding. Admin intentionally receives no decorative 3D treatment. Build output increased by approximately 0.4 kB CSS and remains within the existing architecture.
+- **Recommended next step**: Complete manual motion QA on public routes at mobile/desktop widths, both themes/languages, touch/coarse pointer, and reduced-motion settings.
+- **Motion status**: Regression-protected again after this scoped pass.
+
+### Entry: 2026-10-18 - GPT/Codex (Stronger Premium 3D Experience)
+- **Agent**: GPT/Codex
+- **Task completed**: Added a stronger but scoped premium depth treatment to homepage/storefront-compatible product surfaces and Product Detail gallery surfaces, building on the existing motion system.
+- **Files changed**: `frontend/src/ruby-theme.css`, `frontend/src/product-gallery.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: Fine-pointer product cards now gain restrained perspective, layered highlight, lift, and image separation. Product gallery frames gain ambient stage lighting and grounded image depth. Touch devices avoid pointer tilt/lighting; reduced-motion disables movement and filters. No business logic, image priority, checkout/payment, Admin, or Repair behavior changed.
+- **Known issues**: Browser visual QA remains outstanding. The stronger 3D treatment is intentionally limited to storefront cards/gallery; Checkout, Payment, Admin, Account, Repair, and Billing remain calm.
+- **Recommended next step**: Perform manual visual QA for hero/cards/gallery in light/dark themes, EN/NE, mobile/desktop, touch, and reduced-motion settings.
+- **Motion status**: Stronger 3D system is regression-protected again.
