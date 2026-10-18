@@ -388,7 +388,7 @@ export default function Layout() {
             <p>
               {shop.address}
               <br />
-              {t("Shop pickup only")}
+              {t("Shop pickup or home delivery")}
             </p>
             <div className="mobile-footer-links">
               <Link to="/help">{t("Help")}</Link>

@@ -148,6 +148,9 @@ export default function Checkout() {
           {reviewing && <section className="checkout-review-card">
             <button type="button" className="review-back" onClick={() => { setReviewing(false); navigate("/checkout"); }}>← {t("Edit checkout")}</button>
             <h2>{t("Order review")}</h2>
+            <div className="checkout-review-items">{items.map((item) => { const product = products.find((entry) => entry.id === item.productId); return product ? <div className="summary-line" key={item.productId}><span>{product.name} × {item.quantity}</span><strong>{money(product.price * item.quantity)}</strong></div> : null; })}</div>
+            <div className="summary-line"><span>{t("Subtotal")}</span><strong>{money(total)}</strong></div>
+            {fulfillmentMethod === "DELIVERY" && <div className="summary-line"><span>{t("Delivery fee")}</span><strong>{money(175)}</strong></div>}
             <div className="summary-line total"><strong>{t("Total")}</strong><strong>{money(total + (fulfillmentMethod === "DELIVERY" ? 175 : 0))}</strong></div>
             <div className="review-choice"><strong>{fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
             <div className="review-choice"><strong>{paymentMethod === "MANUAL_QR" ? t("Pay via QR") : t("Pay at shop")}</strong><button type="button" onClick={() => setReviewing(false)}>{t("Change")}</button></div>
@@ -518,6 +521,10 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
         {order.id}
         <span>{t(order.status)}</span>
       </div>
+      <section className="payment-status-summary" aria-label={t("Payment status")}>
+        <span><small>{t("Order status")}</small><strong>{t(order.status)}</strong></span>
+        <span><small>{t("Payment status")}</small><strong>{order.payment?.status === "PAID" ? t("Payment verified") : order.payment?.status === "REJECTED" ? t("Payment needs attention") : order.payment?.method === "PAY_AT_SHOP" ? t("Pay at shop") : t("Payment verification pending")}</strong></span>
+      </section>
       {!paymentOnly && <CheckoutSteps active="tracking" />}
       {updatedAt && (
         <p className="summary-note">
@@ -531,7 +538,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
       <a className="button dark full track-order-button" href="#order-progress">
         {t("Track order")} <ArrowRight size={17} />
       </a>
-      {!paymentOnly && isManualQr && !["PAID", "REJECTED"].includes(order.payment?.status || "") && <Link className="button dark full" to={`/order/${order.id}/payment`}>Complete payment <ArrowRight size={17} /></Link>}
+      {!paymentOnly && isManualQr && !["PAID", "REJECTED"].includes(order.payment?.status || "") && <Link className="button dark full" to={`/order/${order.id}/payment`}>{t("Complete payment")} <ArrowRight size={17} /></Link>}
       {!paymentOnly && order.payment?.status === "REJECTED" && <section className="payment-state-card rejected-payment-state">
         <div className="payment-state-icon"><span>×</span></div>
         <h2>{t("Payment rejected")}</h2>
@@ -643,6 +650,7 @@ export function OrderSuccess({ id, paymentOnly = false }: { id?: string; payment
             <strong>{money(i.product.price * i.quantity)}</strong>
           </div>
         ))}
+        {order.deliveryFee ? <div className="summary-line"><span>{t("Delivery fee")}</span><strong>{money(order.deliveryFee)}</strong></div> : null}
         <div className="summary-line total">
           <strong>
             {order.items.some(

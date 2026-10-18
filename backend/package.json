@@ -15,7 +15,6 @@
     "cloudinary": "^2.11.0",
     "nodemailer": "^10.0.16",
     "pdfkit": "^0.20.2",
-    "postgres": "^3.4.9",
-    "cloudinary": "^2.7.0"
+    "postgres": "^3.4.9"
   }
 }

@@ -464,7 +464,7 @@ export default function Account({
     setName(customer?.name || "");
     setEmail(customer?.email || "");
     setPhone(customer?.phone || "");
-  }, [customer?.id, customer?.name, customer?.email]);
+  }, [customer?.id, customer?.name, customer?.email, customer?.phone]);
   if (checking)
     return (
       <div className="container empty-state" role="status">

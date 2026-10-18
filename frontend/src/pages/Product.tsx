@@ -300,7 +300,7 @@ export default function Product() {
           </div>
           <div>
             <dt>{t("Collection")}</dt>
-            <dd>{t("Shop pickup only")}</dd>
+            <dd>{t("Shop pickup or home delivery")}</dd>
           </div>
         </dl>
       </section>

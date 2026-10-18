@@ -7,9 +7,9 @@
   "functions": {
     "api/handler.mjs": {
       "maxDuration": 300,
-      "includeFiles": "backend/seed/**"
+      "includeFiles": ["backend/seed/**", "data/**"]
     },
-    "api/cron.mjs": { "maxDuration": 300, "includeFiles": "backend/seed/**" }
+    "api/cron.mjs": { "maxDuration": 300, "includeFiles": ["backend/seed/**", "data/**"] }
   },
   "crons": [{ "path": "/api/cron", "schedule": "0 2 * * *" }],
   "rewrites": [

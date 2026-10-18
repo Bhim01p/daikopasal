@@ -104,8 +104,38 @@ function validateCatalogueGrouping(product) {
   return product;
 }
 function publicRepairTicket(ticket) {
-  return { id: ticket.id, device: ticket.device, status: ticket.status,
-    history: ticket.history.map(({ status, date }) => ({ status, date })) };
+  return {
+    id: ticket.id,
+    device: ticket.device,
+    deviceType: ticket.deviceType,
+    issueCategory: ticket.issueCategory,
+    problem: ticket.problem,
+    status: ticket.status,
+    createdAt: ticket.createdAt,
+    updatedAt: ticket.updatedAt,
+    diagnosis: ticket.diagnosis || "",
+    estimatedCost: Number.isFinite(ticket.estimatedCost) ? ticket.estimatedCost : null,
+    finalCost: Number.isFinite(ticket.finalCost) ? ticket.finalCost : null,
+    approval: ticket.approval || "NOT_REQUIRED",
+    customerUpdate: ticket.customerUpdate || "",
+    history: (ticket.history || []).map(({ status, date, message }) => ({ status, date, ...(message ? { message } : {}) })),
+  };
+}
+const repairStatuses = ["Request Received", "Device Received", "Diagnosing", "Awaiting Customer Approval", "Repairing", "Ready for Pickup", "Completed", "Cancelled", "Unrepairable", "Received", "Inspecting", "Awaiting approval", "Ready", "Collected"];
+const repairTransitions = {
+  "Request Received": ["Device Received", "Cancelled", "Unrepairable"],
+  "Device Received": ["Diagnosing", "Cancelled", "Unrepairable"],
+  "Diagnosing": ["Awaiting Customer Approval", "Repairing", "Cancelled", "Unrepairable"],
+  "Awaiting Customer Approval": ["Repairing", "Cancelled", "Unrepairable"],
+  "Repairing": ["Ready for Pickup", "Cancelled", "Unrepairable"],
+  "Ready for Pickup": ["Completed"],
+  "Completed": [], "Cancelled": [], "Unrepairable": [],
+};
+function canRepairTransition(from, to) {
+  if (from === to) return true;
+  if (repairTransitions[from]?.includes(to)) return true;
+  const legacy = { Received: "Device Received", Inspecting: "Diagnosing", "Awaiting approval": "Awaiting Customer Approval", Repairing: "Repairing", Ready: "Ready for Pickup", Collected: "Completed", Cancelled: "Cancelled" };
+  return legacy[from] ? repairTransitions[legacy[from]]?.includes(to) : false;
 }
 async function sendBill(response, bill) {
   const pdf = await billPdf(bill);
@@ -386,6 +416,37 @@ export function createApp(options = {}) {
           repairTickets: current.repairTickets.map((entry) => entry.id === ticket.id ? updated : entry) });
         return json(response, 200, { ticket: publicRepairTicket(updated) });
       }
+      if (route === "/api/repairs" && method === "POST") {
+        const input = await body(request);
+        const limits = stateMap(store, "repairRequestLimits");
+        const key = `ip:${request.clientIp || request.socket.remoteAddress || "local"}`;
+        const now = Date.now();
+        const limit = limits.get(key);
+        if (limit && limit.until > now && limit.count >= 5)
+          throw new HttpError(429, "Too many repair requests. Please wait 15 minutes before trying again.");
+        limits.set(key, { count: limit && limit.until > now ? limit.count + 1 : 1, until: limit && limit.until > now ? limit.until : now + 15 * 60 * 1000 });
+        const deviceType = input.deviceType;
+        if (!["mobile", "meter"].includes(deviceType)) throw new HttpError(400, "Select a valid device type.");
+        const brand = text(input.brand, "Brand or device maker", 1, 60);
+        const model = text(input.model, "Model or vehicle identification", 2, 120);
+        const issueCategories = ["screen", "battery", "charging", "camera", "audio", "software", "network", "buttons", "water", "meter", "other"];
+        const issueCategory = input.issueCategory;
+        if (!issueCategories.includes(input.issueCategory)) throw new HttpError(400, "Select a repair problem category.");
+        const customerName = text(input.customerName, "Full name", 2, 100);
+        const phone = normalizePhone(input.phone);
+        const preferredContact = input.preferredContact;
+        if (!["call", "whatsapp"].includes(preferredContact)) throw new HttpError(400, "Select a preferred contact method.");
+        const whatsappNumber = input.whatsappSameAsPhone ? phone : input.whatsapp ? normalizePhone(input.whatsapp) : "";
+        const description = input.description === undefined || input.description === "" ? "" : text(input.description, "Problem description", 0, 500);
+        const current = store.read();
+        const id = `ME-R${String(current.repairTickets.length + 1).padStart(6, "0")}`;
+        const token = randomBytes(32).toString("hex");
+        const customerId = customerAuth.session(request)?.customer?.id;
+        const date = new Date().toISOString();
+        const ticket = { id, token, customerId, customerName, phone, whatsappNumber, preferredContact, deviceType, brand, model, device: `${brand} ${model}`.trim(), issueCategory, problem: description || issueCategory, description, status: "Request Received", createdAt: date, updatedAt: date, history: [{ status: "Request Received", date }] };
+        store.commit({ ...current, repairTickets: [...current.repairTickets, ticket] });
+        return json(response, 201, { ticket: publicRepairTicket(ticket), trackingToken: token });
+      }
       const customerBill = route.match(/^\/api\/orders\/([^/]+)\/bill$/);
       if (customerBill && method === "GET") {
         const order = store.read().orders.find((item) => item.id === customerBill[1]);
@@ -403,6 +464,19 @@ export function createApp(options = {}) {
         if (!ticket || !equal(request.headers["x-repair-token"] || "", ticket.token))
           throw new HttpError(404, "Repair ticket not found.");
         return json(response, 200, { ticket: publicRepairTicket(ticket) });
+      }
+      const repairDecision = route.match(/^\/api\/repairs\/([^/]+)\/decision$/);
+      if (repairDecision && method === "POST") {
+        const input = await body(request);
+        const current = store.read();
+        const ticket = current.repairTickets.find((item) => item.id === repairDecision[1]);
+        if (!ticket || !equal(request.headers["x-repair-token"] || "", ticket.token)) throw new HttpError(404, "Repair ticket not found.");
+        if (ticket.status !== "Awaiting Customer Approval" && ticket.status !== "Awaiting approval") throw new HttpError(409, "Repair approval is not currently requested.");
+        if (!["APPROVED", "DECLINED"].includes(input.decision)) throw new HttpError(400, "Select a valid repair decision.");
+        const date = new Date().toISOString();
+        const updated = { ...ticket, approval: input.decision, approvalAt: date, customerUpdate: input.decision === "APPROVED" ? "Repair approved by customer." : "Repair declined by customer.", updatedAt: date, history: [...(ticket.history || []), { status: ticket.status, date, message: input.decision === "APPROVED" ? "Repair approved by customer." : "Repair declined by customer." }] };
+        store.commit({ ...current, repairTickets: current.repairTickets.map((item) => item.id === ticket.id ? updated : item) });
+        return json(response, 200, { ticket: publicRepairTicket(updated) });
       }
       if (route === "/api/admin/session" && method === "GET") {
         const active = session(request);
@@ -718,7 +792,17 @@ export function createApp(options = {}) {
           phone: normalizePhone(input.phone),
           device: text(input.device, "Device", 2, 120),
           problem: text(input.problem, "Problem", 2, 1000),
-          status: "Received",
+          status: "Device Received",
+          deviceType: input.deviceType === "meter" ? "meter" : "mobile",
+          brand: typeof input.brand === "string" ? input.brand.trim().slice(0, 60) : "",
+          model: typeof input.model === "string" ? input.model.trim().slice(0, 120) : "",
+          issueCategory: typeof input.issueCategory === "string" ? input.issueCategory.trim().slice(0, 40) : "other",
+          approval: "NOT_REQUIRED",
+          diagnosis: "",
+          estimatedCost: null,
+          finalCost: null,
+          customerUpdate: "",
+          internalNotes: "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           history: [{ status: "Received", date: new Date().toISOString(), by: session(request).username }],
@@ -739,16 +823,22 @@ export function createApp(options = {}) {
       const repairUpdate = route.match(/^\/api\/admin\/repairs\/([^/]+)$/);
       if (repairUpdate && method === "PATCH") {
         const input = await body(request);
-        const statuses = ["Received", "Inspecting", "Awaiting approval", "Repairing", "Ready", "Collected", "Cancelled"];
-        if (!statuses.includes(input.status)) throw new HttpError(400, "Select a valid repair status.");
         const current = store.read();
         const ticket = current.repairTickets.find((item) => item.id === repairUpdate[1]);
         if (!ticket) throw new HttpError(404, "Repair ticket not found.");
-        if (ticket.status === input.status) return json(response, 200, { ticket });
-        if (["Collected", "Cancelled"].includes(ticket.status)) throw new HttpError(409, "Repair ticket is closed.");
+        if (input.status && !repairStatuses.includes(input.status)) throw new HttpError(400, "Select a valid repair status.");
+        if (input.status && !canRepairTransition(ticket.status, input.status)) throw new HttpError(409, "That repair status transition is not allowed.");
+        if (input.approval && !["NOT_REQUIRED", "PENDING", "APPROVED", "DECLINED"].includes(input.approval)) throw new HttpError(400, "Approval state is invalid.");
+        const estimatedCost = input.estimatedCost === undefined ? ticket.estimatedCost : input.estimatedCost;
+        const finalCost = input.finalCost === undefined ? ticket.finalCost : input.finalCost;
+        if (estimatedCost !== null && (!Number.isSafeInteger(estimatedCost) || estimatedCost < 0 || estimatedCost > 100000000)) throw new HttpError(400, "Estimated cost is invalid.");
+        if (finalCost !== null && (!Number.isSafeInteger(finalCost) || finalCost < 0 || finalCost > 100000000)) throw new HttpError(400, "Final cost is invalid.");
+        if (!input.status && input.diagnosis === undefined && input.customerUpdate === undefined && input.estimatedCost === undefined && input.finalCost === undefined && input.approval === undefined) return json(response, 200, { ticket });
         const date = new Date().toISOString();
-        const updated = { ...ticket, status: input.status, updatedAt: date,
-          history: [...ticket.history, { status: input.status, date, by: session(request).username }] };
+        const nextStatus = input.status || ticket.status;
+        const message = input.customerUpdate === undefined ? "" : text(input.customerUpdate, "Customer update", 1, 500);
+        const updated = { ...ticket, status: nextStatus, diagnosis: input.diagnosis === undefined ? ticket.diagnosis || "" : text(input.diagnosis, "Diagnosis", 1, 1000), customerUpdate: input.customerUpdate === undefined ? ticket.customerUpdate || "" : message, internalNotes: input.internalNotes === undefined ? ticket.internalNotes || "" : text(input.internalNotes, "Internal staff notes", 0, 2000), estimatedCost, finalCost, approval: input.approval || ticket.approval || "NOT_REQUIRED", updatedAt: date,
+          history: nextStatus !== ticket.status ? [...(ticket.history || []), { status: nextStatus, date, by: session(request).username, ...(message ? { message } : {}) }] : ticket.history };
         store.commit({ ...current, repairTickets: current.repairTickets.map((item) => item.id === ticket.id ? updated : item) });
         return json(response, 200, { ticket: updated });
       }

@@ -1,65 +1,18 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { api } from "../utils/api";
 import { useT } from "../context/LanguageContext";
 
-interface Ticket {
-  id: string; token: string; claimCode?: string | null; customerId?: string; customerName: string; phone: string; device: string;
-  problem: string; status: string; createdAt: string;
-}
-const steps = ["Received", "Inspecting", "Awaiting approval", "Repairing", "Ready", "Collected", "Cancelled"];
+interface Ticket { id: string; token: string; claimCode?: string | null; customerId?: string; customerName: string; phone: string; device: string; problem: string; status: string; createdAt: string; diagnosis?: string; estimatedCost?: number | null; finalCost?: number | null; approval?: string; customerUpdate?: string; internalNotes?: string; }
+const steps = ["Request Received", "Device Received", "Diagnosing", "Awaiting Customer Approval", "Repairing", "Ready for Pickup", "Completed", "Cancelled", "Unrepairable"];
 export default function AdminRepairs() {
-  const t = useT();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [draft, setDraft] = useState({ customerName: "", phone: "", device: "", problem: "" });
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+  const t = useT(); const [tickets, setTickets] = useState<Ticket[]>([]); const [selected, setSelected] = useState<Ticket | null>(null); const [query, setQuery] = useState(""); const [status, setStatus] = useState(""); const [draft, setDraft] = useState({ customerName: "", phone: "", device: "", problem: "" }); const [edit, setEdit] = useState({ diagnosis: "", customerUpdate: "", internalNotes: "", estimatedCost: "", finalCost: "", approval: "NOT_REQUIRED" }); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
   const load = async () => setTickets((await api<{ tickets: Ticket[] }>("/admin/repairs")).tickets);
-  useEffect(() => { void load().catch((error) => setError(error.message)); }, []);
-  async function create(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError("");
-    try {
-      await api("/admin/repairs", { method: "POST", body: JSON.stringify(draft) });
-      await load(); setDraft({ customerName: "", phone: "", device: "", problem: "" });
-    } catch (error) { setError(error instanceof Error ? error.message : "Could not save repair ticket."); }
-    finally { setBusy(false); }
-  }
-  async function update(ticket: Ticket, status: string) {
-    setBusy(true); setError("");
-    try { await api(`/admin/repairs/${ticket.id}`, { method: "PATCH", body: JSON.stringify({ status }) }); await load(); }
-    catch (error) { setError(error instanceof Error ? error.message : "Could not update repair ticket."); }
-    finally { setBusy(false); }
-  }
-  async function renewCode(ticket: Ticket) {
-    setBusy(true); setError("");
-    try { await api(`/admin/repairs/${ticket.id}/code`, { method: "POST", body: "{}" }); await load(); }
-    catch (error) { setError(error instanceof Error ? error.message : "Could not create repair code."); }
-    finally { setBusy(false); }
-  }
-  return <section className="admin-panel repair-admin-panel">
-    <h2>{t("Repair tickets")}</h2>
-    <p>{t("Record a device left at the shop, then update its repair stage.")}</p>
-    <form className="repair-ticket-form" onSubmit={(event) => void create(event)}>
-      <label>{t("Customer name")}<input required minLength={2} maxLength={100} value={draft.customerName} onChange={(event) => setDraft({ ...draft, customerName: event.target.value })} /></label>
-      <label>{t("Phone")}<input required inputMode="tel" minLength={10} maxLength={20} value={draft.phone} onChange={(event) => setDraft({ ...draft, phone: event.target.value })} /></label>
-      <label>{t("Device or vehicle model")}<input required minLength={2} maxLength={120} value={draft.device} onChange={(event) => setDraft({ ...draft, device: event.target.value })} /></label>
-      <label>{t("Reported problem")}<textarea required minLength={2} maxLength={1000} value={draft.problem} onChange={(event) => setDraft({ ...draft, problem: event.target.value })} /></label>
-      <button className="button dark" disabled={busy}>{t("Create repair ticket")}</button>
-    </form>
-    {error && <p className="form-error" role="alert">{error}</p>}
-    <div className="repair-ticket-list">
-      {tickets.map((ticket) => <article key={ticket.id}>
-        <div><strong>{ticket.id}</strong><span>{ticket.customerName} · {ticket.phone}</span></div>
-        <p>{ticket.device}: {ticket.problem}</p>
-        <label>{t("Status")}
-          <select disabled={busy || ["Collected", "Cancelled"].includes(ticket.status)} value={ticket.status} onChange={(event) => void update(ticket, event.target.value)}>
-            {steps.map((step) => <option key={step} value={step}>{t(step)}</option>)}
-          </select>
-        </label>
-        {ticket.customerId ? <p className="summary-note">{t("Linked to customer account")}</p> : <>
-          {ticket.claimCode && <p className="summary-note">{t("Give this six-digit code to the customer")}: <strong><code>{ticket.claimCode}</code></strong></p>}
-          <button className="button white" type="button" disabled={busy} onClick={() => void renewCode(ticket)}>{t(ticket.claimCode ? "Generate a new code" : "Generate claim code")}</button>
-        </>}
-      </article>)}
-    </div>
-  </section>;
+  useEffect(() => { void load().catch((reason) => setError(reason.message)); }, []);
+  const visible = useMemo(() => tickets.filter((ticket) => (!status || ticket.status === status) && `${ticket.id} ${ticket.customerName} ${ticket.phone} ${ticket.device} ${ticket.problem}`.toLowerCase().includes(query.toLowerCase())), [tickets, status, query]);
+  async function create(event: FormEvent) { event.preventDefault(); setBusy(true); setError(""); try { await api("/admin/repairs", { method: "POST", body: JSON.stringify(draft) }); await load(); setDraft({ customerName: "", phone: "", device: "", problem: "" }); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save repair ticket."); } finally { setBusy(false); } }
+  function open(ticket: Ticket) { setSelected(ticket); setEdit({ diagnosis: ticket.diagnosis || "", customerUpdate: ticket.customerUpdate || "", internalNotes: ticket.internalNotes || "", estimatedCost: ticket.estimatedCost == null ? "" : String(ticket.estimatedCost), finalCost: ticket.finalCost == null ? "" : String(ticket.finalCost), approval: ticket.approval || "NOT_REQUIRED" }); }
+  async function save() { if (!selected) return; setBusy(true); setError(""); try { await api(`/admin/repairs/${selected.id}`, { method: "PATCH", body: JSON.stringify({ diagnosis: edit.diagnosis, customerUpdate: edit.customerUpdate, internalNotes: edit.internalNotes, estimatedCost: edit.estimatedCost === "" ? null : Number(edit.estimatedCost), finalCost: edit.finalCost === "" ? null : Number(edit.finalCost), approval: edit.approval }) }); await load(); setSelected(null); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not update repair ticket."); } finally { setBusy(false); } }
+  async function updateStatus(next: string) { if (!selected) return; setBusy(true); setError(""); try { await api(`/admin/repairs/${selected.id}`, { method: "PATCH", body: JSON.stringify({ status: next }) }); await load(); setSelected({ ...selected, status: next }); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not update repair status."); } finally { setBusy(false); } }
+  async function renewCode(ticket: Ticket) { setBusy(true); setError(""); try { await api(`/admin/repairs/${ticket.id}/code`, { method: "POST", body: "{}" }); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not create repair code."); } finally { setBusy(false); } }
+  return <section className="admin-panel repair-admin-panel"><h2>{t("Repair tickets")}</h2><p>{t("Review requests, diagnosis, estimates and repair progress.")}</p><form className="repair-ticket-form" onSubmit={(event) => void create(event)}><label>{t("Customer name")}<input required minLength={2} maxLength={100} value={draft.customerName} onChange={(event) => setDraft({ ...draft, customerName: event.target.value })} /></label><label>{t("Phone")}<input required inputMode="tel" value={draft.phone} onChange={(event) => setDraft({ ...draft, phone: event.target.value })} /></label><label>{t("Device or vehicle model")}<input required minLength={2} maxLength={120} value={draft.device} onChange={(event) => setDraft({ ...draft, device: event.target.value })} /></label><label>{t("Reported problem")}<textarea required minLength={2} maxLength={1000} value={draft.problem} onChange={(event) => setDraft({ ...draft, problem: event.target.value })} /></label><button className="button dark" disabled={busy}>{t("Create repair ticket")}</button></form>{error && <p className="form-error" role="alert">{error}</p>}<div className="repair-admin-toolbar"><input aria-label={t("Search repairs")} placeholder={t("Search repairs")} value={query} onChange={(event) => setQuery(event.target.value)} /><select aria-label={t("Filter by status")} value={status} onChange={(event) => setStatus(event.target.value)}><option value="">{t("All statuses")}</option>{steps.map((step) => <option key={step} value={step}>{t(step)}</option>)}</select></div><div className="repair-ticket-list">{visible.map((ticket) => <article key={ticket.id}><div><strong>{ticket.id}</strong><span>{ticket.customerName} · {ticket.phone}</span></div><p>{ticket.device}: {ticket.problem}</p><p>{t(ticket.status)} {ticket.approval === "PENDING" ? `· ${t("Approval pending")}` : ""}</p><button className="button white" type="button" onClick={() => open(ticket)}>{t("Open repair")}</button>{ticket.customerId ? <p className="summary-note">{t("Linked to customer account")}</p> : <>{ticket.claimCode && <p className="summary-note">{t("Give this six-digit code to the customer")}: <strong><code>{ticket.claimCode}</code></strong></p>}<button className="button white" type="button" disabled={busy} onClick={() => void renewCode(ticket)}>{t(ticket.claimCode ? "Generate a new code" : "Generate claim code")}</button></>}</article>)}</div>{selected && <div className="repair-detail-card"><h3>{selected.id} · {selected.device}</h3><p>{selected.customerName} · {selected.phone}</p><label>{t("Status")}<select disabled={busy || ["Completed", "Cancelled", "Unrepairable"].includes(selected.status)} value={selected.status} onChange={(event) => void updateStatus(event.target.value)}>{steps.map((step) => <option key={step} value={step}>{t(step)}</option>)}</select></label><label>{t("Diagnosis")}<textarea value={edit.diagnosis} maxLength={1000} onChange={(event) => setEdit({ ...edit, diagnosis: event.target.value })} /></label><label>{t("Customer-visible update")}<textarea value={edit.customerUpdate} maxLength={500} onChange={(event) => setEdit({ ...edit, customerUpdate: event.target.value })} /></label><label><strong>{t("Internal Staff Notes — Not visible to customer")}</strong><textarea value={edit.internalNotes} maxLength={2000} onChange={(event) => setEdit({ ...edit, internalNotes: event.target.value })} /></label><div className="repair-request-grid"><label>{t("Estimated cost (NPR)")}<input type="number" min="0" value={edit.estimatedCost} onChange={(event) => setEdit({ ...edit, estimatedCost: event.target.value })} /></label><label>{t("Final cost (NPR)")}<input type="number" min="0" value={edit.finalCost} onChange={(event) => setEdit({ ...edit, finalCost: event.target.value })} /></label></div><label>{t("Approval")}<select value={edit.approval} onChange={(event) => setEdit({ ...edit, approval: event.target.value })}><option value="NOT_REQUIRED">{t("Not required")}</option><option value="PENDING">{t("Pending")}</option><option value="APPROVED">{t("Approved")}</option><option value="DECLINED">{t("Declined")}</option></select></label><div className="button-row"><button className="button dark" type="button" disabled={busy} onClick={() => void save()}>{t("Save repair")}</button><button className="button white" type="button" onClick={() => setSelected(null)}>{t("Close")}</button></div></div>}</section>;
 }

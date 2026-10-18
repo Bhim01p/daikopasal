@@ -341,3 +341,102 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: USED PHONE SYSTEM — FROZEN. Used phones remain independent product-ID listings; actual-device photos are gated for new listings, legacy reference images are labeled, stock defaults to 1 with deliberate stock-above-one confirmation, condition/battery/inspection data is validated and transparent, and Cart/Checkout/Orders remain unchanged.
 - **Known issues**: Browser QA remains recommended for real/reference image switching, mobile widths, EN/NE, light/dark, and complete purchase flow. No confirmed application blocker remains.
 - **Recommended next step**: Only address confirmed used-phone regressions or explicitly approved future features. Do not start the Repair Request System in this handoff.
+
+### Entry: 2026-10-18 - GPT/Codex (Repair System Phase 1)
+- **Agent**: GPT/Codex
+- **Task completed**: Added the guest repair-request foundation with server-side validation, secure random tracking tokens, human-readable references, optional signed-in customer association, lightweight IP rate limiting, safe public responses, and a responsive English/Nepali request form on `/repair`.
+- **Files changed**: `backend/server.mjs`, `frontend/src/components/CustomerRepairRequest.tsx`, `frontend/src/pages/Repair.tsx`, `frontend/src/operations.css`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Backend/server and locale syntax checks; Nepali locale JSON parse; frontend TypeScript and production build; `git diff --check`. Existing backend fixture tests were attempted but remain blocked by Windows sandbox EPERM store-file rename errors.
+- **Result**: Anonymous customers can submit mobile-phone or digital-meter repair requests with required contact/device/problem fields, receive a private token-backed tracking link, and see a clear success state. Legacy shop-code tracking and admin repair records remain compatible; no checkout, payment, order, billing, auth, schema, or Phase 2 work was changed.
+- **Known issues**: Manual QA is still required for guest submission, token-protected tracking, rate-limit messaging, mobile widths, and EN/NE presentation. Backend fixture tests need a normal writable temp directory to run reliably.
+- **Recommended next step**: Perform the requested manual QA for Repair Phase 1, then decide separately whether to approve Phase 2. Do not treat the repair system as frozen yet.
+
+### Entry: 2026-10-18 - GPT/Codex (Repair Completion Pass In Progress)
+- **Agent**: GPT/Codex
+- **Task completed**: Added the next repair workflow foundation on top of Phase 1: customer-safe diagnosis/estimate/final-cost fields, approval decisions secured by the tracking token, additive lifecycle statuses/transitions, admin repair search/filter/detail editing, and internal staff notes excluded from public responses. The provided repair UI reference is being used for card hierarchy and responsive layout direction.
+- **Files changed**: `backend/server.mjs`, `frontend/src/components/AdminRepairs.tsx`, `frontend/src/pages/Repair.tsx`, `frontend/src/operations.css`, `shared/ne.json`.
+- **Tests/checks performed**: Backend syntax check, frontend TypeScript/production build, and `git diff --check` passed. Existing backend fixture tests remain blocked by Windows sandbox EPERM store-file rename behavior.
+- **Result**: Phase 2 workflow pieces are implemented locally, but the full repair-system completion pass is not yet frozen. Optional photos and notifications remain deferred; browser QA and broader repair regression tests remain.
+- **Known issues**: Manual validation of lifecycle transitions, customer approval, mobile layouts, dark mode, and Nepali text is still required. The current admin UI is functional but remains a compact existing-layout enhancement rather than a final visual match to the reference.
+- **Recommended next step**: Continue targeted repair QA and polish only; do not modify protected commerce, catalogue, variant, used-phone, discovery, or motion systems.
+
+### Entry: 2026-10-18 - GPT/Codex (Repair System Paused)
+- **Agent**: GPT/Codex
+- **Task completed**: Paused Repair System development at READY WITH MANUAL QA REMAINING, per user instruction.
+- **Files changed**: `AGENTS.md` only.
+- **Tests/checks performed**: None; implementation was intentionally left unchanged.
+- **Result**: Repair System is regression-protected and must not receive new features or architectural changes until manual browser QA is completed or a confirmed bug is reported.
+- **Known issues**: Browser QA remains outstanding; the system is not fully frozen. Existing Windows backend fixture EPERM limitations remain documented.
+- **Recommended next step**: Work on a separate user-approved project area. Return to Repair only for manual QA or a confirmed Repair bug.
+
+### Entry: 2026-10-18 - GPT/Codex (Checkout and Payment UX Polish)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited the existing checkout and manual QR flow and added targeted review/payment-status hierarchy improvements without changing payment architecture.
+- **Files changed**: `frontend/src/pages/Checkout.tsx`, `frontend/src/sky-theme.css`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; Nepali locale JSON validation passed; `git diff --check` passed. Existing Vite dynamic-import warnings remain.
+- **Result**: Checkout review now repeats products, subtotal, delivery fee, and total before order creation. Order confirmation now distinguishes order status from payment status using customer-friendly labels. PAY_AT_SHOP, MANUAL_QR, delivery-payment rules, QR verification, rejection/resubmission, and backend payment boundaries were preserved.
+- **Known issues**: Browser/mobile runtime QA remains outstanding in this environment; no browser-side changes were made based on unverified assumptions.
+- **Recommended next step**: Manually exercise pickup/pay-at-shop, pickup/QR, delivery/QR, rejected-payment resubmission, and payment-status display on mobile and desktop.
+
+### Entry: 2026-10-18 - GPT/Codex (Order Tracking UX Polish)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited order confirmation/tracking and My Orders, then added targeted status and summary clarity improvements.
+- **Files changed**: `frontend/src/pages/Checkout.tsx`, `frontend/src/pages/MyOrders.tsx`, `frontend/src/sky-theme.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; Nepali locale JSON validation passed; `git diff --check` passed.
+- **Result**: Checkout/order confirmation now shows separate order and payment status summaries and preserves delivery fees in historical order summaries. My Orders now identifies pickup versus delivery and shows a friendly payment state. Payment/order architecture and protected systems were untouched.
+- **Known issues**: Browser/mobile runtime QA remains outstanding; no unsupported delivery stages or fake tracking were added.
+- **Recommended next step**: Manually review pickup, delivery, QR pending/paid/rejected, cancelled, and completed order states at mobile and desktop widths.
+
+### Entry: 2026-10-18 - GPT/Codex (Customer Account + Profile Audit)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited customer login, registration, session/logout, profile editing, password flows, My Orders, favorites, guest behavior, and navigation.
+- **Files changed**: `frontend/src/pages/Account.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; customer-auth syntax check and locale JSON validation passed; `git diff --check` passed. Customer backend tests were attempted: 4 passed and 3 were blocked by the existing Windows sandbox EPERM store-file rename issue.
+- **Result**: Fixed a confirmed profile-edit synchronization issue where the phone field could remain stale because the profile hydration effect omitted `customer.phone` from its dependencies. Existing account, logout, favorites, guest checkout, ownership, and staff authentication behavior remains unchanged.
+- **Known issues**: Browser/mobile account QA remains outstanding. No additional account features were added.
+- **Recommended next step**: Manually verify login/register, profile edit including phone changes, logout/login again, My Orders ownership, favorites behavior, and mobile EN/NE layouts.
+
+### Entry: 2026-10-18 - GPT/Codex (Admin Workspace Final Polish)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited the existing Admin navigation, product/catalogue integration, orders, payment review, billing, repairs, staff permissions, and settings boundaries.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend syntax check passed; Nepali locale JSON validation passed; `git diff --check` passed.
+- **Result**: Fixed two confirmed Admin workflow issues: delivery orders were labeled as Shop pickup in order detail, and future/ESEWA payment entries exposed manual QR verification actions even though the backend correctly rejects them. Manual verification controls now appear only for MANUAL_QR.
+- **Known issues**: Browser/runtime Admin QA remains outstanding. No protected architecture was redesigned.
+- **Recommended next step**: Manually review Admin order/payment screens, delivery labels, staff permission boundaries, billing, repairs, and narrow-screen layouts before whole-site QA.
+
+### Entry: 2026-10-18 - GPT/Codex (Whole-Site Final QA + Production Readiness)
+- **Agent**: GPT/Codex
+- **Task completed**: Performed a targeted whole-site production-readiness audit across runtime data loading, deployment configuration, dependency metadata, customer/admin flows, checkout/payment boundaries, account/order tracking, catalogue/image loading, repair pause state, and final diff hygiene.
+- **Files changed**: `vercel.json`, `backend/package.json`, `AGENTS.md`; existing targeted Admin, checkout, account, order, and repair changes from this working tree were reviewed and preserved.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend/API module syntax checks passed; deployment/package/locale JSON validation passed; `git diff --check` passed. Existing Vite chunk warnings remain.
+- **Result**: Vercel functions now bundle the runtime `data/**` catalogue/description/image files in addition to backend seed files. The duplicate Cloudinary dependency declaration was removed while retaining the existing version. Database-backed hosted storage remains required through `DATABASE_URL`; secrets stay server-side. No protected checkout, payment, order, billing, authentication, catalogue specification, or paused Repair architecture was redesigned.
+- **Known issues**: Full browser/runtime QA was unavailable in this environment, so manual verification remains required for public routes, mobile widths, both themes/languages, customer checkout/payment, account/order ownership, repair flow, and Admin permissions. Existing Windows EPERM/EACCES fixture-store test failures remain environmental. Existing Vite dynamic/static import warnings remain.
+- **Recommended next step**: Deploy to a preview environment with production-like environment variables and complete the concise manual smoke checklist before production promotion.
+
+### Entry: 2026-10-18 - GPT/Codex (Whole-Project Visual + UX Consistency Polish)
+- **Agent**: GPT/Codex
+- **Task completed**: Completed a static visual/UX consistency review across storefront, catalogue/search, product cards/detail, cart, checkout/payment, order tracking, account, repair, Admin, Billing, forms, status treatments, themes, locales, accessibility, responsive CSS, image handling, and motion boundaries.
+- **Files changed**: `AGENTS.md` only; no confirmed safe visual defect required application-code changes during this pass.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; backend syntax checks passed; Nepali locale JSON validation passed; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: Existing design tokens, responsive rules, image priority, variant behavior, payment/order architecture, paused Repair architecture, and frozen Motion System were preserved. No browser QA was claimed.
+- **Known issues**: Manual browser review remains required at 320/360/390/430px and desktop, in light/dark themes and English/Nepali, including checkout/payment, account/order ownership, Repair, Admin, and Billing flows.
+- **Recommended next step**: Perform the deferred manual visual QA session and fix only confirmed runtime presentation regressions.
+
+### Entry: 2026-10-18 - GPT/Codex (Business Content + Trust Final Polish)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited public business identity, footer/contact links, WhatsApp actions, delivery/payment wording, repair information, used-phone trust messaging, informational routes, metadata copy, and English/Nepali fixed content.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `frontend/src/main.tsx`, `frontend/src/pages/Contact.tsx`, `frontend/src/pages/Product.tsx`, `frontend/src/pages/MyOrders.tsx`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Nepali locale JSON validation; frontend TypeScript and production build; `git diff --check`. Existing Vite dynamic/static import warnings remain.
+- **Result**: Corrected public pickup-only wording that contradicted the implemented eligible home-delivery flow. Contact FAQ now explains the NPR 175 delivery fee and QR requirement; product/footer/meta wording reflects pickup or eligible delivery; guest order heading no longer implies pickup-only orders. Existing WhatsApp number, routes, payment/order/repair logic, and business data were preserved.
+- **Known issues**: Browser/mobile visual QA remains deferred. No unsupported street address, warranty, return, delivery-time, registration, certification, review, or social claims were added.
+- **Recommended next step**: Complete the deferred manual content and responsive review before production promotion.
+
+### Entry: 2026-10-18 - GPT/Codex (Dark Mode + EN/NE Compatibility Audit)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited theme switching, dark-mode token usage, fixed customer-facing strings, checkout/payment labels, account/order/repair labels, Admin UI translation usage, and responsive translation risks.
+- **Files changed**: `frontend/src/pages/Checkout.tsx`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build; Nepali locale JSON validation; `git diff --check`.
+- **Result**: Fixed the confirmed hardcoded customer-facing “Complete payment” label so it follows the existing translation system and added its Nepali translation. Existing dark-mode token architecture, QR light presentation, product image surfaces, language persistence, theme persistence, and business logic were preserved.
+- **Known issues**: Browser verification remains deferred; static review found no additional confirmed dark-mode defect safe to change without visual confirmation. Existing Vite dynamic/static import warnings remain.
+- **Recommended next step**: Perform the final manual combined dark-mode + Nepali browser QA at mobile and desktop widths.

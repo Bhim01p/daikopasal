@@ -128,7 +128,7 @@ export default function Contact() {
             <summary>{t("Do you offer delivery?")}</summary>
             <p>
               {t(
-                "Orders are for shop pickup only. Collect from our Lekhnath store between 8 AM and 6 PM.",
+                "Home delivery is available for eligible orders. A NPR 175 delivery fee applies, and delivery orders require QR payment.",
               )}
             </p>
           </details>

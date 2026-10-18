@@ -79,7 +79,7 @@ export default function MyOrders() {
   if (!customer && guestOrders.length)
     return (
       <div className="container standard-page guest-receipts">
-        <span className="eyebrow">{t("Shop pickup only")}</span>
+        <span className="eyebrow">{t("Your orders")}</span>
         <h1>{t("My orders")}</h1>
         <p>
           {t(
@@ -271,7 +271,8 @@ export default function MyOrders() {
             <div className="customer-order-bottom">
               <div>
                 <strong>{money(order.total)}</strong>
-                <p>{t("Shop pickup")}</p>
+                <p>{order.fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</p>
+                <p className="order-payment-status">{order.payment?.status === "PAID" ? t("Payment verified") : order.payment?.status === "REJECTED" ? t("Payment needs attention") : order.payment?.method === "PAY_AT_SHOP" ? t("Pay at shop") : t("Payment verification pending")}</p>
               </div>
               <Link className="button dark" to={`/order/${order.id}`}>
                 {t("View order")}

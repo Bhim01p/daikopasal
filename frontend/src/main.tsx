@@ -130,7 +130,7 @@ function Meta() {
             : p.description
           : language === "ne"
             ? `${t(title)}। लेखनाथको माछापुच्छ्रे इलेक्ट्रोनिक्स। नयाँ र पुराना फोन, एक्सेसरिज र मर्मत सेवा। खुल्ने समय ${shop.hours}। पसलबाट मात्र लिनुहोस्।`
-            : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand sets, accessories and repair enquiries. Open ${shop.hours}. Shop pickup only.`,
+            : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand sets, accessories and repair enquiries. Shop pickup and eligible home delivery available.`,
       );
     let robots = document.querySelector('meta[name="robots"]');
     if (!robots) {

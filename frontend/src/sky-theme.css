@@ -978,6 +978,11 @@ body .review-items small { color: #777178; }
 body .checkout-review-card .summary-line { display: flex; justify-content: space-between; padding: 7px 0; }
 body .checkout-review-card .summary-line.total { margin-top: 8px; padding-top: 14px; border-top: 1px solid #e4dfe1; font-size: 20px; }
 body .checkout-review-card .summary-line.total strong:last-child { font-size: 26px; }
+body .checkout-review-card .checkout-review-items { display:grid; gap:2px; margin-bottom:8px; }
+body .payment-status-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0; }
+body .payment-status-summary span { display:grid; gap:4px; padding:12px; border:1px solid var(--sky-border); border-radius:10px; background:var(--sky-surface); }
+body .payment-status-summary small { color:var(--sky-muted); }
+body .order-payment-status { color:var(--sky-muted); font-size:13px; margin-top:4px; }
 body .checkout-review-card .review-items > div > strong { font-size: 17px; }
 body .review-choice { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 13px; border: 1px solid #e4dfe1; border-radius: 8px; }
 body .review-choice button { border: 0; background: transparent; color: #be123c; font-weight: 700; }

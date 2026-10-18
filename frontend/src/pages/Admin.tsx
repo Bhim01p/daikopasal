@@ -2047,9 +2047,9 @@ export default function Admin() {
                                 {order.email}
                               </a>
                             )}
-                            <span>{t("Shop pickup")}</span>
+                            <span>{order.fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</span>
                           </div>
-                          {order.payment && ["MANUAL_QR", "ESEWA"].includes(order.payment.method) && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(order.payment.status) && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
+                          {order.payment?.method === "MANUAL_QR" && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(order.payment.status) && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
                           <ul>
                             {order.items.map((item) => (
                               <li key={item.product.id}>
