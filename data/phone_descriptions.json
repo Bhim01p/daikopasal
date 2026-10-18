@@ -1,0 +1,1556 @@
+[
+  {
+    "device_id": "apple-iphone-11",
+    "brand": "Apple",
+    "model": "iPhone 11",
+    "description_en": "Apple iPhone 11 is a smartphone powered by Apple A13 Bionic with a Liquid Retina IPS LCD 6.1-inch 1792 x 828 display. It offers a 12MP wide; 12MP ultrawide camera system and a 3110 mAh battery with iOS 13.",
+    "description_ne": "Apple iPhone 11 मा Apple A13 Bionic chipset र Liquid Retina IPS LCD 6.1-inch 1792 x 828 display उपलब्ध छ। यसमा 12MP wide; 12MP ultrawide camera system र 3110 mAh battery सहित iOS 13 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-12",
+    "brand": "Apple",
+    "model": "iPhone 12",
+    "description_en": "Apple iPhone 12 is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 12 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-12-pro",
+    "brand": "Apple",
+    "model": "iPhone 12 Pro",
+    "description_en": "Apple iPhone 12 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 12 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-12-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 12 Pro Max",
+    "description_en": "Apple iPhone 12 Pro Max is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 12 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-13",
+    "brand": "Apple",
+    "model": "iPhone 13",
+    "description_en": "Apple iPhone 13 is a smartphone powered by Apple A15 Bionic with a Super Retina XDR OLED 6.1-inch 2532 x 1170 display. It offers a 12MP primary; 12MP ultrawide camera system and a 3240 mAh battery with iOS 15.",
+    "description_ne": "Apple iPhone 13 मा Apple A15 Bionic chipset र Super Retina XDR OLED 6.1-inch 2532 x 1170 display उपलब्ध छ। यसमा 12MP primary; 12MP ultrawide camera system र 3240 mAh battery सहित iOS 15 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-13-pro",
+    "brand": "Apple",
+    "model": "iPhone 13 Pro",
+    "description_en": "Apple iPhone 13 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 13 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-13-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 13 Pro Max",
+    "description_en": "Apple iPhone 13 Pro Max is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 13 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-14",
+    "brand": "Apple",
+    "model": "iPhone 14",
+    "description_en": "Apple iPhone 14 is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 14 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-14-pro",
+    "brand": "Apple",
+    "model": "iPhone 14 Pro",
+    "description_en": "Apple iPhone 14 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 14 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-15",
+    "brand": "Apple",
+    "model": "iPhone 15",
+    "description_en": "Apple iPhone 15 is a smartphone powered by Apple A16 Bionic with a OLED 6.1-inch FHD+ display. It offers a 48MP main; 12MP ultrawide camera system and a 3349 mAh battery with iOS 17.",
+    "description_ne": "Apple iPhone 15 मा Apple A16 Bionic chipset र OLED 6.1-inch FHD+ display उपलब्ध छ। यसमा 48MP main; 12MP ultrawide camera system र 3349 mAh battery सहित iOS 17 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-15-plus",
+    "brand": "Apple",
+    "model": "iPhone 15 Plus",
+    "description_en": "Apple iPhone 15 Plus is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 15 Plus मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-15-pro",
+    "brand": "Apple",
+    "model": "iPhone 15 Pro",
+    "description_en": "Apple iPhone 15 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 15 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-15-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 15 Pro Max",
+    "description_en": "Apple iPhone 15 Pro Max is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 15 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-16",
+    "brand": "Apple",
+    "model": "iPhone 16",
+    "description_en": "Apple iPhone 16 is a smartphone powered by Apple A18 with a Super Retina XDR OLED 6.1-inch FHD+ display. It offers a 48MP primary; 12MP ultrawide camera system and a 3561 mAh battery with iOS 18.",
+    "description_ne": "Apple iPhone 16 मा Apple A18 chipset र Super Retina XDR OLED 6.1-inch FHD+ display उपलब्ध छ। यसमा 48MP primary; 12MP ultrawide camera system र 3561 mAh battery सहित iOS 18 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-16e",
+    "brand": "Apple",
+    "model": "iPhone 16e",
+    "description_en": "Apple iPhone 16e is a smartphone powered by Apple A18 with a Super Retina XDR OLED 6.1-inch 2532 x 1170 display. It offers a 48MP primary camera system and a 4005 mAh battery with iOS 18.3.1.",
+    "description_ne": "Apple iPhone 16e मा Apple A18 chipset र Super Retina XDR OLED 6.1-inch 2532 x 1170 display उपलब्ध छ। यसमा 48MP primary camera system र 4005 mAh battery सहित iOS 18.3.1 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-16-plus",
+    "brand": "Apple",
+    "model": "iPhone 16 Plus",
+    "description_en": "Apple iPhone 16 Plus is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 16 Plus मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-16-pro",
+    "brand": "Apple",
+    "model": "iPhone 16 Pro",
+    "description_en": "Apple iPhone 16 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 16 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-16-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 16 Pro Max",
+    "description_en": "Apple iPhone 16 Pro Max is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 16 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-17",
+    "brand": "Apple",
+    "model": "iPhone 17",
+    "description_en": "Apple iPhone 17 is a smartphone powered by Apple A19 with a LTPO Super Retina XDR OLED 6.3-inch 2622 x 1206 display. It offers a 48MP main; 48MP ultrawide camera system with iOS 26.",
+    "description_ne": "Apple iPhone 17 मा Apple A19 chipset र LTPO Super Retina XDR OLED 6.3-inch 2622 x 1206 display उपलब्ध छ। यसमा 48MP main; 48MP ultrawide camera system सहित iOS 26 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-17e",
+    "brand": "Apple",
+    "model": "iPhone 17e",
+    "description_en": "Apple iPhone 17e is a smartphone powered by Apple A19 with a Super Retina XDR OLED 6.1-inch 2532 x 1170 display. It offers a 48MP primary camera system and a 4005 mAh battery with iOS 26.",
+    "description_ne": "Apple iPhone 17e मा Apple A19 chipset र Super Retina XDR OLED 6.1-inch 2532 x 1170 display उपलब्ध छ। यसमा 48MP primary camera system र 4005 mAh battery सहित iOS 26 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-17-pro",
+    "brand": "Apple",
+    "model": "iPhone 17 Pro",
+    "description_en": "Apple iPhone 17 Pro is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 17 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-17-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 17 Pro Max",
+    "description_en": "Apple iPhone 17 Pro Max is a smartphone. It offers .",
+    "description_ne": "Apple iPhone 17 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-18-pro",
+    "brand": "Apple",
+    "model": "iPhone 18 Pro",
+    "description_en": "Apple iPhone 18 Pro is a smartphone powered by Apple A20 Pro with a LTPO Super Retina XDR OLED 6.3-inch 2622 x 1206 display. It offers a 48MP main variable aperture; 48MP ultrawide; 48MP periscope 4x camera system and a 4056 mAh battery with iOS 27.",
+    "description_ne": "Apple iPhone 18 Pro मा Apple A20 Pro chipset र LTPO Super Retina XDR OLED 6.3-inch 2622 x 1206 display उपलब्ध छ। यसमा 48MP main variable aperture; 48MP ultrawide; 48MP periscope 4x camera system र 4056 mAh battery सहित iOS 27 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-18-pro-max",
+    "brand": "Apple",
+    "model": "iPhone 18 Pro Max",
+    "description_en": "Apple iPhone 18 Pro Max is a smartphone powered by Apple A20 Pro with a LTPO Super Retina XDR OLED 6.9-inch 2868 x 1320 display. It offers a 48MP main variable aperture; 48MP ultrawide; 48MP periscope 4x camera system and a 5391 mAh battery with iOS 27.",
+    "description_ne": "Apple iPhone 18 Pro Max मा Apple A20 Pro chipset र LTPO Super Retina XDR OLED 6.9-inch 2868 x 1320 display उपलब्ध छ। यसमा 48MP main variable aperture; 48MP ultrawide; 48MP periscope 4x camera system र 5391 mAh battery सहित iOS 27 रहेको छ।"
+  },
+  {
+    "device_id": "apple-iphone-air",
+    "brand": "Apple",
+    "model": "iPhone Air",
+    "description_en": "Apple iPhone Air is a smartphone powered by Apple A19 Pro with a Super Retina XDR OLED 6.5-inch 2736 x 1260 display. It offers a 48MP Fusion Main; 12MP optical-quality 2x Telephoto camera system with iOS.",
+    "description_ne": "Apple iPhone Air मा Apple A19 Pro chipset र Super Retina XDR OLED 6.5-inch 2736 x 1260 display उपलब्ध छ। यसमा 48MP Fusion Main; 12MP optical-quality 2x Telephoto camera system सहित iOS रहेको छ।"
+  },
+  {
+    "device_id": "honor-choice-t10",
+    "brand": "Honor",
+    "model": "Choice T10",
+    "description_en": "Honor Choice T10 is a smartphone powered by UNISOC T615 with a IPS LCD 6.75-inch 1600 x 720 display. It offers a 13MP main camera system and a 5000 mAh battery with Android 15 Go.",
+    "description_ne": "Honor Choice T10 मा UNISOC T615 chipset र IPS LCD 6.75-inch 1600 x 720 display उपलब्ध छ। यसमा 13MP main camera system र 5000 mAh battery सहित Android 15 Go रहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-400",
+    "brand": "Honor",
+    "model": "HONOR 400",
+    "description_en": "Honor HONOR 400 is a smartphone powered by Snapdragon 7 Gen 3 with a AMOLED 6.55-inch 2736 x 1264 display. It offers a 200MP main OIS + 12MP ultrawide camera system and a 6000 mAh battery with MagicOS 9.0 (Android 15).",
+    "description_ne": "Honor HONOR 400 मा Snapdragon 7 Gen 3 chipset र AMOLED 6.55-inch 2736 x 1264 display उपलब्ध छ। यसमा 200MP main OIS + 12MP ultrawide camera system र 6000 mAh battery सहित MagicOS 9.0 (Android 15) रहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-400-pro",
+    "brand": "Honor",
+    "model": "HONOR 400 Pro",
+    "description_en": "Honor HONOR 400 Pro is a smartphone. It offers .",
+    "description_ne": "Honor HONOR 400 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-600",
+    "brand": "Honor",
+    "model": "HONOR 600",
+    "description_en": "Honor HONOR 600 is a smartphone. It offers .",
+    "description_ne": "Honor HONOR 600 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-600-lite",
+    "brand": "Honor",
+    "model": "HONOR 600 Lite",
+    "description_en": "Honor HONOR 600 Lite is a smartphone. It offers .",
+    "description_ne": "Honor HONOR 600 Lite मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-600-pro",
+    "brand": "Honor",
+    "model": "HONOR 600 Pro",
+    "description_en": "Honor HONOR 600 Pro is a smartphone. It offers .",
+    "description_ne": "Honor HONOR 600 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-magic-v5",
+    "brand": "Honor",
+    "model": "HONOR Magic V5",
+    "description_en": "Honor HONOR Magic V5 is a smartphone. It offers .",
+    "description_ne": "Honor HONOR Magic V5 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-x6e",
+    "brand": "Honor",
+    "model": "HONOR X6e",
+    "description_en": "Honor HONOR X6e is a smartphone. It offers .",
+    "description_ne": "Honor HONOR X6e मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-honor-x7e",
+    "brand": "Honor",
+    "model": "HONOR X7e",
+    "description_en": "Honor HONOR X7e is a smartphone. It offers .",
+    "description_ne": "Honor HONOR X7e मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "honor-magic-8-pro",
+    "brand": "Honor",
+    "model": "Magic 8 Pro",
+    "description_en": "Honor Magic 8 Pro is a smartphone powered by Qualcomm Snapdragon 8 Elite Gen 5 with a LTPO OLED 6.71-inch 1256 x 2808 display. It offers a 50MP main; 200MP 3.7x periscope; 50MP ultrawide camera system and a 7100 mAh battery with Android 16 (MagicOS 10).",
+    "description_ne": "Honor Magic 8 Pro मा Qualcomm Snapdragon 8 Elite Gen 5 chipset र LTPO OLED 6.71-inch 1256 x 2808 display उपलब्ध छ। यसमा 50MP main; 200MP 3.7x periscope; 50MP ultrawide camera system र 7100 mAh battery सहित Android 16 (MagicOS 10) रहेको छ।"
+  },
+  {
+    "device_id": "honor-play-10",
+    "brand": "Honor",
+    "model": "Play 10",
+    "description_en": "Honor Play 10 is a smartphone powered by MediaTek Helio G81 with a TFT LCD 6.74-inch 1600 x 720 display. It offers a 13MP main camera system and a 5000 mAh battery with Android 15 Go Edition.",
+    "description_ne": "Honor Play 10 मा MediaTek Helio G81 chipset र TFT LCD 6.74-inch 1600 x 720 display उपलब्ध छ। यसमा 13MP main camera system र 5000 mAh battery सहित Android 15 Go Edition रहेको छ।"
+  },
+  {
+    "device_id": "honor-x5c-plus",
+    "brand": "Honor",
+    "model": "X5c Plus",
+    "description_en": "Honor X5c Plus is a smartphone powered by MediaTek Helio G81 with a LCD 6.74-inch display. It offers a 50MP main camera system and a 5260 mAh battery with Android 15 (MagicOS 9).",
+    "description_ne": "Honor X5c Plus मा MediaTek Helio G81 chipset र LCD 6.74-inch display उपलब्ध छ। यसमा 50MP main camera system र 5260 mAh battery सहित Android 15 (MagicOS 9) रहेको छ।"
+  },
+  {
+    "device_id": "honor-x6c",
+    "brand": "Honor",
+    "model": "X6c",
+    "description_en": "Honor X6c is a smartphone powered by MediaTek Helio G81 Ultra with a TFT LCD 6.61-inch HD+ display. It offers a 50MP main; 2MP depth camera system and a 5300 mAh battery with Android 14 (Magic UI 8.0).",
+    "description_ne": "Honor X6c मा MediaTek Helio G81 Ultra chipset र TFT LCD 6.61-inch HD+ display उपलब्ध छ। यसमा 50MP main; 2MP depth camera system र 5300 mAh battery सहित Android 14 (Magic UI 8.0) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-gt-20-pro",
+    "brand": "Infinix",
+    "model": "GT 20 Pro",
+    "description_en": "Infinix GT 20 Pro is a smartphone. It offers .",
+    "description_ne": "Infinix GT 20 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-gt-30",
+    "brand": "Infinix",
+    "model": "GT 30",
+    "description_en": "Infinix GT 30 is a smartphone with a AMOLED 6.78-inch display. It offers with Android 15 (XOS 15).",
+    "description_ne": "Infinix GT 30 मा AMOLED 6.78-inch display उपलब्ध छ। यसमा सहित Android 15 (XOS 15) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-gt-30-pro",
+    "brand": "Infinix",
+    "model": "GT 30 Pro",
+    "description_en": "Infinix GT 30 Pro is a smartphone powered by MediaTek Dimensity 8350 Ultimate with a LTPS AMOLED 6.78-inch display. It offers a 108MP main; 8MP ultrawide camera system and a 5500 mAh battery with Android 15 (XOS 15).",
+    "description_ne": "Infinix GT 30 Pro मा MediaTek Dimensity 8350 Ultimate chipset र LTPS AMOLED 6.78-inch display उपलब्ध छ। यसमा 108MP main; 8MP ultrawide camera system र 5500 mAh battery सहित Android 15 (XOS 15) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-gt-50-pro",
+    "brand": "Infinix",
+    "model": "GT 50 Pro",
+    "description_en": "Infinix GT 50 Pro is a smartphone powered by MediaTek Dimensity 8400 Ultimate with a AMOLED 6.78-inch 2644 x 1208 display. It offers a 50MP main; 8MP ultrawide camera system and a 6500 mAh battery with Android 16 (XOS 16).",
+    "description_ne": "Infinix GT 50 Pro मा MediaTek Dimensity 8400 Ultimate chipset र AMOLED 6.78-inch 2644 x 1208 display उपलब्ध छ। यसमा 50MP main; 8MP ultrawide camera system र 6500 mAh battery सहित Android 16 (XOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-60-5g",
+    "brand": "Infinix",
+    "model": "HOT 60 5G",
+    "description_en": "Infinix HOT 60 5G is a smartphone. It offers .",
+    "description_ne": "Infinix HOT 60 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-60i-5g",
+    "brand": "Infinix",
+    "model": "HOT 60i 5G",
+    "description_en": "Infinix HOT 60i 5G is a smartphone. It offers .",
+    "description_ne": "Infinix HOT 60i 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-60-pro",
+    "brand": "Infinix",
+    "model": "HOT 60 Pro+",
+    "description_en": "Infinix HOT 60 Pro+ is a smartphone. It offers .",
+    "description_ne": "Infinix HOT 60 Pro+ मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-70",
+    "brand": "Infinix",
+    "model": "HOT 70",
+    "description_en": "Infinix HOT 70 is a smartphone. It offers .",
+    "description_ne": "Infinix HOT 70 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-70-pro",
+    "brand": "Infinix",
+    "model": "Hot 70 Pro",
+    "description_en": "Infinix Hot 70 Pro is a smartphone powered by MediaTek Dimensity 7100 with a IPS LCD 6.76-inch 1080 x 2344 display. It offers a 50MP main camera system and a 6000 mAh battery with Android 16 (XOS 16).",
+    "description_ne": "Infinix Hot 70 Pro मा MediaTek Dimensity 7100 chipset र IPS LCD 6.76-inch 1080 x 2344 display उपलब्ध छ। यसमा 50MP main camera system र 6000 mAh battery सहित Android 16 (XOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-hot-70-pro-5g",
+    "brand": "Infinix",
+    "model": "HOT 70 Pro 5G+",
+    "description_en": "Infinix HOT 70 Pro 5G+ is a smartphone. It offers .",
+    "description_ne": "Infinix HOT 70 Pro 5G+ मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-note-50s-5g",
+    "brand": "Infinix",
+    "model": "NOTE 50S 5G",
+    "description_en": "Infinix NOTE 50S 5G is a smartphone. It offers .",
+    "description_ne": "Infinix NOTE 50S 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-note-60",
+    "brand": "Infinix",
+    "model": "Note 60",
+    "description_en": "Infinix Note 60 is a smartphone powered by MediaTek Dimensity 7400 with a AMOLED 6.78-inch 1208 x 2644 display. It offers a 50MP main; 8MP ultrawide camera system and a 6500 mAh battery with Android 16 (XOS 16).",
+    "description_ne": "Infinix Note 60 मा MediaTek Dimensity 7400 chipset र AMOLED 6.78-inch 1208 x 2644 display उपलब्ध छ। यसमा 50MP main; 8MP ultrawide camera system र 6500 mAh battery सहित Android 16 (XOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-note-60-pro",
+    "brand": "Infinix",
+    "model": "NOTE 60 Pro",
+    "description_en": "Infinix NOTE 60 Pro is a smartphone. It offers .",
+    "description_ne": "Infinix NOTE 60 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-note-edge",
+    "brand": "Infinix",
+    "model": "Note Edge",
+    "description_en": "Infinix Note Edge is a smartphone powered by MediaTek Dimensity 7100 Ultimate with a AMOLED 6.78-inch 1208 x 2644 display. It offers a 50MP main camera system and a 6500 mAh battery with Android 16 (XOS 16).",
+    "description_ne": "Infinix Note Edge मा MediaTek Dimensity 7100 Ultimate chipset र AMOLED 6.78-inch 1208 x 2644 display उपलब्ध छ। यसमा 50MP main camera system र 6500 mAh battery सहित Android 16 (XOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-smart-10",
+    "brand": "Infinix",
+    "model": "SMART 10",
+    "description_en": "Infinix SMART 10 is a smartphone. It offers .",
+    "description_ne": "Infinix SMART 10 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-smart-10-plus",
+    "brand": "Infinix",
+    "model": "SMART 10 Plus",
+    "description_en": "Infinix SMART 10 Plus is a smartphone. It offers .",
+    "description_ne": "Infinix SMART 10 Plus मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-smart-20",
+    "brand": "Infinix",
+    "model": "Smart 20",
+    "description_en": "Infinix Smart 20 is a smartphone powered by MediaTek Helio G81 Ultimate with a IPS LCD 6.78-inch display. It offers and a 5200 mAh battery with Android 16 (XOS 16).",
+    "description_ne": "Infinix Smart 20 मा MediaTek Helio G81 Ultimate chipset र IPS LCD 6.78-inch display उपलब्ध छ। यसमा 5200 mAh battery सहित Android 16 (XOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "infinix-smart-9",
+    "brand": "Infinix",
+    "model": "SMART 9",
+    "description_en": "Infinix SMART 9 is a smartphone. It offers .",
+    "description_ne": "Infinix SMART 9 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-zero-30",
+    "brand": "Infinix",
+    "model": "ZERO 30",
+    "description_en": "Infinix ZERO 30 is a smartphone. It offers .",
+    "description_ne": "Infinix ZERO 30 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-zero-40",
+    "brand": "Infinix",
+    "model": "ZERO 40",
+    "description_en": "Infinix ZERO 40 is a smartphone. It offers .",
+    "description_ne": "Infinix ZERO 40 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-zero-40-5g",
+    "brand": "Infinix",
+    "model": "ZERO 40 5G",
+    "description_en": "Infinix ZERO 40 5G is a smartphone. It offers .",
+    "description_ne": "Infinix ZERO 40 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "infinix-zero-flip",
+    "brand": "Infinix",
+    "model": "ZERO FLIP",
+    "description_en": "Infinix ZERO FLIP is a smartphone. It offers .",
+    "description_ne": "Infinix ZERO FLIP मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "motorola-edge-60-pro",
+    "brand": "Motorola",
+    "model": "Edge 60 Pro",
+    "description_en": "Motorola Edge 60 Pro is a smartphone powered by MediaTek Dimensity 8350 Extreme with a pOLED 6.7-inch 2712 x 1220 display. It offers and a 6000 mAh battery with Android 16.",
+    "description_ne": "Motorola Edge 60 Pro मा MediaTek Dimensity 8350 Extreme chipset र pOLED 6.7-inch 2712 x 1220 display उपलब्ध छ। यसमा 6000 mAh battery सहित Android 16 रहेको छ।"
+  },
+  {
+    "device_id": "motorola-moto-g06-power",
+    "brand": "Motorola",
+    "model": "Moto G06 Power",
+    "description_en": "Motorola Moto G06 Power is a smartphone powered by MediaTek Helio G81 Ultra with a IPS LCD 6.88-inch 1640 x 720 display. It offers a 50MP main camera system and a 7000 mAh battery with Android 15 (Hello UI).",
+    "description_ne": "Motorola Moto G06 Power मा MediaTek Helio G81 Ultra chipset र IPS LCD 6.88-inch 1640 x 720 display उपलब्ध छ। यसमा 50MP main camera system र 7000 mAh battery सहित Android 15 (Hello UI) रहेको छ।"
+  },
+  {
+    "device_id": "nothing-phone-4a",
+    "brand": "Nothing",
+    "model": "Phone (4a)",
+    "description_en": "Nothing Phone (4a) is a smartphone powered by Qualcomm Snapdragon 7s Gen 4 with a AMOLED 6.78-inch QHD+ display. It offers a 50MP main; 50MP 3.5x periscope; 8MP ultrawide camera system and a 5080 mAh battery with Android 16 (Nothing OS 4.1).",
+    "description_ne": "Nothing Phone (4a) मा Qualcomm Snapdragon 7s Gen 4 chipset र AMOLED 6.78-inch QHD+ display उपलब्ध छ। यसमा 50MP main; 50MP 3.5x periscope; 8MP ultrawide camera system र 5080 mAh battery सहित Android 16 (Nothing OS 4.1) रहेको छ।"
+  },
+  {
+    "device_id": "oneplus-15",
+    "brand": "OnePlus",
+    "model": "15",
+    "description_en": "OnePlus 15 is a smartphone powered by Qualcomm Snapdragon 8 Elite Gen 5 with a LTPO AMOLED 6.78-inch 1.5K display. It offers a 50MP main; 50MP 3.5x periscope; 50MP ultrawide camera system and a 7300 mAh battery with Android 16 (OxygenOS 16).",
+    "description_ne": "OnePlus 15 मा Qualcomm Snapdragon 8 Elite Gen 5 chipset र LTPO AMOLED 6.78-inch 1.5K display उपलब्ध छ। यसमा 50MP main; 50MP 3.5x periscope; 50MP ultrawide camera system र 7300 mAh battery सहित Android 16 (OxygenOS 16) रहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-12",
+    "brand": "OnePlus",
+    "model": "OnePlus 12",
+    "description_en": "OnePlus OnePlus 12 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus 12 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-12r",
+    "brand": "OnePlus",
+    "model": "OnePlus 12R",
+    "description_en": "OnePlus OnePlus 12R is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus 12R मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-13",
+    "brand": "OnePlus",
+    "model": "OnePlus 13",
+    "description_en": "OnePlus OnePlus 13 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus 13 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-13r",
+    "brand": "OnePlus",
+    "model": "OnePlus 13R",
+    "description_en": "OnePlus OnePlus 13R is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus 13R मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-15",
+    "brand": "OnePlus",
+    "model": "OnePlus 15",
+    "description_en": "OnePlus OnePlus 15 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus 15 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-nord-5",
+    "brand": "OnePlus",
+    "model": "OnePlus Nord 5",
+    "description_en": "OnePlus OnePlus Nord 5 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus Nord 5 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-nord-ce4",
+    "brand": "OnePlus",
+    "model": "OnePlus Nord CE4",
+    "description_en": "OnePlus OnePlus Nord CE4 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus Nord CE4 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-nord-ce4-lite-5g",
+    "brand": "OnePlus",
+    "model": "OnePlus Nord CE4 Lite 5G",
+    "description_en": "OnePlus OnePlus Nord CE4 Lite 5G is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus Nord CE4 Lite 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oneplus-oneplus-nord-ce5",
+    "brand": "OnePlus",
+    "model": "OnePlus Nord CE5",
+    "description_en": "OnePlus OnePlus Nord CE5 is a smartphone. It offers .",
+    "description_ne": "OnePlus OnePlus Nord CE5 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-a6-5g",
+    "brand": "OPPO",
+    "model": "A6 5G",
+    "description_en": "OPPO A6 5G is a smartphone. It offers .",
+    "description_ne": "OPPO A6 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-a6-pro-5g",
+    "brand": "OPPO",
+    "model": "A6 Pro 5G",
+    "description_en": "OPPO A6 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO A6 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-a7-pro-5g",
+    "brand": "OPPO",
+    "model": "A7 Pro 5G",
+    "description_en": "OPPO A7 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO A7 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-f31-pro-5g",
+    "brand": "OPPO",
+    "model": "F31 Pro 5G",
+    "description_en": "OPPO F31 Pro 5G is a smartphone powered by MediaTek Dimensity 7300-Energy with a AMOLED 6.57-inch 2372 x 1080 display. It offers a 50MP main OIS; 2MP monochrome camera system and a 7000 mAh battery with ColorOS 15.0.",
+    "description_ne": "OPPO F31 Pro 5G मा MediaTek Dimensity 7300-Energy chipset र AMOLED 6.57-inch 2372 x 1080 display उपलब्ध छ। यसमा 50MP main OIS; 2MP monochrome camera system र 7000 mAh battery सहित ColorOS 15.0 रहेको छ।"
+  },
+  {
+    "device_id": "oppo-find-n6",
+    "brand": "OPPO",
+    "model": "Find N6",
+    "description_en": "OPPO Find N6 is a smartphone. It offers .",
+    "description_ne": "OPPO Find N6 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-find-x9-pro",
+    "brand": "OPPO",
+    "model": "Find X9 Pro",
+    "description_en": "OPPO Find X9 Pro is a smartphone powered by MediaTek Dimensity 9500 with a Flexible AMOLED 6.78-inch 2772 x 1272 display. It offers a 50MP ultrawide; 50MP main OIS; 200MP telephoto OIS; 2MP monochrome camera system and a 7500 mAh battery with ColorOS 16.0.",
+    "description_ne": "OPPO Find X9 Pro मा MediaTek Dimensity 9500 chipset र Flexible AMOLED 6.78-inch 2772 x 1272 display उपलब्ध छ। यसमा 50MP ultrawide; 50MP main OIS; 200MP telephoto OIS; 2MP monochrome camera system र 7500 mAh battery सहित ColorOS 16.0 रहेको छ।"
+  },
+  {
+    "device_id": "oppo-find-x9-ultra",
+    "brand": "OPPO",
+    "model": "Find X9 Ultra",
+    "description_en": "OPPO Find X9 Ultra is a smartphone. It offers .",
+    "description_ne": "OPPO Find X9 Ultra मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno12-5g",
+    "brand": "OPPO",
+    "model": "Reno12 5G",
+    "description_en": "OPPO Reno12 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno12 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno12-f-5g",
+    "brand": "OPPO",
+    "model": "Reno12 F 5G",
+    "description_en": "OPPO Reno12 F 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno12 F 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno12-pro-5g",
+    "brand": "OPPO",
+    "model": "Reno12 Pro 5G",
+    "description_en": "OPPO Reno12 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno12 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno13-5g",
+    "brand": "OPPO",
+    "model": "Reno13 5G",
+    "description_en": "OPPO Reno13 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno13 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno13-f-5g",
+    "brand": "OPPO",
+    "model": "Reno13 F 5G",
+    "description_en": "OPPO Reno13 F 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno13 F 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno13-pro-5g",
+    "brand": "OPPO",
+    "model": "Reno13 Pro 5G",
+    "description_en": "OPPO Reno13 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno13 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno14-5g",
+    "brand": "OPPO",
+    "model": "Reno14 5G",
+    "description_en": "OPPO Reno14 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno14 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno14-f-5g",
+    "brand": "OPPO",
+    "model": "Reno14 F 5G",
+    "description_en": "OPPO Reno14 F 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno14 F 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno14-pro-5g",
+    "brand": "OPPO",
+    "model": "Reno14 Pro 5G",
+    "description_en": "OPPO Reno14 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno14 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno15-5g",
+    "brand": "OPPO",
+    "model": "Reno15 5G",
+    "description_en": "OPPO Reno15 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno15 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno15-f-5g",
+    "brand": "OPPO",
+    "model": "Reno15 F 5G",
+    "description_en": "OPPO Reno15 F 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno15 F 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno15-pro-5g",
+    "brand": "OPPO",
+    "model": "Reno15 Pro 5G",
+    "description_en": "OPPO Reno15 Pro 5G is a smartphone powered by MediaTek Dimensity 8450 with a AMOLED 6.32-inch 2640 x 1216 display. It offers a 200MP main OIS; 50MP ultrawide; 50MP telephoto OIS camera system and a 6200 mAh battery with ColorOS 16.",
+    "description_ne": "OPPO Reno15 Pro 5G मा MediaTek Dimensity 8450 chipset र AMOLED 6.32-inch 2640 x 1216 display उपलब्ध छ। यसमा 200MP main OIS; 50MP ultrawide; 50MP telephoto OIS camera system र 6200 mAh battery सहित ColorOS 16 रहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno16-5g",
+    "brand": "OPPO",
+    "model": "Reno16 5G",
+    "description_en": "OPPO Reno16 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno16 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno16-f-5g",
+    "brand": "OPPO",
+    "model": "Reno16 F 5G",
+    "description_en": "OPPO Reno16 F 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno16 F 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "oppo-reno16-pro-5g",
+    "brand": "OPPO",
+    "model": "Reno16 Pro 5G",
+    "description_en": "OPPO Reno16 Pro 5G is a smartphone. It offers .",
+    "description_ne": "OPPO Reno16 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-f8-pro",
+    "brand": "POCO",
+    "model": "F8 Pro",
+    "description_en": "POCO F8 Pro is a smartphone powered by Qualcomm Snapdragon 8 Elite with a AMOLED 6.59-inch 2510 x 1156 display. It offers a 50MP main; 50MP 2.5x telephoto; 8MP ultrawide camera system and a 6210 mAh battery with Android 16 (HyperOS 3).",
+    "description_ne": "POCO F8 Pro मा Qualcomm Snapdragon 8 Elite chipset र AMOLED 6.59-inch 2510 x 1156 display उपलब्ध छ। यसमा 50MP main; 50MP 2.5x telephoto; 8MP ultrawide camera system र 6210 mAh battery सहित Android 16 (HyperOS 3) रहेको छ।"
+  },
+  {
+    "device_id": "poco-m8-pro",
+    "brand": "POCO",
+    "model": "M8 Pro",
+    "description_en": "POCO M8 Pro is a smartphone powered by Qualcomm Snapdragon 7s Gen 4 with a AMOLED 6.83-inch 2772 x 1280 display. It offers a 50MP main; 8MP ultrawide camera system and a 6500 mAh battery with Android 15 (HyperOS 2).",
+    "description_ne": "POCO M8 Pro मा Qualcomm Snapdragon 7s Gen 4 chipset र AMOLED 6.83-inch 2772 x 1280 display उपलब्ध छ। यसमा 50MP main; 8MP ultrawide camera system र 6500 mAh battery सहित Android 15 (HyperOS 2) रहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-f7",
+    "brand": "POCO",
+    "model": "POCO F7",
+    "description_en": "POCO POCO F7 is a smartphone. It offers .",
+    "description_ne": "POCO POCO F7 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-f8-pro",
+    "brand": "POCO",
+    "model": "POCO F8 Pro",
+    "description_en": "POCO POCO F8 Pro is a smartphone. It offers .",
+    "description_ne": "POCO POCO F8 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-m8-pro-5g",
+    "brand": "POCO",
+    "model": "POCO M8 Pro 5G",
+    "description_en": "POCO POCO M8 Pro 5G is a smartphone. It offers .",
+    "description_ne": "POCO POCO M8 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-m8s-5g",
+    "brand": "POCO",
+    "model": "POCO M8s 5G",
+    "description_en": "POCO POCO M8s 5G is a smartphone. It offers .",
+    "description_ne": "POCO POCO M8s 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-x7-pro",
+    "brand": "POCO",
+    "model": "POCO X7 Pro",
+    "description_en": "POCO POCO X7 Pro is a smartphone. It offers .",
+    "description_ne": "POCO POCO X7 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-x8-pro",
+    "brand": "POCO",
+    "model": "POCO X8 Pro",
+    "description_en": "POCO POCO X8 Pro is a smartphone. It offers .",
+    "description_ne": "POCO POCO X8 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-poco-x8-pro-max",
+    "brand": "POCO",
+    "model": "POCO X8 Pro Max",
+    "description_en": "POCO POCO X8 Pro Max is a smartphone. It offers .",
+    "description_ne": "POCO POCO X8 Pro Max मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "poco-x8-pro",
+    "brand": "POCO",
+    "model": "X8 Pro",
+    "description_en": "POCO X8 Pro is a smartphone powered by MediaTek Dimensity 8500 Ultra with a AMOLED 6.59-inch 2756 x 1268 display. It offers a 50MP main; 8MP ultrawide camera system and a 6500 mAh battery with Android 16 (HyperOS 3).",
+    "description_ne": "POCO X8 Pro मा MediaTek Dimensity 8500 Ultra chipset र AMOLED 6.59-inch 2756 x 1268 display उपलब्ध छ। यसमा 50MP main; 8MP ultrawide camera system र 6500 mAh battery सहित Android 16 (HyperOS 3) रहेको छ।"
+  },
+  {
+    "device_id": "realme-15t",
+    "brand": "Realme",
+    "model": "15T",
+    "description_en": "Realme 15T is a smartphone powered by MediaTek Dimensity 6400 Max with a AMOLED 6.57-inch FHD+ display. It offers a 50MP main; 2MP depth camera system and a 7000 mAh battery with Android 15 (Realme UI 6.0).",
+    "description_ne": "Realme 15T मा MediaTek Dimensity 6400 Max chipset र AMOLED 6.57-inch FHD+ display उपलब्ध छ। यसमा 50MP main; 2MP depth camera system र 7000 mAh battery सहित Android 15 (Realme UI 6.0) रहेको छ।"
+  },
+  {
+    "device_id": "realme-16-5g",
+    "brand": "Realme",
+    "model": "16 5G",
+    "description_en": "Realme 16 5G is a smartphone powered by MediaTek Dimensity 6400 Turbo with a AMOLED 6.57-inch 1080 x 2372 display. It offers a 50MP main; 2MP auxiliary camera system and a 7000 mAh battery with Android 16 (Realme UI 7.0).",
+    "description_ne": "Realme 16 5G मा MediaTek Dimensity 6400 Turbo chipset र AMOLED 6.57-inch 1080 x 2372 display उपलब्ध छ। यसमा 50MP main; 2MP auxiliary camera system र 7000 mAh battery सहित Android 16 (Realme UI 7.0) रहेको छ।"
+  },
+  {
+    "device_id": "realme-c85-5g",
+    "brand": "Realme",
+    "model": "C85 5G",
+    "description_en": "Realme C85 5G is a smartphone powered by MediaTek Dimensity 6300 with a IPS LCD 6.8-inch 1570 x 720 display. It offers a 50MP main camera system and a 7000 mAh battery with Android 15 (Realme UI 6.0).",
+    "description_ne": "Realme C85 5G मा MediaTek Dimensity 6300 chipset र IPS LCD 6.8-inch 1570 x 720 display उपलब्ध छ। यसमा 50MP main camera system र 7000 mAh battery सहित Android 15 (Realme UI 6.0) रहेको छ।"
+  },
+  {
+    "device_id": "realme-note-60x",
+    "brand": "Realme",
+    "model": "Note 60x",
+    "description_en": "Realme Note 60x is a smartphone powered by Unisoc Tiger T612 with a IPS LCD 6.74-inch 720 x 1600 display. It offers a 8MP main; auxiliary lens camera system and a 5000 mAh battery with Android 14 (Realme UI).",
+    "description_ne": "Realme Note 60x मा Unisoc Tiger T612 chipset र IPS LCD 6.74-inch 720 x 1600 display उपलब्ध छ। यसमा 8MP main; auxiliary lens camera system र 5000 mAh battery सहित Android 14 (Realme UI) रहेको छ।"
+  },
+  {
+    "device_id": "realme-note-80",
+    "brand": "Realme",
+    "model": "Note 80",
+    "description_en": "Realme Note 80 is a smartphone powered by Unisoc T7250 with a IPS LCD 6.74-inch 1600 x 720 display. It offers a 8MP main camera system and a 6300 mAh battery with Android 15 (Realme UI).",
+    "description_ne": "Realme Note 80 मा Unisoc T7250 chipset र IPS LCD 6.74-inch 1600 x 720 display उपलब्ध छ। यसमा 8MP main camera system र 6300 mAh battery सहित Android 15 (Realme UI) रहेको छ।"
+  },
+  {
+    "device_id": "realme-p3",
+    "brand": "Realme",
+    "model": "P3",
+    "description_en": "Realme P3 is a smartphone powered by Qualcomm Snapdragon 6 Gen 4 with a AMOLED 6.67-inch 1080 x 2400 display. It offers and a 6000 mAh battery.",
+    "description_ne": "Realme P3 मा Qualcomm Snapdragon 6 Gen 4 chipset र AMOLED 6.67-inch 1080 x 2400 display उपलब्ध छ। यसमा 6000 mAh battery रहेको छ।"
+  },
+  {
+    "device_id": "realme-p3-ultra",
+    "brand": "Realme",
+    "model": "P3 Ultra",
+    "description_en": "Realme P3 Ultra is a smartphone powered by MediaTek Dimensity 8350 Ultra with a AMOLED 6.83-inch 2800 x 1272 display. It offers a 50MP main; 8MP ultrawide camera system and a 6000 mAh battery with Android 15 (Realme UI 6.0).",
+    "description_ne": "Realme P3 Ultra मा MediaTek Dimensity 8350 Ultra chipset र AMOLED 6.83-inch 2800 x 1272 display उपलब्ध छ। यसमा 50MP main; 8MP ultrawide camera system र 6000 mAh battery सहित Android 15 (Realme UI 6.0) रहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-12x-5g",
+    "brand": "Realme",
+    "model": "realme 12x 5G",
+    "description_en": "Realme realme 12x 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme 12x 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-14t-5g",
+    "brand": "Realme",
+    "model": "realme 14T 5G",
+    "description_en": "Realme realme 14T 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme 14T 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-15-pro-5g",
+    "brand": "Realme",
+    "model": "realme 15 Pro 5G",
+    "description_en": "Realme realme 15 Pro 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme 15 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-16-5g",
+    "brand": "Realme",
+    "model": "realme 16 5G",
+    "description_en": "Realme realme 16 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme 16 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c100i",
+    "brand": "Realme",
+    "model": "realme C100i",
+    "description_en": "Realme realme C100i is a smartphone. It offers .",
+    "description_ne": "Realme realme C100i मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c100x",
+    "brand": "Realme",
+    "model": "realme C100x",
+    "description_en": "Realme realme C100x is a smartphone. It offers .",
+    "description_ne": "Realme realme C100x मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c61",
+    "brand": "Realme",
+    "model": "realme C61",
+    "description_en": "Realme realme C61 is a smartphone. It offers .",
+    "description_ne": "Realme realme C61 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c63",
+    "brand": "Realme",
+    "model": "realme C63",
+    "description_en": "Realme realme C63 is a smartphone. It offers .",
+    "description_ne": "Realme realme C63 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c67-5g",
+    "brand": "Realme",
+    "model": "realme C67 5G",
+    "description_en": "Realme realme C67 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme C67 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-c85-5g",
+    "brand": "Realme",
+    "model": "realme C85 5G",
+    "description_en": "Realme realme C85 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme C85 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-narzo-70-pro-5g",
+    "brand": "Realme",
+    "model": "realme NARZO 70 Pro 5G",
+    "description_en": "Realme realme NARZO 70 Pro 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme NARZO 70 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-narzo-n61",
+    "brand": "Realme",
+    "model": "realme NARZO N61",
+    "description_en": "Realme realme NARZO N61 is a smartphone. It offers .",
+    "description_ne": "Realme realme NARZO N61 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-narzo-n65-5g",
+    "brand": "Realme",
+    "model": "realme NARZO N65 5G",
+    "description_en": "Realme realme NARZO N65 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme NARZO N65 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-note-80",
+    "brand": "Realme",
+    "model": "realme Note 80",
+    "description_en": "Realme realme Note 80 is a smartphone. It offers .",
+    "description_ne": "Realme realme Note 80 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-p3-5g",
+    "brand": "Realme",
+    "model": "realme P3 5G",
+    "description_en": "Realme realme P3 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme P3 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-p3-ultra-5g",
+    "brand": "Realme",
+    "model": "realme P3 Ultra 5G",
+    "description_en": "Realme realme P3 Ultra 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme P3 Ultra 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "realme-realme-p4-power-5g",
+    "brand": "Realme",
+    "model": "realme P4 Power 5G",
+    "description_en": "Realme realme P4 Power 5G is a smartphone. It offers .",
+    "description_ne": "Realme realme P4 Power 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-17-4g",
+    "brand": "Redmi",
+    "model": "17 4G",
+    "description_en": "Redmi 17 4G is a smartphone powered by MediaTek Helio G91 Ultra with a LCD 6.9-inch 1600 x 720 display. It offers a 50MP main; auxiliary lens camera system and a 7500 mAh battery with Android 16 (HyperOS 3).",
+    "description_ne": "Redmi 17 4G मा MediaTek Helio G91 Ultra chipset र LCD 6.9-inch 1600 x 720 display उपलब्ध छ। यसमा 50MP main; auxiliary lens camera system र 7500 mAh battery सहित Android 16 (HyperOS 3) रहेको छ।"
+  },
+  {
+    "device_id": "redmi-17-5g",
+    "brand": "Redmi",
+    "model": "17 5G",
+    "description_en": "Redmi 17 5G is a smartphone powered by Snapdragon 4 Gen 5 with a LCD 6.9-inch HD+ display. It offers a 50MP main; auxiliary lens camera system and a 7500 mAh battery with Android 16 (HyperOS 3).",
+    "description_ne": "Redmi 17 5G मा Snapdragon 4 Gen 5 chipset र LCD 6.9-inch HD+ display उपलब्ध छ। यसमा 50MP main; auxiliary lens camera system र 7500 mAh battery सहित Android 16 (HyperOS 3) रहेको छ।"
+  },
+  {
+    "device_id": "redmi-a7-pro-4g",
+    "brand": "Redmi",
+    "model": "A7 Pro 4G",
+    "description_en": "Redmi A7 Pro 4G is a smartphone powered by Unisoc T7250 with a IPS LCD 6.9-inch 1600 x 720 display. It offers and a 6000 mAh battery.",
+    "description_ne": "Redmi A7 Pro 4G मा Unisoc T7250 chipset र IPS LCD 6.9-inch 1600 x 720 display उपलब्ध छ। यसमा 6000 mAh battery रहेको छ।"
+  },
+  {
+    "device_id": "redmi-note-17-4g",
+    "brand": "Redmi",
+    "model": "Note 17 4G",
+    "description_en": "Redmi Note 17 4G is a smartphone powered by Snapdragon 6s 4G Gen 2 with a AMOLED 6.99-inch 2396 x 1080 display. It offers a 50MP main camera system and a 7700 mAh battery with Android 16 (HyperOS 3).",
+    "description_ne": "Redmi Note 17 4G मा Snapdragon 6s 4G Gen 2 chipset र AMOLED 6.99-inch 2396 x 1080 display उपलब्ध छ। यसमा 50MP main camera system र 7700 mAh battery सहित Android 16 (HyperOS 3) रहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-12",
+    "brand": "Redmi",
+    "model": "Redmi 12",
+    "description_en": "Redmi Redmi 12 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 12 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-13",
+    "brand": "Redmi",
+    "model": "Redmi 13",
+    "description_en": "Redmi Redmi 13 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 13 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-13c",
+    "brand": "Redmi",
+    "model": "Redmi 13C",
+    "description_en": "Redmi Redmi 13C is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 13C मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-14c",
+    "brand": "Redmi",
+    "model": "Redmi 14C",
+    "description_en": "Redmi Redmi 14C is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 14C मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-15",
+    "brand": "Redmi",
+    "model": "Redmi 15",
+    "description_en": "Redmi Redmi 15 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 15 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-15c",
+    "brand": "Redmi",
+    "model": "Redmi 15C",
+    "description_en": "Redmi Redmi 15C is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi 15C मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-17",
+    "brand": "Redmi",
+    "model": "REDMI 17",
+    "description_en": "Redmi REDMI 17 is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI 17 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-17-5g",
+    "brand": "Redmi",
+    "model": "REDMI 17 5G",
+    "description_en": "Redmi REDMI 17 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI 17 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-a3",
+    "brand": "Redmi",
+    "model": "Redmi A3",
+    "description_en": "Redmi Redmi A3 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi A3 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-a5",
+    "brand": "Redmi",
+    "model": "Redmi A5",
+    "description_en": "Redmi Redmi A5 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi A5 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-a7",
+    "brand": "Redmi",
+    "model": "REDMI A7",
+    "description_en": "Redmi REDMI A7 is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI A7 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-a7-pro",
+    "brand": "Redmi",
+    "model": "REDMI A7 Pro",
+    "description_en": "Redmi REDMI A7 Pro is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI A7 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-13",
+    "brand": "Redmi",
+    "model": "Redmi Note 13",
+    "description_en": "Redmi Redmi Note 13 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 13 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-13-pro",
+    "brand": "Redmi",
+    "model": "Redmi Note 13 Pro",
+    "description_en": "Redmi Redmi Note 13 Pro is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 13 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-13-pro-5g",
+    "brand": "Redmi",
+    "model": "Redmi Note 13 Pro+ 5G",
+    "description_en": "Redmi Redmi Note 13 Pro+ 5G is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 13 Pro+ 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-14",
+    "brand": "Redmi",
+    "model": "Redmi Note 14",
+    "description_en": "Redmi Redmi Note 14 is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 14 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-14-5g",
+    "brand": "Redmi",
+    "model": "Redmi Note 14 5G",
+    "description_en": "Redmi Redmi Note 14 5G is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 14 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-14-pro-plus-5g",
+    "brand": "Redmi",
+    "model": "Redmi Note 14 Pro+ 5G",
+    "description_en": "Redmi Redmi Note 14 Pro+ 5G is a smartphone. It offers .",
+    "description_ne": "Redmi Redmi Note 14 Pro+ 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-15",
+    "brand": "Redmi",
+    "model": "REDMI Note 15",
+    "description_en": "Redmi REDMI Note 15 is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 15 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-15-5g",
+    "brand": "Redmi",
+    "model": "REDMI Note 15 5G",
+    "description_en": "Redmi REDMI Note 15 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 15 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-15-pro-5g",
+    "brand": "Redmi",
+    "model": "REDMI Note 15 Pro 5G",
+    "description_en": "Redmi REDMI Note 15 Pro 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 15 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-17",
+    "brand": "Redmi",
+    "model": "REDMI Note 17",
+    "description_en": "Redmi REDMI Note 17 is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 17 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-17-5g",
+    "brand": "Redmi",
+    "model": "REDMI Note 17 5G",
+    "description_en": "Redmi REDMI Note 17 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 17 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-17-pro-5g",
+    "brand": "Redmi",
+    "model": "REDMI Note 17 Pro 5G",
+    "description_en": "Redmi REDMI Note 17 Pro 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 17 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "redmi-redmi-note-17-pro-max-5g",
+    "brand": "Redmi",
+    "model": "REDMI Note 17 Pro Max 5G",
+    "description_en": "Redmi REDMI Note 17 Pro Max 5G is a smartphone. It offers .",
+    "description_ne": "Redmi REDMI Note 17 Pro Max 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a06",
+    "brand": "Samsung",
+    "model": "Galaxy A06",
+    "description_en": "Samsung Galaxy A06 is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy A06 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a16-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A16 5G",
+    "description_en": "Samsung Galaxy A16 5G is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy A16 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a26-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A26 5G",
+    "description_en": "Samsung Galaxy A26 5G is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy A26 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a36-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A36 5G",
+    "description_en": "Samsung Galaxy A36 5G is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy A36 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a37-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A37 5G",
+    "description_en": "Samsung Galaxy A37 5G is a smartphone powered by Samsung Exynos 1480 with a Super AMOLED 6.7-inch 2340 x 1080 display. It offers a 50MP primary; 8MP ultrawide; 5MP macro camera system and a 5000 mAh battery with Android 16 (One UI 8.5).",
+    "description_ne": "Samsung Galaxy A37 5G मा Samsung Exynos 1480 chipset र Super AMOLED 6.7-inch 2340 x 1080 display उपलब्ध छ। यसमा 50MP primary; 8MP ultrawide; 5MP macro camera system र 5000 mAh battery सहित Android 16 (One UI 8.5) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a56-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A56 5G",
+    "description_en": "Samsung Galaxy A56 5G is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy A56 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-a57-5g",
+    "brand": "Samsung",
+    "model": "Galaxy A57 5G",
+    "description_en": "Samsung Galaxy A57 5G is a smartphone powered by Samsung Exynos 1680 with a Super AMOLED 6.7-inch 2340 x 1080 display. It offers a 50MP primary; 12MP ultrawide; 5MP macro camera system and a 5000 mAh battery with Android 16 (One UI 8.5).",
+    "description_ne": "Samsung Galaxy A57 5G मा Samsung Exynos 1680 chipset र Super AMOLED 6.7-inch 2340 x 1080 display उपलब्ध छ। यसमा 50MP primary; 12MP ultrawide; 5MP macro camera system र 5000 mAh battery सहित Android 16 (One UI 8.5) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s24",
+    "brand": "Samsung",
+    "model": "Galaxy S24+",
+    "description_en": "Samsung Galaxy S24+ is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy S24+ मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s24-fe",
+    "brand": "Samsung",
+    "model": "Galaxy S24 FE",
+    "description_en": "Samsung Galaxy S24 FE is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy S24 FE मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s24-ultra",
+    "brand": "Samsung",
+    "model": "Galaxy S24 Ultra",
+    "description_en": "Samsung Galaxy S24 Ultra is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy S24 Ultra मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s25",
+    "brand": "Samsung",
+    "model": "Galaxy S25+",
+    "description_en": "Samsung Galaxy S25+ is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy S25+ मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s25-fe",
+    "brand": "Samsung",
+    "model": "Galaxy S25 FE",
+    "description_en": "Samsung Galaxy S25 FE is a smartphone powered by Samsung Exynos 2400 with a Dynamic LTPO AMOLED 2X 6.7-inch 2340 x 1080 display. It offers a 50MP primary; 8MP 3x telephoto; 12MP ultrawide camera system and a 4900 mAh battery with Android 16 (One UI 8).",
+    "description_ne": "Samsung Galaxy S25 FE मा Samsung Exynos 2400 chipset र Dynamic LTPO AMOLED 2X 6.7-inch 2340 x 1080 display उपलब्ध छ। यसमा 50MP primary; 8MP 3x telephoto; 12MP ultrawide camera system र 4900 mAh battery सहित Android 16 (One UI 8) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s25-ultra",
+    "brand": "Samsung",
+    "model": "Galaxy S25 Ultra",
+    "description_en": "Samsung Galaxy S25 Ultra is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy S25 Ultra मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s26",
+    "brand": "Samsung",
+    "model": "Galaxy S26",
+    "description_en": "Samsung Galaxy S26 is a smartphone powered by Samsung Exynos 2600 with a LTPO AMOLED 6.3-inch FHD+ display. It offers a 50MP main; 10MP telephoto; 12MP ultrawide camera system and a 4300 mAh battery with Android 16 (One UI 8.5).",
+    "description_ne": "Samsung Galaxy S26 मा Samsung Exynos 2600 chipset र LTPO AMOLED 6.3-inch FHD+ display उपलब्ध छ। यसमा 50MP main; 10MP telephoto; 12MP ultrawide camera system र 4300 mAh battery सहित Android 16 (One UI 8.5) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s26-fe",
+    "brand": "Samsung",
+    "model": "Galaxy S26 FE",
+    "description_en": "Samsung Galaxy S26 FE is a smartphone powered by Samsung Exynos 2500 with a Dynamic AMOLED 2X 6.7-inch 2340 x 1080 display. It offers a 50MP main; 12MP ultrawide; 8MP telephoto camera system and a 4900 mAh battery with Android 17 (One UI 9).",
+    "description_ne": "Samsung Galaxy S26 FE मा Samsung Exynos 2500 chipset र Dynamic AMOLED 2X 6.7-inch 2340 x 1080 display उपलब्ध छ। यसमा 50MP main; 12MP ultrawide; 8MP telephoto camera system र 4900 mAh battery सहित Android 17 (One UI 9) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-s26-ultra",
+    "brand": "Samsung",
+    "model": "Galaxy S26 Ultra",
+    "description_en": "Samsung Galaxy S26 Ultra is a smartphone powered by Qualcomm Snapdragon 8 Elite Gen 5 for Galaxy with a LTPO AMOLED 6.9-inch QHD+ display. It offers a 200MP main; 50MP 5x periscope; 10MP 3x telephoto; 50MP ultrawide camera system and a 5000 mAh battery with Android 16 (One UI 8.5).",
+    "description_ne": "Samsung Galaxy S26 Ultra मा Qualcomm Snapdragon 8 Elite Gen 5 for Galaxy chipset र LTPO AMOLED 6.9-inch QHD+ display उपलब्ध छ। यसमा 200MP main; 50MP 5x periscope; 10MP 3x telephoto; 50MP ultrawide camera system र 5000 mAh battery सहित Android 16 (One UI 8.5) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-flip6",
+    "brand": "Samsung",
+    "model": "Galaxy Z Flip6",
+    "description_en": "Samsung Galaxy Z Flip6 is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy Z Flip6 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-flip7",
+    "brand": "Samsung",
+    "model": "Galaxy Z Flip7",
+    "description_en": "Samsung Galaxy Z Flip7 is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy Z Flip7 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-fold6",
+    "brand": "Samsung",
+    "model": "Galaxy Z Fold6",
+    "description_en": "Samsung Galaxy Z Fold6 is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy Z Fold6 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-fold7",
+    "brand": "Samsung",
+    "model": "Galaxy Z Fold7",
+    "description_en": "Samsung Galaxy Z Fold7 is a smartphone. It offers .",
+    "description_ne": "Samsung Galaxy Z Fold7 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-fold-7",
+    "brand": "Samsung",
+    "model": "Galaxy Z Fold 7",
+    "description_en": "Samsung Galaxy Z Fold 7 is a smartphone powered by Qualcomm Snapdragon 8 Elite for Galaxy with a Foldable Dynamic LTPO AMOLED 2X 8.0-inch 2184 x 1968 display. It offers a 200MP primary; 10MP 3x telephoto; 12MP ultrawide camera system and a 4400 mAh battery with Android 16 (One UI 8).",
+    "description_ne": "Samsung Galaxy Z Fold 7 मा Qualcomm Snapdragon 8 Elite for Galaxy chipset र Foldable Dynamic LTPO AMOLED 2X 8.0-inch 2184 x 1968 display उपलब्ध छ। यसमा 200MP primary; 10MP 3x telephoto; 12MP ultrawide camera system र 4400 mAh battery सहित Android 16 (One UI 8) रहेको छ।"
+  },
+  {
+    "device_id": "samsung-galaxy-z-fold-8",
+    "brand": "Samsung",
+    "model": "Galaxy Z Fold 8",
+    "description_en": "Samsung Galaxy Z Fold 8 is a smartphone powered by Qualcomm Snapdragon 8 Elite Gen 5 for Galaxy with a Foldable Dynamic LTPO AMOLED 2X 7.6-inch 2448 x 1828 display. It offers a Dual 50MP rear camera system camera system and a 4800 mAh battery with Android.",
+    "description_ne": "Samsung Galaxy Z Fold 8 मा Qualcomm Snapdragon 8 Elite Gen 5 for Galaxy chipset र Foldable Dynamic LTPO AMOLED 2X 7.6-inch 2448 x 1828 display उपलब्ध छ। यसमा Dual 50MP rear camera system camera system र 4800 mAh battery सहित Android रहेको छ।"
+  },
+  {
+    "device_id": "tecno-camon-40",
+    "brand": "TECNO",
+    "model": "CAMON 40",
+    "description_en": "TECNO CAMON 40 is a smartphone. It offers .",
+    "description_ne": "TECNO CAMON 40 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-camon-40-premier-5g",
+    "brand": "TECNO",
+    "model": "CAMON 40 Premier 5G",
+    "description_en": "TECNO CAMON 40 Premier 5G is a smartphone powered by MediaTek Dimensity 8350 Ultimate with a AMOLED 6.67-inch 1260 x 2800 display. It offers a 50MP main OIS; 50MP 3x telephoto; 50MP ultrawide camera system and a 5100 mAh battery with Android 15.",
+    "description_ne": "TECNO CAMON 40 Premier 5G मा MediaTek Dimensity 8350 Ultimate chipset र AMOLED 6.67-inch 1260 x 2800 display उपलब्ध छ। यसमा 50MP main OIS; 50MP 3x telephoto; 50MP ultrawide camera system र 5100 mAh battery सहित Android 15 रहेको छ।"
+  },
+  {
+    "device_id": "tecno-camon-40-pro",
+    "brand": "TECNO",
+    "model": "CAMON 40 Pro",
+    "description_en": "TECNO CAMON 40 Pro is a smartphone. It offers .",
+    "description_ne": "TECNO CAMON 40 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-camon-40-pro-5g",
+    "brand": "TECNO",
+    "model": "CAMON 40 Pro 5G",
+    "description_en": "TECNO CAMON 40 Pro 5G is a smartphone. It offers .",
+    "description_ne": "TECNO CAMON 40 Pro 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-pova-7-5g",
+    "brand": "TECNO",
+    "model": "POVA 7 5G",
+    "description_en": "TECNO POVA 7 5G is a smartphone. It offers .",
+    "description_ne": "TECNO POVA 7 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-pova-7-pro-5g",
+    "brand": "TECNO",
+    "model": "POVA 7 Pro 5G",
+    "description_en": "TECNO POVA 7 Pro 5G is a smartphone powered by MediaTek Dimensity 7300 Ultimate with a AMOLED 6.78-inch 2720 x 1224 display. It offers a 64MP main; 8MP secondary camera system and a 6000 mAh battery with Android 15.",
+    "description_ne": "TECNO POVA 7 Pro 5G मा MediaTek Dimensity 7300 Ultimate chipset र AMOLED 6.78-inch 2720 x 1224 display उपलब्ध छ। यसमा 64MP main; 8MP secondary camera system र 6000 mAh battery सहित Android 15 रहेको छ।"
+  },
+  {
+    "device_id": "tecno-spark-40",
+    "brand": "TECNO",
+    "model": "SPARK 40",
+    "description_en": "TECNO SPARK 40 is a smartphone. It offers .",
+    "description_ne": "TECNO SPARK 40 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-spark-40c",
+    "brand": "TECNO",
+    "model": "SPARK 40C",
+    "description_en": "TECNO SPARK 40C is a smartphone. It offers .",
+    "description_ne": "TECNO SPARK 40C मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "tecno-spark-40-pro",
+    "brand": "TECNO",
+    "model": "SPARK 40 Pro+",
+    "description_en": "TECNO SPARK 40 Pro+ is a smartphone. It offers .",
+    "description_ne": "TECNO SPARK 40 Pro+ मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v29",
+    "brand": "vivo",
+    "model": "V29",
+    "description_en": "vivo V29 is a smartphone. It offers .",
+    "description_ne": "vivo V29 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v29e-5g",
+    "brand": "vivo",
+    "model": "V29e 5G",
+    "description_en": "vivo V29e 5G is a smartphone. It offers .",
+    "description_ne": "vivo V29e 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v30-5g",
+    "brand": "vivo",
+    "model": "V30 5G",
+    "description_en": "vivo V30 5G is a smartphone. It offers .",
+    "description_ne": "vivo V30 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v40",
+    "brand": "vivo",
+    "model": "V40",
+    "description_en": "vivo V40 is a smartphone. It offers .",
+    "description_ne": "vivo V40 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v40-lite",
+    "brand": "vivo",
+    "model": "V40 Lite",
+    "description_en": "vivo V40 Lite is a smartphone. It offers .",
+    "description_ne": "vivo V40 Lite मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v50",
+    "brand": "vivo",
+    "model": "V50",
+    "description_en": "vivo V50 is a smartphone. It offers .",
+    "description_ne": "vivo V50 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v50-lite-5g",
+    "brand": "vivo",
+    "model": "V50 Lite 5G",
+    "description_en": "vivo V50 Lite 5G is a smartphone. It offers .",
+    "description_ne": "vivo V50 Lite 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v60",
+    "brand": "vivo",
+    "model": "V60",
+    "description_en": "vivo V60 is a smartphone. It offers .",
+    "description_ne": "vivo V60 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v60-lite-5g",
+    "brand": "vivo",
+    "model": "V60 Lite 5G",
+    "description_en": "vivo V60 Lite 5G is a smartphone. It offers .",
+    "description_ne": "vivo V60 Lite 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v70",
+    "brand": "vivo",
+    "model": "V70",
+    "description_en": "vivo V70 is a smartphone powered by Snapdragon 7 Gen 4 with a AMOLED 6.59-inch 2750 x 1260 display. It offers and a 6500 mAh battery with OriginOS 6 (Android 16).",
+    "description_ne": "vivo V70 मा Snapdragon 7 Gen 4 chipset र AMOLED 6.59-inch 2750 x 1260 display उपलब्ध छ। यसमा 6500 mAh battery सहित OriginOS 6 (Android 16) रहेको छ।"
+  },
+  {
+    "device_id": "vivo-v70-fe",
+    "brand": "vivo",
+    "model": "V70 FE",
+    "description_en": "vivo V70 FE is a smartphone. It offers .",
+    "description_ne": "vivo V70 FE मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-v80-lite-5g",
+    "brand": "vivo",
+    "model": "V80 Lite 5G",
+    "description_en": "vivo V80 Lite 5G is a smartphone. It offers .",
+    "description_ne": "vivo V80 Lite 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-x200-pro",
+    "brand": "vivo",
+    "model": "X200 Pro",
+    "description_en": "vivo X200 Pro is a smartphone. It offers .",
+    "description_ne": "vivo X200 Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-x300-pro",
+    "brand": "Vivo",
+    "model": "X300 Pro",
+    "description_en": "Vivo X300 Pro is a smartphone powered by MediaTek Dimensity 9500 with a LTPO AMOLED 6.78-inch 1.5K display. It offers a 50MP main; 200MP 3.5x periscope; 50MP ultrawide camera system and a 6510 mAh battery with Android 16 (OriginOS 6).",
+    "description_ne": "Vivo X300 Pro मा MediaTek Dimensity 9500 chipset र LTPO AMOLED 6.78-inch 1.5K display उपलब्ध छ। यसमा 50MP main; 200MP 3.5x periscope; 50MP ultrawide camera system र 6510 mAh battery सहित Android 16 (OriginOS 6) रहेको छ।"
+  },
+  {
+    "device_id": "vivo-y03",
+    "brand": "vivo",
+    "model": "Y03",
+    "description_en": "vivo Y03 is a smartphone. It offers .",
+    "description_ne": "vivo Y03 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y04",
+    "brand": "vivo",
+    "model": "Y04",
+    "description_en": "vivo Y04 is a smartphone. It offers .",
+    "description_ne": "vivo Y04 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y05",
+    "brand": "vivo",
+    "model": "Y05",
+    "description_en": "vivo Y05 is a smartphone. It offers .",
+    "description_ne": "vivo Y05 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y05e",
+    "brand": "Vivo",
+    "model": "Y05e",
+    "description_en": "Vivo Y05e is a smartphone powered by Unisoc T7225 with a IPS LCD 6.74-inch 1600 x 720 display. It offers a 8MP main camera system and a 5150 mAh battery with Android 16 (OriginOS 6).",
+    "description_ne": "Vivo Y05e मा Unisoc T7225 chipset र IPS LCD 6.74-inch 1600 x 720 display उपलब्ध छ। यसमा 8MP main camera system र 5150 mAh battery सहित Android 16 (OriginOS 6) रहेको छ।"
+  },
+  {
+    "device_id": "vivo-y11d",
+    "brand": "vivo",
+    "model": "Y11d",
+    "description_en": "vivo Y11d is a smartphone. It offers .",
+    "description_ne": "vivo Y11d मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y18",
+    "brand": "vivo",
+    "model": "Y18",
+    "description_en": "vivo Y18 is a smartphone. It offers .",
+    "description_ne": "vivo Y18 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y19s",
+    "brand": "vivo",
+    "model": "Y19s",
+    "description_en": "vivo Y19s is a smartphone. It offers .",
+    "description_ne": "vivo Y19s मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y19s-pro",
+    "brand": "vivo",
+    "model": "Y19s Pro",
+    "description_en": "vivo Y19s Pro is a smartphone. It offers .",
+    "description_ne": "vivo Y19s Pro मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y21-5g",
+    "brand": "vivo",
+    "model": "Y21 5G",
+    "description_en": "vivo Y21 5G is a smartphone. It offers .",
+    "description_ne": "vivo Y21 5G मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y21d",
+    "brand": "vivo",
+    "model": "Y21d",
+    "description_en": "vivo Y21d is a smartphone. It offers .",
+    "description_ne": "vivo Y21d मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y28",
+    "brand": "vivo",
+    "model": "Y28",
+    "description_en": "vivo Y28 is a smartphone. It offers .",
+    "description_ne": "vivo Y28 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y29",
+    "brand": "vivo",
+    "model": "Y29",
+    "description_en": "vivo Y29 is a smartphone. It offers .",
+    "description_ne": "vivo Y29 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y31d",
+    "brand": "vivo",
+    "model": "Y31d",
+    "description_en": "vivo Y31d is a smartphone. It offers .",
+    "description_ne": "vivo Y31d मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y400",
+    "brand": "vivo",
+    "model": "Y400",
+    "description_en": "vivo Y400 is a smartphone. It offers .",
+    "description_ne": "vivo Y400 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "vivo-y500",
+    "brand": "vivo",
+    "model": "Y500",
+    "description_en": "vivo Y500 is a smartphone. It offers .",
+    "description_ne": "vivo Y500 मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "xiaomi-xiaomi-17t",
+    "brand": "Xiaomi",
+    "model": "Xiaomi 17T",
+    "description_en": "Xiaomi Xiaomi 17T is a smartphone. It offers .",
+    "description_ne": "Xiaomi Xiaomi 17T मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "xiaomi-xiaomi-17-ultra",
+    "brand": "Xiaomi",
+    "model": "Xiaomi 17 Ultra",
+    "description_en": "Xiaomi Xiaomi 17 Ultra is a smartphone. It offers .",
+    "description_ne": "Xiaomi Xiaomi 17 Ultra मा उपलब्ध छ। यसमाहेको छ।"
+  },
+  {
+    "device_id": "zte-a37e",
+    "brand": "ZTE",
+    "model": "A37e",
+    "description_en": "ZTE A37e is a smartphone powered by Unisoc T7250 with a IPS LCD 6.52-inch 1600 x 720 display. It offers a 8MP main camera system and a 5000 mAh battery with Android 16.",
+    "description_ne": "ZTE A37e मा Unisoc T7250 chipset र IPS LCD 6.52-inch 1600 x 720 display उपलब्ध छ। यसमा 8MP main camera system र 5000 mAh battery सहित Android 16 रहेको छ।"
+  },
+  {
+    "device_id": "zte-nubia-a77",
+    "brand": "ZTE",
+    "model": "Nubia A77",
+    "description_en": "ZTE Nubia A77 is a smartphone powered by Unisoc T7250 with a LCD 6.75-inch display. It offers a 50MP main camera system and a 5000 mAh battery with Android 16.",
+    "description_ne": "ZTE Nubia A77 मा Unisoc T7250 chipset र LCD 6.75-inch display उपलब्ध छ। यसमा 50MP main camera system र 5000 mAh battery सहित Android 16 रहेको छ।"
+  }
+]

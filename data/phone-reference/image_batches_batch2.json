@@ -1,0 +1,357 @@
+{
+  "batch_id": "batch-2",
+  "devices": [
+    {
+      "device_id": "samsung-galaxy-s24-ultra",
+      "brand": "Samsung",
+      "model": "Galaxy S24 Ultra",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.628Z",
+      "candidate_resolved_count": 3,
+      "failure_reason": null
+    },
+    {
+      "device_id": "samsung-galaxy-s24",
+      "brand": "Samsung",
+      "model": "Galaxy S24+",
+      "current_image_count": 1,
+      "existing_positions": [
+        1
+      ],
+      "missing_positions": [
+        2,
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "samsung-galaxy-s24-fe",
+      "brand": "Samsung",
+      "model": "Galaxy S24 FE",
+      "current_image_count": 1,
+      "existing_positions": [
+        1
+      ],
+      "missing_positions": [
+        2,
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "samsung-galaxy-a16-5g",
+      "brand": "Samsung",
+      "model": "Galaxy A16 5G",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "failed",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "samsung-galaxy-a06",
+      "brand": "Samsung",
+      "model": "Galaxy A06",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "failed",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "samsung-galaxy-z-fold6",
+      "brand": "Samsung",
+      "model": "Galaxy Z Fold6",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "samsung-galaxy-z-flip6",
+      "brand": "Samsung",
+      "model": "Galaxy Z Flip6",
+      "current_image_count": 1,
+      "existing_positions": [
+        1
+      ],
+      "missing_positions": [
+        2,
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "redmi-redmi-note-13",
+      "brand": "Redmi",
+      "model": "Redmi Note 13",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-note-13-pro",
+      "brand": "Redmi",
+      "model": "Redmi Note 13 Pro",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-note-13-pro-5g",
+      "brand": "Redmi",
+      "model": "Redmi Note 13 Pro+ 5G",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 3,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-13",
+      "brand": "Redmi",
+      "model": "Redmi 13",
+      "current_image_count": 1,
+      "existing_positions": [
+        1
+      ],
+      "missing_positions": [
+        2,
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "redmi-redmi-13c",
+      "brand": "Redmi",
+      "model": "Redmi 13C",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-12",
+      "brand": "Redmi",
+      "model": "Redmi 12",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-a3",
+      "brand": "Redmi",
+      "model": "Redmi A3",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "redmi-redmi-note-14-pro-plus-5g",
+      "brand": "Redmi",
+      "model": "Redmi Note 14 Pro+ 5G",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "failed",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "redmi-redmi-14c",
+      "brand": "Redmi",
+      "model": "Redmi 14C",
+      "current_image_count": 1,
+      "existing_positions": [
+        1
+      ],
+      "missing_positions": [
+        2,
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 2
+    },
+    {
+      "device_id": "oneplus-oneplus-13",
+      "brand": "OnePlus",
+      "model": "OnePlus 13",
+      "current_image_count": 2,
+      "existing_positions": [
+        1,
+        2
+      ],
+      "missing_positions": [
+        3
+      ],
+      "workflow_status": "partially_uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "candidate_resolved_count": 2,
+      "failure_reason": null
+    },
+    {
+      "device_id": "oneplus-oneplus-12r",
+      "brand": "OnePlus",
+      "model": "OnePlus 12R",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "failed",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 1
+    },
+    {
+      "device_id": "vivo-x200-pro",
+      "brand": "vivo",
+      "model": "X200 Pro",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "failed",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "One or more candidates returned HTTP 429 rate-limit HTML; retry later if desired.",
+      "candidate_resolved_count": 1
+    },
+    {
+      "device_id": "samsung-galaxy-a36-5g",
+      "brand": "Samsung",
+      "model": "Galaxy A36 5G",
+      "current_image_count": 0,
+      "existing_positions": [],
+      "missing_positions": [
+        1,
+        2,
+        3
+      ],
+      "workflow_status": "needs_manual_review",
+      "last_completed_part": 1,
+      "updated_at": "2026-10-18T05:11:55.631Z",
+      "failure_reason": "Model unreleased/lacking verified standalone official or licensed photography. Zero candidate images found to avoid false model substitution.",
+      "candidate_resolved_count": 0
+    }
+  ]
+}

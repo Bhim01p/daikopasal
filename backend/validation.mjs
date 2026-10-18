@@ -19,7 +19,9 @@ export const statuses = [
 ];
 export const fulfillmentMethods = ["PICKUP", "DELIVERY"];
 export const paymentMethods = ["PAY_AT_SHOP", "MANUAL_QR", "ESEWA"];
-export const paymentStatuses = ["PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
+// PENDING_VERIFICATION remains accepted for orders created before the canonical
+// VERIFICATION_PENDING status was introduced.
+export const paymentStatuses = ["PENDING", "VERIFICATION_PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
 export const accessoryCategories = [
   "Mobile Covers",
   "Chargers",

@@ -106,7 +106,7 @@ export default function Layout() {
   useEffect(() => {
     const keepsSearch = ["/search", "/mobiles", "/second-hand", "/accessories"].includes(location.pathname);
     const nextQuery = keepsSearch ? new URLSearchParams(location.search).get("q") || "" : "";
-    if (nextQuery || !keepsSearch) setQuery(nextQuery);
+    setQuery(nextQuery);
   }, [location.pathname, location.search]);
   useEffect(() => {
     setMenu(false);
@@ -190,7 +190,11 @@ export default function Layout() {
               onSubmit={(event) => {
                 event.preventDefault();
                 const value = query.trim();
-                if (!value) return;
+                setSearchFocused(false);
+                if (!value) {
+                  navigate("/search");
+                  return;
+                }
                 const nextHistory = [value, ...searchHistory.filter((item) => item.toLowerCase() !== value.toLowerCase())].slice(0, 8);
                 setSearchHistory(nextHistory);
                 try { localStorage.setItem(searchHistoryKey, JSON.stringify(nextHistory)); } catch { /* optional cache */ }
@@ -204,7 +208,13 @@ export default function Layout() {
                 id="header-query"
                 value={query}
                 onFocus={() => setSearchFocused(true)}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setQuery(value);
+                  if (location.pathname === "/search") {
+                    navigate(value.trim() ? `/search?q=${encodeURIComponent(value)}` : "/search", { replace: true });
+                  }
+                }}
                 placeholder={t("Search products…")}
               />
               <button type="submit" aria-label={t("Search the shop")}>

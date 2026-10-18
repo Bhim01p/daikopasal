@@ -1,0 +1,175 @@
+{
+  "batch_id": "batch-1",
+  "devices": [
+    {
+      "device_id": "apple-iphone-11",
+      "brand": "Apple",
+      "model": "iPhone 11",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.041Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-12",
+      "brand": "Apple",
+      "model": "iPhone 12",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-12-pro",
+      "brand": "Apple",
+      "model": "iPhone 12 Pro",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-12-pro-max",
+      "brand": "Apple",
+      "model": "iPhone 12 Pro Max",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-13",
+      "brand": "Apple",
+      "model": "iPhone 13",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-13-pro",
+      "brand": "Apple",
+      "model": "iPhone 13 Pro",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-13-pro-max",
+      "brand": "Apple",
+      "model": "iPhone 13 Pro Max",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-14",
+      "brand": "Apple",
+      "model": "iPhone 14",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-14-pro",
+      "brand": "Apple",
+      "model": "iPhone 14 Pro",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 3
+    },
+    {
+      "device_id": "apple-iphone-15",
+      "brand": "Apple",
+      "model": "iPhone 15",
+      "current_image_count": 3,
+      "existing_positions": [
+        1,
+        2,
+        3
+      ],
+      "missing_positions": [],
+      "workflow_status": "uploaded",
+      "last_completed_part": 4,
+      "updated_at": "2026-10-18T04:48:49.042Z",
+      "failure_reason": null,
+      "candidate_resolved_count": 2
+    }
+  ]
+}

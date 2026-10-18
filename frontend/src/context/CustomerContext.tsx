@@ -66,6 +66,13 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
   async function logout() {
     await api("/customer/logout", { method: "POST", body: "{}" });
     setCustomer(null);
+    try {
+      // Account orders are server-owned; clear any cached receipt list so a
+      // signed-out session cannot continue showing the previous account's order.
+      localStorage.removeItem("me-orders");
+    } catch {
+      /* Storage is optional. */
+    }
     window.dispatchEvent(new Event("customer-logout"));
   }
   return (

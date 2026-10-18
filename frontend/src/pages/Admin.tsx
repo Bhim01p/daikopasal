@@ -107,6 +107,18 @@ type StoreSale = {
   customerName: string;
   paymentMethod: string;
 };
+type CataloguePhone = {
+  deviceId: string;
+  brand: string;
+  model: string;
+  variant: string;
+  ram?: number;
+  storage?: number;
+  specs: Record<string, string>;
+  sourceUrl: string;
+  catalogueImage?: string;
+  catalogueImageCount?: number;
+};
 const initialSpecs = [{ name: "Warranty", value: "Confirm with shop" }];
 const draftKey = (draft: Product, specs: { name: string; value: string }[]) =>
   JSON.stringify([draft, specs]);
@@ -210,12 +222,27 @@ export default function Admin() {
   const previousPath = useRef(location.pathname);
   const restoringPath = useRef(false);
   const [draft, setDraft] = useState<Product>(freshProduct);
+  const [cataloguePhones, setCataloguePhones] = useState<CataloguePhone[]>([]);
+  const [catalogueBrand, setCatalogueBrand] = useState("");
+  const [catalogueModel, setCatalogueModel] = useState("");
+  const [catalogueVariant, setCatalogueVariant] = useState("");
+  const [catalogueMode, setCatalogueMode] = useState<"catalogue" | "manual">("catalogue");
+  const [catalogueFilled, setCatalogueFilled] = useState(false);
+  const [catalogueImageFilter, setCatalogueImageFilter] = useState<"all" | 3 | 2 | 1 | 0>("all");
+  const [catalogueSearch, setCatalogueSearch] = useState("");
+  const [catalogueAdvancedOpen, setCatalogueAdvancedOpen] = useState(false);
   const [discardPrompt, setDiscardPrompt] = useState(false);
   const [salesRange, setSalesRange] = useState<"today" | "7days" | "month" | "all">("today");
   useEffect(() => {
     if (productEditorOpen)
       document.getElementById("product-editor-title")?.focus();
   }, [productEditorOpen]);
+  useEffect(() => {
+    if (!user || !productEditorOpen || draft.category !== "new" || cataloguePhones.length) return;
+    void api<{ phones: CataloguePhone[] }>("/admin/phone-catalogue")
+      .then((result) => setCataloguePhones(result.phones))
+      .catch(fail);
+  }, [user, productEditorOpen, draft.category, cataloguePhones.length]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [storeSales, setStoreSales] = useState<StoreSale[]>([]);
   const selectedOrder = orders.find((order) => order.id === selectedOrderId);
@@ -449,7 +476,7 @@ export default function Admin() {
           }),
         },
       );
-      await refresh();
+      await refresh(true);
       setInventoryPreview(null);
       setImportProducts([]);
       resetDraft(true);
@@ -470,8 +497,39 @@ export default function Admin() {
     setBaseline(draftKey(next, initialSpecs));
     setProductEditorOpen(false);
     setDraft(next);
+    setCatalogueBrand(""); setCatalogueModel(""); setCatalogueVariant("");
+    setCatalogueMode("catalogue"); setCatalogueFilled(false);
+    setCatalogueImageFilter("all");
+    setCatalogueSearch("");
+    setCatalogueAdvancedOpen(false);
     setSpecRows(initialSpecs);
     setBaseline(draftKey(next, initialSpecs));
+  }
+  const catalogueDeviceRows = Array.from(new Map(cataloguePhones.map((phone) => [phone.deviceId, phone])).values());
+  const imageCountMatches = (phone: CataloguePhone) => catalogueImageFilter === "all" || (catalogueImageFilter === 3 ? (phone.catalogueImageCount || 0) >= 3 : (phone.catalogueImageCount || 0) === catalogueImageFilter);
+  const catalogueCards = catalogueDeviceRows.filter((phone) => imageCountMatches(phone) && `${phone.brand} ${phone.model}`.toLowerCase().includes(catalogueSearch.toLowerCase()));
+  const catalogueModels = cataloguePhones.filter((phone) => phone.brand === catalogueBrand && imageCountMatches(phone));
+  const catalogueVariants = catalogueModels.filter((phone) => phone.model === catalogueModel);
+  const uniqueCatalogueVariants = Array.from(new Map(catalogueVariants.map((phone) => [phone.variant, phone])).values());
+  function fillFromCatalogue() {
+    const selected = uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant);
+    if (!selected) return;
+    const rows = Object.entries(selected.specs)
+      .filter(([name]) => name !== "RAM" && name !== "Storage")
+      .map(([name, value]) => ({ name, value }));
+    setDraft((current) => ({
+      ...current,
+      brand: selected.brand,
+      name: selected.model,
+      ram: selected.ram,
+      storage: selected.storage,
+      image: "/assets/phone.svg",
+      images: ["/assets/phone.svg"],
+      description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}`,
+    }));
+    setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...rows]);
+    setCatalogueFilled(true);
+    setNotice("Catalogue details filled. Review the product before saving.");
   }
   async function uploadPhotos(files?: FileList) {
     const selected = Array.from(files || []);
@@ -648,6 +706,10 @@ export default function Admin() {
     setNotice("");
     setBusy("save");
     try {
+      const selectedCatalogue = uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant);
+      const catalogueDraft = selectedCatalogue && catalogueMode === "catalogue"
+        ? { ...draft, brand: selectedCatalogue.brand, name: selectedCatalogue.model, ram: selectedCatalogue.ram ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]) : draft.ram), storage: selectedCatalogue.storage ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1]) : draft.storage) }
+        : draft;
       const specs: Record<string, string> = {};
       for (const row of specRows) {
         if (!row.name.trim() && !row.value.trim()) continue;
@@ -663,10 +725,10 @@ export default function Admin() {
           : "/admin/products",
         {
           method: draft.id ? "PATCH" : "POST",
-          body: JSON.stringify({ ...draft, specs }),
+          body: JSON.stringify({ ...catalogueDraft, specs }),
         },
       );
-      await refresh();
+      await refresh(true);
       resetDraft(true);
       setNotice("Product saved. The storefront catalogue has been updated.");
     } catch (error) {
@@ -1226,9 +1288,10 @@ export default function Admin() {
               )}
               {productEditorOpen && (
                 <form
-                  className="admin-panel admin-editor"
+                  className={`admin-panel admin-editor${!draft.id && draft.category === "new" && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
                   id="product-editor"
                   onSubmit={saveProduct}
+                  noValidate
                 >
                   <button
                     type="button"
@@ -1241,15 +1304,22 @@ export default function Admin() {
                   <h2 id="product-editor-title" tabIndex={-1}>
                     {draft.id ? t("Edit product") : t("Add a product")}
                   </h2>
-                  <fieldset className="editor-section">
+                  {!draft.id && draft.category === "new" && (
+                    <div className="admin-form-row catalogue-mode-switch" role="group" aria-label={t("New phone source")}>
+                      <button type="button" className={`button ${catalogueMode === "catalogue" ? "dark" : "white"}`} onClick={() => { setCatalogueMode("catalogue"); setCatalogueFilled(false); }}>{t("Use Catalogue")}</button>
+                      <button type="button" className={`button ${catalogueMode === "manual" ? "dark" : "white"}`} onClick={() => setCatalogueMode("manual")}>{t("Add Manually")}</button>
+                    </div>
+                  )}
+                  <fieldset className="editor-section catalogue-basic">
                     <legend>{t("Basic details")}</legend>
                     <label htmlFor="product-name">{t("Product name *")}</label>
                     <input
                       id="product-name"
                       value={draft.name}
+                      readOnly={catalogueMode === "catalogue" && catalogueFilled}
                       maxLength={100}
                       minLength={2}
-                      required
+                      required={!!draft.id || catalogueMode !== "catalogue"}
                       onChange={(e) =>
                         setDraft({ ...draft, name: e.target.value })
                       }
@@ -1258,12 +1328,50 @@ export default function Admin() {
                     <input
                       id="product-brand"
                       value={draft.brand}
+                      readOnly={catalogueMode === "catalogue" && catalogueFilled}
                       maxLength={60}
-                      required
+                      required={!!draft.id || catalogueMode !== "catalogue"}
                       onChange={(e) =>
                         setDraft({ ...draft, brand: e.target.value })
                       }
                     />
+                    {!draft.id && draft.category === "new" && catalogueMode === "catalogue" && (
+                      <fieldset className="catalogue-autofill editor-section">
+                        <legend>{t("Fill from phone catalogue")}</legend>
+                        <div className="admin-filter-bar catalogue-image-filters" aria-label={t("Filter catalogue phones by image count")}>
+                          {(["all", 3, 2, 1, 0] as const).map((filter) => {
+                            const count = filter === "all" ? catalogueDeviceRows.length : catalogueDeviceRows.filter((phone) => filter === 3 ? (phone.catalogueImageCount || 0) >= 3 : (phone.catalogueImageCount || 0) === filter).length;
+                            const label = filter === "all" ? t("All") : filter === 0 ? t("No Photos") : `${filter} ${filter === 1 ? t("Photo") : t("Photos")}`;
+                            return <button key={String(filter)} type="button" aria-pressed={catalogueImageFilter === filter} onClick={() => { setCatalogueImageFilter(filter); setCatalogueModel(""); setCatalogueVariant(""); }}>{label} ({count})</button>;
+                          })}
+                        </div>
+                        <label htmlFor="catalogue-search">{t("Search phone model")}</label>
+                        <input id="catalogue-search" className="catalogue-search" value={catalogueSearch} onChange={(event) => setCatalogueSearch(event.target.value)} placeholder={t("Search by brand, model or keyword…")} />
+                        <div className="catalogue-phone-grid" role="listbox" aria-label={t("Catalogue phone models")}>
+                          {catalogueCards.slice(0, 60).map((phone) => { const count = phone.catalogueImageCount || 0; const selected = catalogueBrand === phone.brand && catalogueModel === phone.model; return <button type="button" role="option" aria-selected={selected} className={`catalogue-phone-card${selected ? " selected" : ""}`} key={phone.deviceId} onClick={() => { setCatalogueBrand(phone.brand); setCatalogueModel(phone.model); setCatalogueVariant(""); }}>
+                            <SafeImage className="catalogue-phone-thumb" src={phone.catalogueImage || "/assets/phone.svg"} alt="" />
+                            <strong>{phone.brand} {phone.model}</strong>
+                            <span className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}>{count >= 3 ? "3+ Photos" : count === 1 ? "1 Photo" : `${count} Photos`}</span>
+                            <small>{Array.from(new Set(cataloguePhones.filter((item) => item.deviceId === phone.deviceId).map((item) => item.variant.replace(/^.*?·\s*/, "")).filter(Boolean))).join(" · ")}</small>
+                          </button>; })}
+                        </div>
+                        {!catalogueCards.length && <p className="admin-empty">{t("No catalogue phones match this filter.")}</p>}
+                        {catalogueModel && (() => { const phone = catalogueModels.find((item) => item.model === catalogueModel); const count = phone?.catalogueImageCount || 0; return <p className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}>{count >= 3 ? "3+ Photos" : count === 1 ? "1 Photo" : `${count} Photos`}</p>; })()}
+                        <label htmlFor="catalogue-variant">{t("Catalogue variant")}</label>
+                        <select id="catalogue-variant" value={catalogueVariant} disabled={!catalogueModel} onChange={(event) => { setCatalogueVariant(event.target.value); const selected = uniqueCatalogueVariants.find((phone) => phone.variant === event.target.value); if (selected) { setDraft((current) => ({ ...current, brand: selected.brand, name: selected.model, ram: selected.ram, storage: selected.storage, image: "/assets/phone.svg", images: ["/assets/phone.svg"], description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}` })); setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...Object.entries(selected.specs).filter(([name]) => name !== "RAM" && name !== "Storage").map(([name, value]) => ({ name, value }))]); setCatalogueFilled(true); } }}>
+                          <option value="">{t("Choose a RAM/storage variant")}</option>
+                          {uniqueCatalogueVariants.map((phone) => <option key={`${phone.deviceId}-${phone.variant}`} value={phone.variant}>{phone.variant}</option>)}
+                        </select>
+                        <button type="button" className="button white" disabled={!catalogueVariant || busy === "save"} onClick={fillFromCatalogue}>{t("Fill from Catalogue")}</button>
+                        {uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.catalogueImage && (
+                          <SafeImage
+                            className="admin-catalogue-preview"
+                            src={uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.catalogueImage || ""}
+                            alt={t("Catalogue image preview")}
+                          />
+                        )}
+                      </fieldset>
+                    )}
                     <div className="admin-form-row">
                       <div>
                         <label htmlFor="product-category">
@@ -1339,7 +1447,7 @@ export default function Admin() {
                             max={2048}
                             step={1}
                             value={draft.storage ?? ""}
-                            required
+                            required={!!draft.id || catalogueMode !== "catalogue"}
                             onChange={(e) =>
                               setDraft({
                                 ...draft,
@@ -1439,7 +1547,7 @@ export default function Admin() {
                       </fieldset></>
                     )}
                   </fieldset>
-                  <fieldset className="editor-section">
+                  <fieldset className="editor-section catalogue-advanced">
                     <legend>{t("Photos")}</legend>
                     <label htmlFor="product-image">{t("Illustration")}</label>
                     <select
@@ -1549,8 +1657,16 @@ export default function Admin() {
                       ))}
                     </div>
                   </fieldset>
-                  <ProductFinanceEditor draft={draft} onChange={setDraft} />
-                  <fieldset className="editor-section">
+                  <fieldset className="editor-section catalogue-store-details">
+                    <legend>{t("Store details")}</legend>
+                    <div className="admin-form-row"><label>{t("Price (NPR) *")}<input id="catalogue-price" type="number" min={0} max={100000000} step={1} value={Number.isFinite(draft.price) && draft.price > 0 ? draft.price : ""} required onChange={(e) => setDraft({ ...draft, price: e.target.value === "" ? 0 : Number(e.target.value) })} /></label><label>{t("Stock *")}<input id="catalogue-stock" type="number" min={0} max={1000000} step={1} value={draft.stockQuantity !== null && Number.isFinite(draft.stockQuantity) ? draft.stockQuantity : ""} required onChange={(e) => setDraft({ ...draft, stockQuantity: e.target.value === "" ? 0 : Number(e.target.value) })} /></label></div>
+                    <div className="admin-form-row"><label>{t("Color")}<input value={draft.color || ""} onChange={(e) => setDraft({ ...draft, color: e.target.value })} /></label><label>{t("Warranty")}<input value={specRows.find((row) => row.name === "Warranty")?.value || ""} onChange={(e) => setSpecRows(specRows.map((row) => row.name === "Warranty" ? { ...row, value: e.target.value } : row))} /></label></div>
+                    {uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant) && (!uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.ram || !uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.storage) && <p className="summary-note">{t("Only the catalogue values are applied; missing RAM or storage is left blank.")}</p>}
+                    <p className="summary-note">✓ {t("Specifications automatically loaded from catalogue")}<br />✓ {t("Catalogue image automatically connected")}</p>
+                    <button type="button" className="button white" onClick={() => setCatalogueAdvancedOpen((open) => !open)}>{catalogueAdvancedOpen ? t("Hide catalogue details") : t("View / edit catalogue details")}</button>
+                  </fieldset>
+                  <div className="catalogue-advanced catalogue-advanced"><ProductFinanceEditor draft={draft} onChange={setDraft} /></div>
+                  <fieldset className="editor-section catalogue-advanced">
                     <legend>{t("Descriptions & specifications")}</legend>
                     <label htmlFor="product-description">
                       {t("English description *")}
@@ -1560,7 +1676,7 @@ export default function Admin() {
                       rows={4}
                       value={draft.description}
                       maxLength={2000}
-                      required
+                      required={!!draft.id || catalogueMode !== "catalogue"}
                       onChange={(e) =>
                         setDraft({ ...draft, description: e.target.value })
                       }
@@ -1649,7 +1765,7 @@ export default function Admin() {
                       {t("Add specification")}
                     </button>
                   </fieldset>
-                  <fieldset className="editor-section">
+                  <fieldset className="editor-section catalogue-advanced">
                     <legend>{t("Price & stock")}</legend>
                     <div>
                       <label htmlFor="product-price">
@@ -1662,7 +1778,7 @@ export default function Admin() {
                         max={100000000}
                         step={1}
                         value={Number.isFinite(draft.price) ? draft.price : ""}
-                        required
+                        required={!!draft.id || catalogueMode !== "catalogue"}
                         onChange={(e) =>
                           setDraft({ ...draft, price: e.target.valueAsNumber })
                         }
@@ -1701,7 +1817,7 @@ export default function Admin() {
                           ? draft.stockQuantity
                           : ""
                       }
-                      required
+                      required={!!draft.id || catalogueMode !== "catalogue"}
                       onChange={(e) =>
                         setDraft({
                           ...draft,
@@ -1896,7 +2012,7 @@ export default function Admin() {
                             )}
                             <span>{t("Shop pickup")}</span>
                           </div>
-                          {order.payment && ["MANUAL_QR", "ESEWA"].includes(order.payment.method) && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{order.payment.status === "PENDING_VERIFICATION" && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
+                          {order.payment && ["MANUAL_QR", "ESEWA"].includes(order.payment.method) && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(order.payment.status) && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
                           <ul>
                             {order.items.map((item) => (
                               <li key={item.product.id}>

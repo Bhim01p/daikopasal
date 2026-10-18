@@ -8,5 +8,5 @@ export const productImages = (product: Product) =>
   [...new Set([product.image, ...(product.images || [])])].slice(0, 6);
 export const productImageSource = (product: Product) =>
   product.image === "/assets/phone.svg"
-    ? "/assets/sample-phone-v1.png"
+    ? product.catalogueImage?.url || "/assets/sample-phone-v1.png"
     : product.image;

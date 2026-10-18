@@ -83,9 +83,9 @@ export default function Product() {
             )}
           </div>
           <p>
-            {language === "ne" && product.descriptionNe
-              ? product.descriptionNe
-              : product.description}
+            {language === "ne"
+              ? product.catalogueDescription?.ne || product.descriptionNe || product.description
+              : product.catalogueDescription?.en || product.description}
           </p>
           {product.category === "used" && (
             <div className="condition-grid">

@@ -14,7 +14,7 @@ export default function Catalogue({ category }: { category?: Category }) {
   const t = useT();
   const { products } = useProducts();
   const [params, setParams] = useSearchParams();
-  const query = params.get("q") || "";
+  const query = (params.get("q") || "").trim();
   const [brand, setBrand] = useState("");
   const [budget, setBudget] = useState(params.get("budget") || "");
   const [inStock, setInStock] = useState(false);

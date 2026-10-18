@@ -21,7 +21,7 @@ const ProductContext = createContext<{
   loading: boolean;
   error: string;
   retry: () => Promise<void>;
-  refresh: () => Promise<void>;
+  refresh: (force?: boolean) => Promise<void>;
 } | null>(null);
 export function ProductProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(readCachedProducts);
@@ -29,10 +29,10 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const lastRefresh = useRef(0);
   const inFlight = useRef<Promise<void> | null>(null);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
     const now = Date.now();
     if (inFlight.current) return inFlight.current;
-    if (now - lastRefresh.current < 30000) return;
+    if (!force && now - lastRefresh.current < 30000) return;
     lastRefresh.current = now;
     const request = api<{ products: Product[] }>("/products")
       .then((result) => {

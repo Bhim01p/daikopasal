@@ -1,10 +1,20 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 
 export const phoneColumns =
   "id,brand,model,model_number,region,nepal_availability,release_date,ram_gb,storage_gb,display_size_inches,display_type,resolution_pixels,refresh_rate_hz,chipset,gpu,rear_camera_details,front_camera_details,battery_mah,wired_charging_w,wireless_charging_w,launch_os,network_support,sim_details,nfc,headphone_jack,memory_card_support,ip_rating,weight_g,dimensions_mm,source_urls,verified_at".split(
     ",",
   );
+
+function variantLabel(region, ram, storage) {
+  const values = [];
+  if (ram) values.push(`${ram} GB RAM`);
+  if (storage) values.push(`${storage} GB`);
+  const details = values.join(" / ");
+  return [region, details].filter(Boolean).join(" · ");
+}
 
 // Strict RFC-style parser: quoted delimiters/newlines and escaped quotes are preserved.
 export function parsePhoneCsv(input) {
@@ -154,7 +164,7 @@ export function parsePhoneCsv(input) {
         id: `csv-${data.id}`,
         brand: data.brand,
         name: data.model,
-        variant: `${data.region} · ${data.ram_gb || "?"} GB / ${data.storage_gb || "?"} GB`,
+        variant: variantLabel(data.region, data.ram_gb, data.storage_gb),
         sourceUrl: sourceUrls[0],
         sourceUrls,
         checkedAt: data.verified_at,
@@ -206,4 +216,26 @@ export function upgradePhoneCatalogue(current) {
 
 export function publicReferencePhones(current) {
   return (current.referencePhones || []).map(({ raw, ...phone }) => phone);
+}
+
+// Admin-only reference view of the V3 catalogue. It never creates products.
+export function adminPhoneCatalogue() {
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const csvPath = path.join(root, "data", "phone-reference", "phones_master_catalogue_v3_nepal_expanded.csv");
+  if (!existsSync(csvPath)) return [];
+  const rows = readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/).map((line) => {
+    const fields = []; let field = ""; let quoted = false;
+    for (let i = 0; i < line.length; i++) { const c = line[i]; if (quoted) { if (c === '"' && line[i + 1] === '"') { field += '"'; i++; } else if (c === '"') quoted = false; else field += c; } else if (c === '"') quoted = true; else if (c === ',') { fields.push(field.trim()); field = ""; } else field += c; }
+    fields.push(field.trim()); return fields;
+  });
+  const headers = rows.shift() || [];
+  return rows.filter((row) => row.some(Boolean)).map((row) => {
+    const raw = Object.fromEntries(headers.map((header, index) => [header, row[index] || ""]));
+    const specs = {};
+    const put = (label, value, suffix = "") => { if (value) specs[label] = `${value}${suffix}`; };
+    put("Display", [raw.display_size_inches && `${raw.display_size_inches}-inch`, raw.display_type, raw.resolution_pixels, raw.refresh_rate_hz && `${raw.refresh_rate_hz} Hz`].filter(Boolean).join(" · "));
+    for (const [label, key, suffix] of [["Processor", "chipset", ""], ["GPU", "gpu", ""], ["Battery", "battery_mah", " mAh"], ["Rear camera", "rear_camera_details", ""], ["Front camera", "front_camera_details", ""], ["Network", "network_support", ""], ["OS", "launch_os", ""], ["Water resistance", "ip_rating", ""]]) put(label, raw[key], suffix);
+    put("NFC", raw.nfc); put("SIM", raw.sim_details);
+    return { deviceId: raw.device_id, brand: raw.brand, model: raw.model, variant: variantLabel(raw.region || "Global", raw.ram_gb, raw.storage_gb), ram: raw.ram_gb ? Number(raw.ram_gb) : undefined, storage: raw.storage_gb ? Number(raw.storage_gb) : undefined, specs, sourceUrl: (raw.source_urls || "").split("|")[0] };
+  });
 }

@@ -8,7 +8,9 @@ import { ProductImage } from "./ProductCard";
 
 export default function ProductGallery({ product }: { product: Product }) {
   const t = useT();
-  const images = productImages(product);
+  const productSpecificImages = productImages(product);
+  const catalogueImages = product.image === "/assets/phone.svg" ? (product.catalogueImage?.images || []) : [];
+  const images = catalogueImages.length ? catalogueImages.map((image) => image.url) : productSpecificImages;
   const signature = images.join("|");
   const [selected, setSelected] = useState(0);
   const rail = useRef<HTMLDivElement>(null);
@@ -122,6 +124,14 @@ export default function ProductGallery({ product }: { product: Product }) {
           {t(
             "Illustrative placeholder. Actual product photos can be added by the shop.",
           )}
+        </p>
+      )}
+      {catalogueImages[selected]?.attributionRequired && catalogueImages[selected]?.sourceUrl && (
+        <p className="image-attribution">
+          <a href={catalogueImages[selected].sourceUrl} target="_blank" rel="noreferrer">
+            {t("Image source")}
+          </a>
+          {catalogueImages[selected].license ? ` · ${catalogueImages[selected].license}` : ""}
         </p>
       )}
     </section>

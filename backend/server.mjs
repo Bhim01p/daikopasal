@@ -17,7 +17,7 @@ import { bufferedResponse } from "./buffered-response.mjs";
 import { saveProductImage } from "./images.mjs";
 import { publicStaff, saveStaff } from "./staff.mjs";
 import { previewInventory, replaceSamples } from "./catalogue.mjs";
-import { publicReferencePhones } from "./phone-reference.mjs";
+import { publicReferencePhones, adminPhoneCatalogue } from "./phone-reference.mjs";
 import { issueBill, billPdf } from "./billing.mjs";
 import {
   createCustomerAuth,
@@ -39,12 +39,14 @@ import {
   statuses,
 } from "./validation.mjs";
 import { createPayment, paymentProvider, updatePayment } from "./payments.mjs";
+import { catalogueImageForProduct } from "./catalogue-images.mjs";
+import { catalogueDescriptionForProduct } from "./phone-descriptions.mjs";
 
 function staffPermissionForRoute(route) {
   if (route.startsWith("/api/admin/orders")) return "orders";
   if (route.startsWith("/api/admin/sales")) return "sales";
   if (route.startsWith("/api/admin/bills")) return "billing";
-  if (route.startsWith("/api/admin/products") || route.startsWith("/api/admin/catalogue") || route === "/api/admin/images") return "inventory";
+  if (route.startsWith("/api/admin/products") || route.startsWith("/api/admin/catalogue") || route === "/api/admin/images" || route === "/api/admin/phone-catalogue") return "inventory";
   if (route.startsWith("/api/admin/repairs")) return "repairs";
   if (route.startsWith("/api/admin/payment-config")) return "paymentQr";
   return null;
@@ -226,7 +228,7 @@ export function createApp(options = {}) {
       if (route === "/api/health" && method === "GET")
         return json(response, 200, { ok: true });
       if (route === "/api/products" && method === "GET")
-        return json(response, 200, { products: store.read().products });
+        return json(response, 200, { products: store.read().products.map((product) => ({ ...product, catalogueImage: catalogueImageForProduct(product), catalogueDescription: product.category === "new" ? catalogueDescriptionForProduct(product) : undefined })) });
       if (route === "/api/reference-phones" && method === "GET")
         return json(response, 200, {
           phones: publicReferencePhones(store.read()),
@@ -472,6 +474,8 @@ export function createApp(options = {}) {
       const requiredStaffPermission = staffPermissionForRoute(route);
       if (requiredStaffPermission && session(request)?.role !== "owner" && !session(request)?.permissions?.[requiredStaffPermission])
         throw new HttpError(403, "Your staff role does not allow this area.");
+      if (route === "/api/admin/phone-catalogue" && method === "GET")
+        return json(response, 200, { phones: adminPhoneCatalogue().map((phone) => { const gallery = catalogueImageForProduct({ category: "new", brand: phone.brand, name: phone.model }); return { ...phone, catalogueImage: gallery?.url || "", catalogueImageCount: gallery?.images?.length || 0 }; }) });
       if (
         route === "/api/admin/staff" ||
         route.startsWith("/api/admin/staff/")
@@ -978,7 +982,7 @@ export function createApp(options = {}) {
           stockReserved: true,
         };
         order.payment.orderId = order.id;
-        if (order.payment.method !== "PAY_AT_SHOP") order.payment.status = "PENDING_VERIFICATION";
+        if (order.payment.method !== "PAY_AT_SHOP") order.payment.status = "VERIFICATION_PENDING";
         store.commit({
           ...current,
           products: current.products.map((product) => {
@@ -1012,7 +1016,7 @@ export function createApp(options = {}) {
           throw new HttpError(404, "Order not found.");
         if (paymentProvider(order.payment) !== "MANUAL_QR") throw new HttpError(400, "This order does not use manual QR payment.");
         const reference = text(input.reference, "Transaction/reference ID", 3, 120);
-        const payment = updatePayment(order.payment, { reference, customerReference: reference, status: "PENDING_VERIFICATION", verificationType: "ADMIN", submittedAt: new Date().toISOString() });
+        const payment = updatePayment(order.payment, { reference, customerReference: reference, status: "VERIFICATION_PENDING", verificationType: undefined, submittedAt: new Date().toISOString() });
         const updated = { ...order, payment };
         store.commit({ ...current, orders: current.orders.map((item) => item.id === order.id ? updated : item) });
         return json(response, 200, { order: publicOrder(updated), message: "Payment submitted. We will verify your payment shortly." });
