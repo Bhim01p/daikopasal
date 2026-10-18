@@ -234,10 +234,15 @@ export function validateProduct(input, existing) {
   }
   if (category !== "accessory") {
     delete result.specs.Category;
-    result.storage = integer(input.storage, "Storage", 16, 2048);
+    const catalogueStorageMayBeMissing = Boolean(input.catalogueDeviceId);
+    if (catalogueStorageMayBeMissing && input.storage === undefined) {
+      delete result.storage;
+      delete result.specs.Storage;
+    } else {
+      result.storage = integer(input.storage, "Storage", 16, 2048);
+      result.specs.Storage = `${result.storage} GB`;
+    }
     if (input.ram !== undefined) result.ram = integer(input.ram, "RAM", 1, 64);
-
-    result.specs.Storage = `${result.storage} GB`;
     if (result.ram) result.specs.RAM = `${result.ram} GB`;
   } else {
     delete result.specs.RAM;

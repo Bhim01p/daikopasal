@@ -708,7 +708,7 @@ export default function Admin() {
     try {
       const selectedCatalogue = uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant);
       const catalogueDraft = selectedCatalogue && catalogueMode === "catalogue"
-        ? { ...draft, brand: selectedCatalogue.brand, name: selectedCatalogue.model, ram: selectedCatalogue.ram ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]) : draft.ram), storage: selectedCatalogue.storage ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1]) : draft.storage) }
+        ? { ...draft, brand: selectedCatalogue.brand, name: selectedCatalogue.model, ram: selectedCatalogue.ram ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]) : undefined), storage: selectedCatalogue.storage ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1]) : undefined), catalogueDeviceId: selectedCatalogue.deviceId }
         : draft;
       const specs: Record<string, string> = {};
       for (const row of specRows) {
@@ -1438,7 +1438,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <label htmlFor="product-storage">
-                            {t("Storage (GB) *")}
+                            {t(`Storage (GB)${catalogueMode === "catalogue" ? "" : " *"}`)}
                           </label>
                           <input
                             id="product-storage"
