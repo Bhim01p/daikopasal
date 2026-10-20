@@ -122,6 +122,44 @@ function Meta() {
     setMeta("og:type", "property", p ? "product" : "website");
     setMeta("twitter:title", "name", document.title);
     setMeta("twitter:description", "name", description);
+    const imageUrl = p
+      ? p.image === "/assets/phone.svg"
+        ? p.catalogueImage?.url
+        : p.image
+      : "/assets/logo.png";
+    if (imageUrl)
+      setMeta("og:image", "property", imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`);
+    let structured = document.querySelector<HTMLScriptElement>('script[data-seo="product"]');
+    if (!p) {
+      structured?.remove();
+    } else {
+      if (!structured) {
+        structured = document.createElement("script");
+        structured.type = "application/ld+json";
+        structured.dataset.seo = "product";
+        document.head.appendChild(structured);
+      }
+      const productSchema: Record<string, unknown> = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: `${p.brand} ${p.name}`,
+        description: language === "ne" && p.descriptionNe ? p.descriptionNe : p.description,
+        brand: { "@type": "Brand", name: p.brand },
+        url: `${publicOrigin}/product/${p.slug}`,
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "NPR",
+          price: p.price,
+          availability: `https://schema.org/${p.available ? "InStock" : "OutOfStock"}`,
+          url: `${publicOrigin}/product/${p.slug}`,
+          itemCondition: `https://schema.org/${p.category === "used" ? "UsedCondition" : "NewCondition"}`,
+        },
+      };
+      if (imageUrl)
+        productSchema.image = [imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`];
+      if (p.id) productSchema.sku = p.id;
+      structured.textContent = JSON.stringify(productSchema);
+    }
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute(

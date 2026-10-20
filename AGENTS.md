@@ -460,3 +460,13 @@ This file serves as the shared project context and handoff log between coding ag
 - **Known issues**: Browser visual QA remains outstanding. The stronger 3D treatment is intentionally limited to storefront cards/gallery; Checkout, Payment, Admin, Account, Repair, and Billing remain calm.
 - **Recommended next step**: Perform manual visual QA for hero/cards/gallery in light/dark themes, EN/NE, mobile/desktop, touch, and reduced-motion settings.
 - **Motion status**: Stronger 3D system is regression-protected again.
+
+### Entry: 2026-10-20 - GPT/Codex (Production SEO Foundation)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited production SEO metadata, indexability, robots, sitemap, canonical handling, social metadata, product metadata, LocalBusiness JSON-LD, private-route indexing, image fallback metadata, and deployment-facing static SEO files.
+- **Files changed**: `frontend/index.html`, `frontend/public/sitemap.xml`, `frontend/public/sitemap-template.xml`, `frontend/src/main.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; sitemap/locale validation passed; backend syntax check passed; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: Removed overly precise LocalBusiness address/geo/opening-hour values from static JSON-LD, corrected sitemap entries to canonical public routes, preserved robots exclusions for private routes, and added conservative Product JSON-LD plus dynamic product/social image metadata from real product data. Query/filter state remains functional while canonical URLs use pathname only.
+- **Known issues**: The static sitemap cannot safely enumerate database-backed product URLs at build time; product pages still expose runtime metadata when loaded. Search Console, indexing submission, Business Profile, GA4, Bing verification, and real production crawler/PageSpeed checks require external/manual action.
+- **Recommended next step**: Deploy to preview/production, validate `/robots.txt`, `/sitemap.xml`, representative product metadata and JSON-LD with external tools, then submit the sitemap to search platforms.
+- **SEO status**: Regression-protected after this pass.
