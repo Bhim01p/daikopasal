@@ -301,7 +301,7 @@ export default function Layout() {
             </small>
           </div>
           <div>
-            <h3>{t("Explore the shop")}</h3>
+            <h2 className="footer-section-heading">{t("Explore the shop")}</h2>
             {links.slice(1).filter(([, label]) => label !== "My orders").map(([to, label]) => (
               <Link key={to} to={to}>
                 {t(label)}
@@ -309,7 +309,7 @@ export default function Layout() {
             ))}
           </div>
           <div>
-            <h3>{t("Let’s talk.")}</h3>
+            <h2 className="footer-section-heading">{t("Let’s talk.")}</h2>
             <a href={`tel:+${shop.internationalPhone}`}>
               <Phone size={14} />
               {shop.phone}

@@ -546,7 +546,7 @@
     line-height: 1.7;
     margin-top: 12px;
   }
-  .footer-grid h3 {
+  .footer-grid :is(h2.footer-section-heading, h3) {
     font-size: 16px;
     margin-bottom: 8px;
   }

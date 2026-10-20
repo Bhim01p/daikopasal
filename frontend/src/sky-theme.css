@@ -530,7 +530,7 @@ body footer {
 body footer :is(a, p, small, li, .brand, .brand small) {
   color: var(--sky-muted);
 }
-body footer :is(h3, h4, .brand > span) {
+body footer :is(h2.footer-section-heading, h3, h4, .brand > span) {
   color: var(--sky-text);
 }
 body .site-header .reference-main-nav a:is(.active, :hover) {

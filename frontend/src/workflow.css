@@ -23,7 +23,7 @@ body .payment-qr-panel input[type="file"], body .payment-qr-panel input:not([typ
 :root body footer .footer-grid .brand > span,
 :root body footer .footer-grid .brand small { color: #f6e7ed !important; }
 body .footer-grid { grid-template-columns: 1.35fr 1fr 1fr; align-items: start; column-gap: clamp(28px, 5vw, 72px); row-gap: 28px; }
-body .footer-grid h3 { margin-bottom: 14px; }
+body .footer-grid :is(h2.footer-section-heading, h3) { margin-bottom: 14px; }
 body .footer-grid > div:not(:first-child) > a { margin-bottom: 8px; }
 body .footer-grid > div:nth-child(3) p { line-height: 1.7; }
 body .admin-sales-heading, body .sales-periods, body .sales-summary-cards, body .admin-sales-row { display: flex; align-items: center; gap: 12px; }

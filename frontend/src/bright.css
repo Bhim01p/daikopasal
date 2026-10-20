@@ -563,7 +563,7 @@ select,
   font-size: 17px;
   line-height: 1.7;
 }
-.footer-grid h3 {
+.footer-grid :is(h2.footer-section-heading, h3) {
   font-size: 21px;
 }
 .footer-grid small,
@@ -967,7 +967,7 @@ select,
   .footer-grid > div:not(:first-child) > a {
     font-size: 17px;
   }
-  .footer-grid h3 {
+  .footer-grid :is(h2.footer-section-heading, h3) {
     font-size: 21px;
   }
   .footer-grid small,

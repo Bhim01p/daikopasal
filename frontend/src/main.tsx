@@ -12,11 +12,11 @@ import {
 import { CartProvider } from "./context/CartContext";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import Layout from "./components/Layout";
+import Home from "./pages/ReferenceHome";
 const Checkout = React.lazy(() => import("./pages/Checkout"));
 const OrderSuccess = React.lazy(async () => ({ default: (await import("./pages/Checkout")).OrderSuccess }));
 import NotFound from "./pages/NotFound";
 const Admin = React.lazy(() => import("./pages/Admin"));
-const Home = React.lazy(() => import("./pages/ReferenceHome"));
 const Favourites = React.lazy(() => import("./pages/Favourites"));
 const Compare = React.lazy(() => import("./pages/Compare"));
 const Shop = React.lazy(() => import("./pages/Shop"));

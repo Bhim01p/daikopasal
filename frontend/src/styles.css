@@ -859,8 +859,10 @@ footer {
   font-size: 10px;
   color: #b6c5ce;
 }
-.footer-grid h3 {
+.footer-grid :is(h2.footer-section-heading, h3) {
   font-size: 13px;
+  font-weight: 700;
+  letter-spacing: normal;
   margin: 0 0 17px;
 }
 .footer-grid > div:not(:first-child) > a {
