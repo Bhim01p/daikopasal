@@ -90,7 +90,11 @@ export default function ProductGallery({ product }: { product: Product }) {
               v1: String(images.length),
             })}
           >
-            <ProductImage product={{ ...product, image }} />
+            <ProductImage
+              product={{ ...product, image }}
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchPriority={index === 0 ? "high" : "auto"}
+            />
           </div>
         ))}
       </div>

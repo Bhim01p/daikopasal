@@ -12,11 +12,16 @@ import { isIllustration, productImageSource } from "../utils/products";
 export function ProductImage({
   product,
   className = "",
+  loading = "lazy",
+  fetchPriority = "auto",
 }: {
   product: Product;
   className?: string;
+  loading?: "eager" | "lazy";
+  fetchPriority?: "high" | "low" | "auto";
 }) {
   const t = useT();
+  const isGenericPhoneFallback = product.image === "/assets/phone.svg" && !product.catalogueImage?.url;
   return (
     <div
       className={`product-visual ${isIllustration(product) ? "product-visual-placeholder" : ""} ${className}`}
@@ -24,8 +29,11 @@ export function ProductImage({
     >
       <SafeImage
         src={productImageSource(product)}
+        srcSet={isGenericPhoneFallback ? "/assets/sample-phone-fallback-320.webp 320w, /assets/sample-phone-fallback-640.webp 640w" : undefined}
+        sizes={isGenericPhoneFallback ? "(max-width: 767px) 45vw, 50vw" : undefined}
         alt={`${product.brand} ${product.name}${isIllustration(product) ? " — illustrative placeholder" : ""}`}
-        loading="lazy"
+        loading={loading}
+        fetchPriority={fetchPriority}
       />
       {isIllustration(product) && (
         <span className="image-caption">{t("Illustrative image")}</span>

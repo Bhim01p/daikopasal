@@ -470,3 +470,39 @@ This file serves as the shared project context and handoff log between coding ag
 - **Known issues**: The static sitemap cannot safely enumerate database-backed product URLs at build time; product pages still expose runtime metadata when loaded. Search Console, indexing submission, Business Profile, GA4, Bing verification, and real production crawler/PageSpeed checks require external/manual action.
 - **Recommended next step**: Deploy to preview/production, validate `/robots.txt`, `/sitemap.xml`, representative product metadata and JSON-LD with external tools, then submit the sitemap to search platforms.
 - **SEO status**: Regression-protected after this pass.
+
+### Entry: 2026-10-20 - GPT/Codex (Repair Request Form Layout Regression)
+- **Agent**: GPT/Codex
+- **Task completed**: Scoped the legacy repair tracking form grid so it no longer overrides the guest repair request form layout.
+- **Files changed**: `frontend/src/operations.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend production build and `git diff --check`.
+- **Result**: New repair request fields render in their intended stacked/two-column groups; only the legacy tracking form uses the compact tracking grid.
+- **Known issues**: Browser visual QA remains outstanding as previously documented.
+- **Recommended next step**: Refresh the Repair page and verify desktop/mobile request form layout.
+
+### Entry: 2026-10-20 - GPT/Codex (Mobile Performance Asset Pass)
+- **Agent**: GPT/Codex
+- **Task completed**: Reduced oversized homepage, shared logo, repair-service, category-card, and generic phone-fallback image downloads; added responsive image variants and a homepage-only early preload for the first hero image.
+- **Files changed**: `frontend/index.html`, `frontend/src/components/CategoryNav.tsx`, `frontend/src/components/Layout.tsx`, `frontend/src/components/ProductCard.tsx`, `frontend/src/pages/NotFound.tsx`, `frontend/src/pages/ReferenceHome.tsx`, `frontend/src/pages/Services.tsx`, `frontend/src/utils/products.ts`, optimized WebP/PNG derivatives in `frontend/public/assets/`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; verified all optimized files are present in production output; image payload calculation; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: The header logo, favicon, and homepage carousel sources previously totaled about 4.28 MB. The same visual sources now select roughly 93–154 KB of responsive assets across the mobile DPR range, with originals retained. The first hero image is preloaded only on `/`; hero images reserve intrinsic dimensions. Product cards keep lazy loading, and the second repair image is lazy-loaded. Existing Cloudinary catalogue delivery transforms remain `f_auto,q_auto,w_800`.
+- **Known issues**: The exact production LCP element and before/after Core Web Vitals were not verified: the Google PageSpeed API returned HTTP 429 quota exceeded, and Windows browser inspection was blocked by browser URL policy. Therefore the carousel hero is a strongly supported LCP candidate, not a directly measured LCP element. Font render-blocking and forced-reflow diagnostics were not changed without browser evidence.
+- **Recommended next step**: Deploy and rerun mobile PageSpeed Insights, then manually check the homepage and Repair page at 320, 360, 390, and 430 px, including EN/NE and light/dark themes.
+
+### Entry: 2026-10-20 - GPT/Codex (Safe Performance Follow-up)
+- **Agent**: GPT/Codex
+- **Task completed**: Made homepage sizing measurements run before first paint and batch all geometry reads before style writes; ensured the visible first Product Detail gallery image loads eagerly at high priority while later gallery frames remain lazy.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `frontend/src/pages/ReferenceHome.tsx`, `frontend/src/components/ProductCard.tsx`, `frontend/src/components/ProductGallery.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; compared built asset output and image source sizes; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: The home hero no longer waits for post-paint effects to size itself, and its measurement avoids a read-after-write layout flush. Product Detail no longer marks its displayed first gallery photo lazy. Static image delivery improvements from the prior pass remain in place.
+- **Known issues**: No post-change production Lighthouse run was possible: the previous PageSpeed API request hit quota (HTTP 429), and browser inspection was blocked by the environment's URL policy. Exact mobile/desktop LCP element and resulting CLS/LCP values remain unverified; no metric improvement is claimed until production is retested.
+- **Recommended next step**: Deploy only after review, then rerun mobile and desktop PageSpeed and confirm the LCP element, CLS, render-blocking chain, and initial requests in a real browser.
+
+### Entry: 2026-10-20 - GPT/Codex (Homepage Slider Controls)
+- **Agent**: GPT/Codex
+- **Task completed**: Fixed the homepage carousel's undiscoverable controls and rapid slide changes. Added previous/next arrows, slide dots, a pause/resume control, and replayed the existing entrance transition on slide changes.
+- **Files changed**: `frontend/src/pages/ReferenceHome.tsx`, `frontend/src/ruby-theme.css`, `shared/ui-keys.json`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; verified the added slide-label translation in English fallback and Nepali; `git diff --check` passed. Existing Vite dynamic/static import warnings remain.
+- **Result**: Auto-advance is now every 6 seconds; it pauses on hover/focus, can be explicitly paused, and users can select any slide without relying on swipe or keyboard discovery.
+- **Known issues**: Visual browser QA was not available, so control placement should be reviewed at mobile and desktop sizes.
+- **Recommended next step**: Check the hero carousel on phone and desktop, including pause/resume, arrows, dots, keyboard, swipe, and reduced-motion mode.

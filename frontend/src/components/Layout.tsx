@@ -1,6 +1,6 @@
 import { useT } from "../context/LanguageContext";
 import { LanguageSwitch } from "../context/LanguageContext";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import {
   Link,
   NavLink,
@@ -58,7 +58,7 @@ export function Brand() {
     >
       <img
         className="brand-logo"
-        src="/assets/logo.png"
+        src="/assets/logo-header.webp"
         alt={shop.name}
         width="52"
         height="52"
@@ -73,13 +73,13 @@ export function Brand() {
 export default function Layout() {
   const t = useT();
   const header = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const observer = new ResizeObserver(() =>
-      document.documentElement.style.setProperty(
-        "--site-header-height",
-        (header.current?.getBoundingClientRect().height || 84) + "px",
-      ),
-    );
+  useLayoutEffect(() => {
+    const measure = () => {
+      const height = header.current?.getBoundingClientRect().height || 84;
+      document.documentElement.style.setProperty("--site-header-height", `${height}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
     if (header.current) observer.observe(header.current);
     return () => observer.disconnect();
   }, []);

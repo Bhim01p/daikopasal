@@ -35,14 +35,14 @@
 .repair-success { max-width:620px; }
 .repair-success .repair-current-status { display:grid; gap:4px; padding:14px; border-radius:10px; background:var(--sky-background); }
 .customer-repair-request .form-error { color:#b42318; }
-.repair-tracking form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; gap:12px; align-items:end; }
+.legacy-repair-tracking form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; gap:12px; align-items:end; }
 .repair-status-card { margin-top:18px; padding:18px; border:1px solid var(--sky-border); border-radius:10px; }
 .repair-admin-toolbar { display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:10px; margin:18px 0; }
 .repair-admin-toolbar input, .repair-admin-toolbar select, .repair-detail-card input, .repair-detail-card select, .repair-detail-card textarea { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-surface); color:var(--sky-text); font:inherit; }
 .repair-detail-card { display:grid; gap:14px; margin-top:20px; padding:20px; border:1px solid var(--sky-border); border-radius:12px; background:var(--sky-surface); }
 .repair-detail-card h3, .repair-detail-card p { margin:0; }
 .repair-detail-card textarea { min-height:90px; resize:vertical; }
-@media(max-width:700px) { .repair-tracking form, .used-inspection-editor, .repair-request-grid { grid-template-columns:1fr; } .billing-list article { display:grid; grid-template-columns:1fr auto; } }
+@media(max-width:700px) { .legacy-repair-tracking form, .used-inspection-editor, .repair-request-grid { grid-template-columns:1fr; } .billing-list article { display:grid; grid-template-columns:1fr auto; } }
 @media(max-width:700px) { .repair-admin-toolbar { grid-template-columns:1fr; } }
 .billing-heading p { margin:4px 0; }
 .billing-workspace { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(280px, 1fr); gap:18px; align-items:start; }

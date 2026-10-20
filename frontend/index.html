@@ -24,7 +24,19 @@
       if (document.documentElement.dataset.theme === "dark")
         document.querySelector('meta[name="theme-color"]').content = "#15222e";
     </script>
-    <link rel="icon" type="image/png" href="/assets/logo.png" />
+    <link rel="icon" type="image/png" href="/assets/logo-icon-128.png" sizes="128x128" />
+    <script>
+      if (window.location.pathname === "/") {
+        const heroImage = document.createElement("link");
+        heroImage.rel = "preload";
+        heroImage.as = "image";
+        heroImage.href = "/assets/catalogue-iphone-15-1000.webp";
+        heroImage.setAttribute("imagesrcset", "/assets/catalogue-iphone-15-640.webp 640w, /assets/catalogue-iphone-15-1000.webp 1000w");
+        heroImage.setAttribute("imagesizes", "(max-width: 767px) 88vw, 60vw");
+        heroImage.setAttribute("fetchpriority", "high");
+        document.head.appendChild(heroImage);
+      }
+    </script>
     <meta
       name="description"
       content="Explore mobiles, second-hand phones, accessories and repair services at Machhapuchhree Electronics in Lekhnath, Pokhara."

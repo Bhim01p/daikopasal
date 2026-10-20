@@ -1396,6 +1396,14 @@ body :is(input, select, textarea) {
 
 /* Phase 1 homepage hero 2.5D motion */
 .reference-banner-main { perspective: 1100px; overflow:hidden; }
+.home-carousel { position: relative; }
+.home-carousel-controls { position:absolute; z-index:4; right:clamp(18px, 4vw, 54px); bottom:18px; display:flex; align-items:center; gap:6px; padding:5px; border:1px solid var(--sky-border); border-radius:999px; background:color-mix(in srgb, var(--sky-surface) 92%, transparent); box-shadow:0 4px 16px rgba(20,22,28,.16); backdrop-filter:blur(8px); }
+.home-carousel-arrow { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; padding:0; border:0; border-radius:50%; background:transparent; color:var(--sky-text); }
+.home-carousel-arrow:hover, .home-carousel-arrow:focus-visible { background:var(--ruby-soft); color:var(--sky-accent); }
+.home-carousel-dots { display:flex; align-items:center; gap:5px; padding-inline:3px; }
+.home-carousel-dot { width:8px; height:8px; padding:0; border:0; border-radius:999px; background:var(--sky-muted); opacity:.55; }
+.home-carousel-dot.active { width:20px; background:var(--sky-accent); opacity:1; }
+.home-carousel-controls button:focus-visible { outline:2px solid var(--sky-accent); outline-offset:2px; }
 .reference-banner-main::after { content:""; position:absolute; width:42%; aspect-ratio:1; right:7%; top:15%; border-radius:50%; background:radial-gradient(circle, rgba(200,16,46,.18), transparent 68%); filter:blur(22px); pointer-events:none; transform:translateZ(-40px); }
 .reference-banner-visual { position:absolute; inset:0; z-index:1; transform:translate3d(0,0,0) rotateX(var(--hero-tilt-x, 0deg)) rotateY(var(--hero-tilt-y, 0deg)); transform-style:preserve-3d; transition:transform 420ms cubic-bezier(.2,.8,.2,1); animation:hero-visual-enter 620ms cubic-bezier(.2,.8,.2,1) both, hero-visual-float 6s ease-in-out 700ms infinite; will-change:transform; }
 .reference-banner-photo { filter:drop-shadow(0 18px 22px rgba(20,22,28,.16)); }
@@ -1405,6 +1413,7 @@ body :is(input, select, textarea) {
 @keyframes hero-visual-float { 0%,100% { translate:0 0; } 50% { translate:0 -4px; } }
 @media (hover:none), (pointer:coarse) { .reference-banner-visual { animation:hero-visual-enter 620ms cubic-bezier(.2,.8,.2,1) both; } }
 @media (prefers-reduced-motion: reduce) { .reference-banner-visual, .reference-banner-main .hero-copy { animation:none; transition:none; } .reference-banner-main::after { display:none; } }
+@media (max-width:767px) { .home-carousel-controls { right:22px; bottom:26px; } .home-carousel-arrow { width:34px; height:34px; } }
 
 /* Phase 2 category and product-card motion */
 .shop-category-cards a { transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 220ms ease, border-color 220ms ease; }

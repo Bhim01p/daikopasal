@@ -1,8 +1,8 @@
 import SafeImage from "../components/SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export default function ReferenceHome() {
   const t = useT();
@@ -11,40 +11,53 @@ export default function ReferenceHome() {
       title: "New and used phones",
       description: "Find your next phone or a pre-owned option.",
       links: [{ to: "/mobiles", label: "New phones" }, { to: "/second-hand", label: "Used phones" }],
-      image: "/assets/catalogue-iphone-15.png",
+      image: "/assets/catalogue-iphone-15-1000.webp",
+      srcSet: "/assets/catalogue-iphone-15-640.webp 640w, /assets/catalogue-iphone-15-1000.webp 1000w",
+      sizes: "(max-width: 767px) 88vw, 60vw",
+      width: 1000,
+      height: 1000,
     },
     {
       title: "Phone and meter repair",
       description: "Help for your phone or vehicle meter.",
       links: [{ to: "/repair#phone-repairs", label: "Phone repair" }, { to: "/repair#digital-meter-repairs", label: "Digital meter repair" }],
-      image: "/assets/pulsar-meter-repair.png",
+      image: "/assets/pulsar-meter-repair-1280.webp",
+      srcSet: "/assets/pulsar-meter-repair-640.webp 640w, /assets/pulsar-meter-repair-1280.webp 1280w",
+      sizes: "100vw",
+      width: 1672,
+      height: 941,
     },
     {
       title: "Accessories",
       description: "Everyday essentials",
       links: [{ to: "/accessories", label: "Explore category" }],
-      image: "/assets/catalogue-redmi-buds-6-play.jpg",
+      image: "/assets/catalogue-redmi-buds-6-play-1280.webp",
+      srcSet: "/assets/catalogue-redmi-buds-6-play-640.webp 640w, /assets/catalogue-redmi-buds-6-play-1280.webp 1280w",
+      sizes: "(max-width: 767px) 88vw, 60vw",
+      width: 2560,
+      height: 1400,
     },
   ];
   const [index, setIndex] = useState(0);
   const carousel = useRef<HTMLElement>(null);
   const heroVisual = useRef<HTMLDivElement>(null);
   const tiltFrame = useRef<number | null>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const section = carousel.current;
     if (!section) return;
     const measure = () => {
       const header = document.querySelector(".site-header");
       const tabs = document.querySelector(".home-tabs");
       const dock = document.querySelector(".mobile-dock");
+      const topHeight =
+        (header?.getBoundingClientRect().height || 0) +
+        (tabs?.getBoundingClientRect().height || 0);
+      const dockHeight = dock?.getBoundingClientRect().height || 64;
       section.style.setProperty(
         "--home-top-height",
-        `${(header?.getBoundingClientRect().height || 0) + (tabs?.getBoundingClientRect().height || 0)}px`,
+        `${topHeight}px`,
       );
-      section.style.setProperty(
-        "--home-dock-height",
-        `${dock?.getBoundingClientRect().height || 64}px`,
-      );
+      section.style.setProperty("--home-dock-height", `${dockHeight}px`);
     };
     const observer = new ResizeObserver(measure);
     for (const selector of [".site-header", ".home-tabs", ".mobile-dock"]) {
@@ -56,14 +69,23 @@ export default function ReferenceHome() {
   }, []);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const suppress = useRef(0);
-  const paused = useRef(false);
+  const interactionPaused = useRef(false);
+  const manualPaused = useRef(false);
+  const [isPaused, setIsPaused] = useState(false);
   const pauseUntil = useRef(0);
-  const move = (n: number) => { pauseUntil.current = Date.now() + 3000; setIndex((i) => (i + n + slides.length) % slides.length); };
+  const move = (n: number) => {
+    pauseUntil.current = Date.now() + 6000;
+    setIndex((i) => (i + n + slides.length) % slides.length);
+  };
+  const select = (nextIndex: number) => {
+    pauseUntil.current = Date.now() + 6000;
+    setIndex(nextIndex);
+  };
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible" && !drag.current && !paused.current && Date.now() > pauseUntil.current)
+      if (document.visibilityState === "visible" && !drag.current && !interactionPaused.current && !manualPaused.current && Date.now() > pauseUntil.current)
         setIndex((i) => (i + 1) % slides.length);
-    }, 3000);
+    }, 6000);
     return () => window.clearInterval(timer);
   }, []);
   const slide = slides[index];
@@ -76,10 +98,10 @@ export default function ReferenceHome() {
         aria-roledescription="carousel"
         aria-label={t("Shop categories")}
         tabIndex={0}
-        onMouseEnter={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) paused.current = true; }}
-        onMouseLeave={() => { paused.current = false; }}
-        onFocusCapture={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) paused.current = true; }}
-        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) paused.current = false; }}
+        onMouseEnter={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) interactionPaused.current = true; }}
+        onMouseLeave={() => { interactionPaused.current = false; }}
+        onFocusCapture={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) interactionPaused.current = true; }}
+        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) interactionPaused.current = false; }}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
             e.preventDefault();
@@ -159,20 +181,57 @@ export default function ReferenceHome() {
           aria-roledescription="slide"
           aria-label={`${index + 1} / ${slides.length}: ${t(slide.title)}`}
         >
-          <div ref={heroVisual} className="reference-banner-visual">
+          <div key={`visual-${index}`} ref={heroVisual} className="reference-banner-visual">
             <SafeImage
               className="reference-banner-photo"
               src={slide.image}
               alt={t(slide.title)}
-              fetchPriority="high"
+              srcSet={slide.srcSet}
+              sizes={slide.sizes}
+              width={slide.width}
+              height={slide.height}
+              loading="eager"
+              fetchPriority={index === 0 ? "high" : "auto"}
               draggable={false}
             />
           </div>
-          <div className="hero-copy">
+          <div key={`copy-${index}`} className="hero-copy">
             <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
             <h1>{t(slide.title)}</h1>
             <p>{t(slide.description)}</p>
             <div className="home-slide-links">{slide.links.map((link) => <Link key={link.to} className="button dark" to={link.to}>{t(link.label)} <ArrowRight size={17} /></Link>)}</div>
+          </div>
+          <div className="home-carousel-controls" role="group" aria-label={t("Shop categories")}>
+            <button className="home-carousel-arrow" type="button" aria-label={t("Previous category")} onClick={() => move(-1)}>
+              <ChevronLeft size={19} aria-hidden="true" />
+            </button>
+            <div className="home-carousel-dots">
+              {slides.map((item, dotIndex) => (
+                <button
+                  key={item.title}
+                  className={`home-carousel-dot${dotIndex === index ? " active" : ""}`}
+                  type="button"
+                  aria-label={t("Show slide {{v0}}", { v0: dotIndex + 1 })}
+                  aria-current={dotIndex === index ? "true" : undefined}
+                  onClick={() => select(dotIndex)}
+                />
+              ))}
+            </div>
+            <button className="home-carousel-arrow" type="button" aria-label={t("Next category")} onClick={() => move(1)}>
+              <ChevronRight size={19} aria-hidden="true" />
+            </button>
+            <button
+              className="home-carousel-arrow home-carousel-toggle"
+              type="button"
+              aria-label={t(isPaused ? "Play slideshow" : "Pause slideshow")}
+              aria-pressed={isPaused}
+              onClick={() => {
+                manualPaused.current = !manualPaused.current;
+                setIsPaused(manualPaused.current);
+              }}
+            >
+              {isPaused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}
+            </button>
           </div>
         </div>
       </section>
