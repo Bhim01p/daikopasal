@@ -576,21 +576,8 @@ body .home-carousel {
   }
   body .site-header .reference-main-nav {
     padding-inline: max(0px, calc((100vw - 1550px) / 2));
-    box-shadow:
-      100vw 0 0 var(--ruby-nav),
-      -100vw 0 0 var(--ruby-nav);
     position: relative;
     z-index: 0;
-  }
-  body .site-header .reference-main-nav::before {
-    content: "";
-    position: absolute;
-    z-index: -1;
-    left: -100vw;
-    right: -100vw;
-    top: 0;
-    bottom: 0;
-    background: var(--ruby-nav);
   }
   body .site-header .reference-nav-wrap::before {
     content: "";

@@ -13,6 +13,8 @@ import { CartProvider } from "./context/CartContext";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import Layout from "./components/Layout";
 import Home from "./pages/ReferenceHome";
+import Cart from "./pages/Cart";
+import Account, { Login } from "./pages/Account";
 const Checkout = React.lazy(() => import("./pages/Checkout"));
 const OrderSuccess = React.lazy(async () => ({
   default: (await import("./pages/Checkout")).OrderSuccess,
@@ -24,13 +26,8 @@ const Compare = React.lazy(() => import("./pages/Compare"));
 const Shop = React.lazy(() => import("./pages/Shop"));
 const Catalogue = React.lazy(() => import("./pages/Catalogue"));
 const Product = React.lazy(() => import("./pages/Product"));
-const Cart = React.lazy(() => import("./pages/Cart"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const Repair = React.lazy(() => import("./pages/Repair"));
-const Account = React.lazy(() => import("./pages/Account"));
-const Login = React.lazy(async () => ({
-  default: (await import("./pages/Account")).Login,
-}));
 const MyOrders = React.lazy(() => import("./pages/MyOrders"));
 import { CustomerProvider, useCustomer } from "./context/CustomerContext";
 import "./admin.css";

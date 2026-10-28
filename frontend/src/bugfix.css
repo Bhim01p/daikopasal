@@ -1,6 +1,12 @@
 :root {
   background: var(--sky-background);
 }
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
 body,
 #root {
   min-height: 100dvh;
@@ -484,12 +490,6 @@ body,
     background: transparent;
     color: var(--sky-text);
     font-size: 12px;
-  }
-  html,
-  body,
-  #root {
-    max-width: 100%;
-    overflow-x: clip;
   }
   .login-language {
     display: flex;

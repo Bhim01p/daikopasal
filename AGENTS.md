@@ -569,3 +569,30 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: The existing `/sitemap.xml` is now a sitemap index that points to `/api/sitemap.xml`; the backend generates a cached XML sitemap from real store products and excludes sample listings. The robots sitemap reference remains unchanged.
 - **Known issues**: Product titles, descriptions, canonical metadata, and Product JSON-LD are still added by client-side JavaScript; initial HTML rendering was not changed. Google Search Console URL inspection/indexing requests and Google Business Profile edits remain user-side actions.
 - **Recommended next step**: Deploy, then inspect `/sitemap.xml` and `/api/sitemap.xml` in browser and resubmit `/sitemap.xml` in Search Console.
+
+### Entry: 2026-10-28 - GPT/Codex (Account and Cart Build Warnings)
+- **Agent**: GPT/Codex
+- **Task completed**: Removed ineffective lazy imports for Account and Cart routes because shared account/cart dialogs and checkout already statically import those page modules.
+- **Files changed**: `frontend/src/main.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; build no longer reported mixed static/dynamic import warnings for Account.tsx or Cart.tsx; `git diff --check` passed.
+- **Result**: Route and dialog components remain unchanged; route elements now reference the same eagerly loaded modules already required by shared UI, avoiding the misleading lazy loading and associated build warnings.
+- **Known issues**: Other existing Vite chunk/import warnings may remain.
+- **Recommended next step**: No further Account/Cart import changes unless a route or dialog regression is reported.
+
+### Entry: 2026-10-28 - GPT/Codex (Account/Cart Runtime Check and Favourites Overflow)
+- **Agent**: GPT/Codex
+- **Task completed**: Checked the live Account and Cart routes and dialogs, and fixed the desktop horizontal overflow visible on the Favourites page.
+- **Files changed**: `frontend/src/bugfix.css`, `AGENTS.md`.
+- **Tests/checks performed**: Live browser checks confirmed Account route, customer login dialog, empty Cart route/dialog, and Favourites empty state render; Favourites had no horizontal overflow at 390px but did at desktop due to full-bleed header decoration. Frontend TypeScript/production build and `git diff --check` passed.
+- **Result**: Root horizontal clipping is now applied at all viewport sizes, matching the existing mobile behavior and containing the decorative header overflow without changing page content or internal scroll areas.
+- **Known issues**: Local preview could not be opened in the browser environment, so the CSS fix was build-verified but still needs post-deploy visual confirmation. Production currently reflects the deployed version until this change is released.
+- **Recommended next step**: After deployment, confirm the horizontal scrollbar is gone on desktop and check a Favorites page with saved items on desktop/mobile.
+
+### Entry: 2026-10-28 - GPT/Codex (Desktop Horizontal Page Drift)
+- **Agent**: GPT/Codex
+- **Task completed**: Traced the screenshot's horizontal page drift to full-viewport shadows and a pseudo-element extending 100vw on both sides of the desktop navigation.
+- **Files changed**: `frontend/src/workflow.css`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build passed; `git diff --check` passed. The live page had a document scroll width of about twice the viewport before the fix; local browser preview was unavailable for post-change visual confirmation.
+- **Result**: Removed the oversized navigation shadow/pseudo-element; the existing centered full-width nav background and root horizontal clipping remain.
+- **Known issues**: The deployed site will continue to show the old behavior until this local change is pushed and deployed. Confirm desktop horizontal scrolling after deployment.
+- **Recommended next step**: Deploy and verify that dragging/scrolling horizontally no longer shifts the page into blank space.
