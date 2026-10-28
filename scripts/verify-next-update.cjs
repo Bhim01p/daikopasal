@@ -1,10 +1,20 @@
 const assert = require("node:assert/strict");
-const { chromium } = require("C:/Users/USER/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright");
+const {
+  chromium,
+} = require("C:/Users/USER/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright");
 const base = "http://127.0.0.1:8767";
 (async () => {
-  const browser = await chromium.launch({ headless: true, executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe" });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  });
   try {
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" });
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+      reducedMotion: "reduce",
+    });
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
@@ -13,53 +23,127 @@ const base = "http://127.0.0.1:8767";
     await hero.waitFor();
     assert.equal(await hero.locator("h1").textContent(), "New and used phones");
     await page.waitForTimeout(3300);
-    assert.equal(await hero.locator("h1").textContent(), "Phone and meter repair");
+    assert.equal(
+      await hero.locator("h1").textContent(),
+      "Phone and meter repair",
+    );
     await hero.evaluate((element) => {
-      const start = new Touch({ identifier: 1, target: element, clientX: 320, clientY: 460 });
-      const end = new Touch({ identifier: 1, target: element, clientX: 100, clientY: 465 });
-      element.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, touches: [start], changedTouches: [start], targetTouches: [start] }));
-      element.dispatchEvent(new TouchEvent("touchend", { bubbles: true, touches: [], changedTouches: [end], targetTouches: [] }));
+      const start = new Touch({
+        identifier: 1,
+        target: element,
+        clientX: 320,
+        clientY: 460,
+      });
+      const end = new Touch({
+        identifier: 1,
+        target: element,
+        clientX: 100,
+        clientY: 465,
+      });
+      element.dispatchEvent(
+        new TouchEvent("touchstart", {
+          bubbles: true,
+          touches: [start],
+          changedTouches: [start],
+          targetTouches: [start],
+        }),
+      );
+      element.dispatchEvent(
+        new TouchEvent("touchend", {
+          bubbles: true,
+          touches: [],
+          changedTouches: [end],
+          targetTouches: [],
+        }),
+      );
     });
     assert.equal(await hero.locator("h1").textContent(), "Accessories");
-    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    const gap = await page.evaluate(() => Math.round(document.documentElement.scrollHeight - document.querySelector("footer").getBoundingClientRect().bottom - scrollY));
+    await page.evaluate(() =>
+      scrollTo(0, document.documentElement.scrollHeight),
+    );
+    const gap = await page.evaluate(() =>
+      Math.round(
+        document.documentElement.scrollHeight -
+          document.querySelector("footer").getBoundingClientRect().bottom -
+          scrollY,
+      ),
+    );
     assert.ok(gap <= 2, `Extra area below footer: ${gap}px`);
-    const adminLogin = await context.request.post(base + "/api/admin/login", { data: { username: "qaowner", password: "qa-owner-password-only" } });
+    const adminLogin = await context.request.post(base + "/api/admin/login", {
+      data: { username: "qaowner", password: "qa-owner-password-only" },
+    });
     assert.equal(adminLogin.status(), 200);
     await page.goto(base + "/not-admin/billing");
     await page.locator(".admin-shell").waitFor();
-    const top = await page.locator(".admin-shell").evaluate((element) => element.getBoundingClientRect().top);
+    const top = await page
+      .locator(".admin-shell")
+      .evaluate((element) => element.getBoundingClientRect().top);
     assert.ok(top < 500, `Admin content starts too low: ${top}px`);
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    assert.equal(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+      true,
+    );
     await page.evaluate(() => {
       const dialog = document.createElement("dialog");
       dialog.className = "order-close-dialog";
-      dialog.innerHTML = "<h2>Complete this pickup?</h2><button>Confirm</button>";
+      dialog.innerHTML =
+        "<h2>Complete this pickup?</h2><button>Confirm</button>";
       document.body.append(dialog);
       dialog.showModal();
     });
     const orderBox = await page.locator(".order-close-dialog").boundingBox();
     assert.ok(Math.abs(orderBox.x + orderBox.width / 2 - 195) < 2);
     assert.ok(Math.abs(orderBox.y + orderBox.height / 2 - 422) < 2);
-    const customerContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const customerContext = await browser.newContext({
+      viewport: { width: 1280, height: 800 },
+    });
     const customerPage = await customerContext.newPage();
-    const started = await customerPage.request.post(base + "/api/customer/auth/start", { data: { email: "reset-check@example.com" } });
+    const started = await customerPage.request.post(
+      base + "/api/customer/auth/start",
+      { data: { email: "reset-check@example.com" } },
+    );
     const challenge = await started.json();
     assert.match(challenge.developmentCode, /^\d{6}$/);
-    assert.equal((await customerPage.request.post(base + "/api/customer/auth/verify", { data: { challengeId: challenge.challengeId, code: challenge.developmentCode } })).status(), 200);
+    assert.equal(
+      (
+        await customerPage.request.post(base + "/api/customer/auth/verify", {
+          data: {
+            challengeId: challenge.challengeId,
+            code: challenge.developmentCode,
+          },
+        })
+      ).status(),
+      200,
+    );
     await customerPage.goto(base + "/account?security=1");
     const passwordSheet = customerPage.locator(".password-sheet");
     await passwordSheet.waitFor();
     const passwordBox = await passwordSheet.boundingBox();
     assert.ok(Math.abs(passwordBox.x + passwordBox.width / 2 - 640) < 2);
-    await passwordSheet.locator('input[name="new-password"]').fill("reset-password-123");
-    await passwordSheet.locator('input[name="confirm-password"]').fill("reset-password-123");
+    await passwordSheet
+      .locator('input[name="new-password"]')
+      .fill("reset-password-123");
+    await passwordSheet
+      .locator('input[name="confirm-password"]')
+      .fill("reset-password-123");
     await passwordSheet.getByRole("button", { name: "Save password" }).click();
     await customerPage.waitForURL("**/account");
     assert.equal(await customerPage.locator(".password-sheet").count(), 0);
-    assert.notEqual(await customerPage.evaluate(() => document.body.style.overflow), "hidden");
+    assert.notEqual(
+      await customerPage.evaluate(() => document.body.style.overflow),
+      "hidden",
+    );
     await customerContext.close();
     assert.deepEqual(errors, []);
-    console.log("PASS: slider/footer/admin, centered dialogs, password close and restored scrolling; no page errors");
-  } finally { await browser.close(); }
-})().catch((error) => { console.error(error); process.exitCode = 1; });
+    console.log(
+      "PASS: slider/footer/admin, centered dialogs, password close and restored scrolling; no page errors",
+    );
+  } finally {
+    await browser.close();
+  }
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

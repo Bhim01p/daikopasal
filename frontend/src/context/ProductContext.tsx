@@ -14,7 +14,9 @@ function readCachedProducts(): Product[] {
   try {
     const value = JSON.parse(localStorage.getItem(catalogueCacheKey) || "[]");
     return Array.isArray(value) ? value : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 const ProductContext = createContext<{
   products: Product[];
@@ -25,7 +27,9 @@ const ProductContext = createContext<{
 } | null>(null);
 export function ProductProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(readCachedProducts);
-  const [loading, setLoading] = useState(() => readCachedProducts().length === 0);
+  const [loading, setLoading] = useState(
+    () => readCachedProducts().length === 0,
+  );
   const [error, setError] = useState("");
   const lastRefresh = useRef(0);
   const inFlight = useRef<Promise<void> | null>(null);
@@ -37,9 +41,18 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     const request = api<{ products: Product[] }>("/products")
       .then((result) => {
         setProducts(result.products);
-        try { localStorage.setItem(catalogueCacheKey, JSON.stringify(result.products)); } catch { /* cache is optional */ }
+        try {
+          localStorage.setItem(
+            catalogueCacheKey,
+            JSON.stringify(result.products),
+          );
+        } catch {
+          /* cache is optional */
+        }
       })
-      .finally(() => { inFlight.current = null; });
+      .finally(() => {
+        inFlight.current = null;
+      });
     inFlight.current = request;
     return request;
   }, []);
@@ -65,7 +78,9 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("focus", onFocus);
   }, [load, refresh]);
   return (
-    <ProductContext.Provider value={{ products, loading, error, retry: load, refresh }}>
+    <ProductContext.Provider
+      value={{ products, loading, error, retry: load, refresh }}
+    >
       {children}
     </ProductContext.Provider>
   );

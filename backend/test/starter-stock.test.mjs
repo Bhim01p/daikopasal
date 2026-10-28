@@ -1,13 +1,32 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { seedStore, upgradeStarterStock, removeStarterListings } from "../store.mjs";
+import {
+  seedStore,
+  upgradeStarterStock,
+  removeStarterListings,
+} from "../store.mjs";
 
 test("supplied shop listings are removed once while owner items and old order/bill snapshots remain", () => {
   const original = seedStore();
-  const owner = { ...original.products[0], id: "owner-created-123", name: "Owner phone" };
-  const order = { id: "order-1", items: [{ product: original.products[0], quantity: 1 }] };
-  const bill = { id: "bill-1", lines: [{ name: original.products[0].name, quantity: 1 }] };
-  const next = removeStarterListings({ ...original, products: [...original.products, owner], orders: [order], bills: [bill] });
+  const owner = {
+    ...original.products[0],
+    id: "owner-created-123",
+    name: "Owner phone",
+  };
+  const order = {
+    id: "order-1",
+    items: [{ product: original.products[0], quantity: 1 }],
+  };
+  const bill = {
+    id: "bill-1",
+    lines: [{ name: original.products[0].name, quantity: 1 }],
+  };
+  const next = removeStarterListings({
+    ...original,
+    products: [...original.products, owner],
+    orders: [order],
+    bills: [bill],
+  });
   assert.deepEqual(next.products, [owner]);
   assert.deepEqual(next.orders, [order]);
   assert.deepEqual(next.bills, [bill]);
@@ -41,7 +60,7 @@ test("opening stock preserves owner edits, existing orders, changed quantities a
   original.products[2].stockQuantity = 5;
   original.products[2].available = true;
   original.orders = [
-    { id: "existing", items: [{ product: {id: original.products[3].id} }] },
+    { id: "existing", items: [{ product: { id: original.products[3].id } }] },
   ];
   original.referencePhones = [{ id: "reference-only" }];
   original.products[4].descriptionNe = "पसलले दिएको विवरण";

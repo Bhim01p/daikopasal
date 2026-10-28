@@ -62,8 +62,17 @@ test("staff permissions, private credentials, revocation and restart persistence
       "enabled",
       "id",
       "name",
+      "permissions",
       "username",
     ]);
+    assert.deepEqual(created.data.account.permissions, {
+      orders: true,
+      sales: true,
+      billing: true,
+      inventory: true,
+      repairs: true,
+      paymentQr: false,
+    });
     assert.ok(!readFileSync(options.dataFile, "utf8").includes(staffPassword));
     const id = created.data.account.id;
     assert.equal(

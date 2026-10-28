@@ -1,13 +1,7 @@
 import SafeImage from "../components/SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
-import {
-  ShoppingBag,
-  Minus,
-  Plus,
-  Trash2,
-  ArrowRight,
-} from "lucide-react";
+import { ShoppingBag, Minus, Plus, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useProducts } from "../context/ProductContext";
 import { money } from "../data/shop";
@@ -147,5 +141,3 @@ export default function Cart() {
     </div>
   );
 }
-
-

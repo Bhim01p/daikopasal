@@ -87,7 +87,9 @@ export function createDatabaseStore(
           await tx`select data from ${tx(schema)}.store where id = 1 for update`;
         const normalized = normalizeStore(row.data);
         const upgraded = upgradePhoneCatalogue(
-          removeStarterListings(upgradeStarterStock(upgradeStarterCatalogue(normalized))),
+          removeStarterListings(
+            upgradeStarterStock(upgradeStarterCatalogue(normalized)),
+          ),
         );
         const current = { data: upgraded, dirty: upgraded !== normalized, tx };
         const result = await context.run(current, callback);
@@ -120,8 +122,18 @@ export function createDatabaseStore(
     },
     async readCatalogueOverrides() {
       const tx = snapshot().tx;
-      const rows = await tx`select device_id, override_data, updated_at, updated_by from ${tx(schema)}.catalogue_overrides`;
-      return Object.fromEntries(rows.map((row) => [row.device_id, { ...row.override_data, updatedAt: row.updated_at, updatedBy: row.updated_by }]));
+      const rows =
+        await tx`select device_id, override_data, updated_at, updated_by from ${tx(schema)}.catalogue_overrides`;
+      return Object.fromEntries(
+        rows.map((row) => [
+          row.device_id,
+          {
+            ...row.override_data,
+            updatedAt: row.updated_at,
+            updatedBy: row.updated_by,
+          },
+        ]),
+      );
     },
     async saveCatalogueOverride(deviceId, data, updatedBy) {
       const tx = snapshot().tx;
@@ -130,7 +142,10 @@ export function createDatabaseStore(
     },
     async deleteCatalogueOverride(deviceId, field) {
       const tx = snapshot().tx;
-      if (!field) { await tx`delete from ${tx(schema)}.catalogue_overrides where device_id = ${deviceId}`; return; }
+      if (!field) {
+        await tx`delete from ${tx(schema)}.catalogue_overrides where device_id = ${deviceId}`;
+        return;
+      }
       await tx`update ${tx(schema)}.catalogue_overrides set override_data = override_data - ${field}, updated_at = now() where device_id = ${deviceId}`;
       await tx`delete from ${tx(schema)}.catalogue_overrides where device_id = ${deviceId} and override_data = '{}'::jsonb`;
     },

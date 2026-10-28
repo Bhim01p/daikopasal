@@ -19,6 +19,7 @@ const Context = createContext<{
   refresh: () => Promise<void>;
   setCustomer: (customer: Customer | null) => void;
   logout: () => Promise<void>;
+  logoutAll: () => Promise<void>;
 } | null>(null);
 export function CustomerProvider({ children }: { children: ReactNode }) {
   const [customer, updateCustomer] = useState<Customer | null>(null);
@@ -39,21 +40,23 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
     const current = ++generation.current;
     const request = (async () => {
       try {
-      const result = await api<{ customer: Customer | null; mode: Mode }>(
-        "/customer/session",
-      );
-      if (current === generation.current) {
-        updateCustomer(result.customer);
-        setMode(result.mode);
-        setError("");
-      }
-    } catch {
-      if (current === generation.current)
-        setError("We could not check your login. Please try again.");
+        const result = await api<{ customer: Customer | null; mode: Mode }>(
+          "/customer/session",
+        );
+        if (current === generation.current) {
+          updateCustomer(result.customer);
+          setMode(result.mode);
+          setError("");
+        }
+      } catch {
+        if (current === generation.current)
+          setError("We could not check your login. Please try again.");
       } finally {
         setChecking(false);
       }
-    })().finally(() => { inFlight.current = null; });
+    })().finally(() => {
+      inFlight.current = null;
+    });
     inFlight.current = request;
     return request;
   }, []);
@@ -75,9 +78,28 @@ export function CustomerProvider({ children }: { children: ReactNode }) {
     }
     window.dispatchEvent(new Event("customer-logout"));
   }
+  async function logoutAll() {
+    await api("/customer/logout-all", { method: "POST", body: "{}" });
+    setCustomer(null);
+    try {
+      localStorage.removeItem("me-orders");
+    } catch {
+      /* Storage is optional. */
+    }
+    window.dispatchEvent(new Event("customer-logout"));
+  }
   return (
     <Context.Provider
-      value={{ customer, checking, mode, error, refresh, setCustomer, logout }}
+      value={{
+        customer,
+        checking,
+        mode,
+        error,
+        refresh,
+        setCustomer,
+        logout,
+        logoutAll,
+      }}
     >
       {children}
     </Context.Provider>

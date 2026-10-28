@@ -28,9 +28,7 @@ async function run() {
     .waitFor();
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await page
-    .getByRole("heading", { name: "Dashboard", exact: true })
-    .waitFor();
+  await page.getByRole("heading", { name: "Dashboard", exact: true }).waitFor();
   await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   assert.equal(await page.locator(".admin-product").count(), 33);
   await page.getByLabel("Product name *", { exact: true }).fill("QA USB Cable");
@@ -207,9 +205,7 @@ async function run() {
   assert.equal(restocked.available, true);
   await page.getByRole("tab", { name: "Inventory", exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page
-    .getByRole("heading", { name: "Inventory", exact: true })
-    .waitFor();
+  await page.getByRole("heading", { name: "Inventory", exact: true }).waitFor();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByLabel("Delete QA USB Cable", { exact: true }).click();
   await page
@@ -224,7 +220,7 @@ async function run() {
     );
     assert.ok(productWidth <= width, `Admin products overflow at ${width}`);
     await page.getByRole("tab", { name: "Orders", exact: true }).click();
-    await page.locator('.admin-order').filter({hasText:reference}).waitFor();
+    await page.locator(".admin-order").filter({ hasText: reference }).waitFor();
     const orderWidth = await page.evaluate(
       () => document.documentElement.scrollWidth,
     );

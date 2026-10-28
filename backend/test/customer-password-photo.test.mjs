@@ -226,7 +226,7 @@ test("profile photos are authenticated, private, format/size checked, replaceabl
         body: data,
       });
     assert.equal((await send(Buffer.from("not-a-png"))).status, 400);
-    assert.equal((await send(Buffer.alloc(2 * 1024 * 1024 + 1))).status, 413);
+    assert.equal((await send(Buffer.alloc(5 * 1024 * 1024 + 1))).status, 413);
     const png = Buffer.from(
       "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j9L0AAAAASUVORK5CYII=",
       "base64",

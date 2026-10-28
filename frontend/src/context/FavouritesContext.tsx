@@ -42,7 +42,11 @@ export function FavouritesProvider({ children }: { children: ReactNode }) {
     };
     const clearOnLogout = () => {
       setIds([]);
-      try { localStorage.removeItem(key); } catch { /* Session-only when storage is unavailable. */ }
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        /* Session-only when storage is unavailable. */
+      }
     };
     window.addEventListener("storage", sync);
     window.addEventListener("customer-logout", clearOnLogout);

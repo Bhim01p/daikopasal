@@ -68,7 +68,9 @@ export default function AccountDialog({ onClose }: { onClose: () => void }) {
       }}
     >
       <div className="account-dialog-topbar">
-        <div className="dialog-language"><LanguageSwitch /></div>
+        <div className="dialog-language">
+          <LanguageSwitch />
+        </div>
         <button
           className="icon-button dialog-close"
           aria-label={t("Close account window")}

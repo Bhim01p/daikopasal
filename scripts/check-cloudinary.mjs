@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import { verifyCloudinary } from "../backend/cloudinary.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-if (existsSync(path.join(root, ".env.local"))) loadEnvFile(path.join(root, ".env.local"));
+if (existsSync(path.join(root, ".env.local")))
+  loadEnvFile(path.join(root, ".env.local"));
 if (existsSync(path.join(root, "backend", ".env")))
   loadEnvFile(path.join(root, "backend", ".env"));
 
@@ -20,6 +21,8 @@ try {
   );
   if (!result.configured || !result.reachable) process.exitCode = 1;
 } catch {
-  console.error("Cloudinary configuration detected, but connection verification failed.");
+  console.error(
+    "Cloudinary configuration detected, but connection verification failed.",
+  );
   process.exitCode = 1;
 }

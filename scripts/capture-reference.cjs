@@ -57,7 +57,9 @@ async function capture() {
       ),
     );
     await phone.setViewportSize({ width: 390, height: 1280 });
-    await phone.screenshot({ path: "qa-results/reference-catalogue-preview.png" });
+    await phone.screenshot({
+      path: "qa-results/reference-catalogue-preview.png",
+    });
     console.log(
       "Captured reference-style desktop, phone homepage, and phone catalogue screenshots.",
     );

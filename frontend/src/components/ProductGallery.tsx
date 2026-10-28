@@ -9,14 +9,24 @@ import { ProductImage } from "./ProductCard";
 export default function ProductGallery({ product }: { product: Product }) {
   const t = useT();
   const productSpecificImages = productImages(product);
-  const hasActualUsedPhotos = product.category === "used" && productSpecificImages.some((image) => image.startsWith("/api/images/upload-"));
-  const catalogueImages = product.image === "/assets/phone.svg" ? (product.catalogueImage?.images || []) : [];
-  const images = catalogueImages.length ? catalogueImages.map((image) => image.url) : productSpecificImages;
+  const hasActualUsedPhotos =
+    product.category === "used" &&
+    productSpecificImages.some((image) =>
+      image.startsWith("/api/images/upload-"),
+    );
+  const catalogueImages =
+    product.image === "/assets/phone.svg"
+      ? product.catalogueImage?.images || []
+      : [];
+  const images = catalogueImages.length
+    ? catalogueImages.map((image) => image.url)
+    : productSpecificImages;
   const signature = images.join("|");
   const [selected, setSelected] = useState(0);
   const rail = useRef<HTMLDivElement>(null);
   const tiltFrame = useRef<number | null>(null);
-  const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = () =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function resetTilt() {
     if (tiltFrame.current !== null) cancelAnimationFrame(tiltFrame.current);
     tiltFrame.current = null;
@@ -24,15 +34,26 @@ export default function ProductGallery({ product }: { product: Product }) {
     rail.current?.style.removeProperty("--detail-tilt-y");
   }
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (event.pointerType === "touch" || reducedMotion() || images[selected]?.endsWith(".svg")) return;
+    if (
+      event.pointerType === "touch" ||
+      reducedMotion() ||
+      images[selected]?.endsWith(".svg")
+    )
+      return;
     const target = event.currentTarget;
     const rect = target.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
     const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
     if (tiltFrame.current !== null) cancelAnimationFrame(tiltFrame.current);
     tiltFrame.current = requestAnimationFrame(() => {
-      target.style.setProperty("--detail-tilt-x", `${Math.max(-3, Math.min(3, x * 3))}deg`);
-      target.style.setProperty("--detail-tilt-y", `${Math.max(-2, Math.min(2, y * -2))}deg`);
+      target.style.setProperty(
+        "--detail-tilt-x",
+        `${Math.max(-3, Math.min(3, x * 3))}deg`,
+      );
+      target.style.setProperty(
+        "--detail-tilt-y",
+        `${Math.max(-2, Math.min(2, y * -2))}deg`,
+      );
     });
   }
   useEffect(() => () => resetTilt(), [product.id, signature]);
@@ -156,19 +177,29 @@ export default function ProductGallery({ product }: { product: Product }) {
           )}
         </p>
       )}
-      {product.category === "used" && (hasActualUsedPhotos ? (
-        <p className="used-photo-trust">{t("Actual device photos")}</p>
-      ) : (
-        <p className="image-disclaimer">{t("Reference image — actual device photos not available")}</p>
-      ))}
-      {catalogueImages[selected]?.attributionRequired && catalogueImages[selected]?.sourceUrl && (
-        <p className="image-attribution">
-          <a href={catalogueImages[selected].sourceUrl} target="_blank" rel="noreferrer">
-            {t("Image source")}
-          </a>
-          {catalogueImages[selected].license ? ` · ${catalogueImages[selected].license}` : ""}
-        </p>
-      )}
+      {product.category === "used" &&
+        (hasActualUsedPhotos ? (
+          <p className="used-photo-trust">{t("Actual device photos")}</p>
+        ) : (
+          <p className="image-disclaimer">
+            {t("Reference image — actual device photos not available")}
+          </p>
+        ))}
+      {catalogueImages[selected]?.attributionRequired &&
+        catalogueImages[selected]?.sourceUrl && (
+          <p className="image-attribution">
+            <a
+              href={catalogueImages[selected].sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("Image source")}
+            </a>
+            {catalogueImages[selected].license
+              ? ` · ${catalogueImages[selected].license}`
+              : ""}
+          </p>
+        )}
     </section>
   );
 }

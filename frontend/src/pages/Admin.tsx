@@ -26,7 +26,16 @@ import {
   ReceiptText,
   Wrench,
 } from "lucide-react";
-type AdminTab = "dashboard" | "products" | "catalogue" | "orders" | "staff" | "billing" | "qr" | "repairs" | "sales";
+type AdminTab =
+  | "dashboard"
+  | "products"
+  | "catalogue"
+  | "orders"
+  | "staff"
+  | "billing"
+  | "qr"
+  | "repairs"
+  | "sales";
 const adminSections = [
   {
     value: "dashboard",
@@ -42,10 +51,34 @@ const adminSections = [
     panel: "admin-orders",
     id: "orders-tab",
   },
-  { value: "billing", label: "Billing", Icon: ReceiptText, panel: "admin-billing", id: "billing-tab" },
-  { value: "qr", label: "Payment QR", Icon: ReceiptText, panel: "admin-payment-qr", id: "payment-qr-tab" },
-  { value: "sales", label: "Sales", Icon: ReceiptText, panel: "admin-sales", id: "sales-tab" },
-  { value: "repairs", label: "Repair tickets", Icon: Wrench, panel: "admin-repairs", id: "repairs-tab" },
+  {
+    value: "billing",
+    label: "Billing",
+    Icon: ReceiptText,
+    panel: "admin-billing",
+    id: "billing-tab",
+  },
+  {
+    value: "qr",
+    label: "Payment QR",
+    Icon: ReceiptText,
+    panel: "admin-payment-qr",
+    id: "payment-qr-tab",
+  },
+  {
+    value: "sales",
+    label: "Sales",
+    Icon: ReceiptText,
+    panel: "admin-sales",
+    id: "sales-tab",
+  },
+  {
+    value: "repairs",
+    label: "Repair tickets",
+    Icon: Wrench,
+    panel: "admin-repairs",
+    id: "repairs-tab",
+  },
   {
     value: "products",
     category: "new",
@@ -149,10 +182,19 @@ export default function Admin() {
   const { products, refresh } = useProducts();
   const [user, setUser] = useState<string | null>(null);
   const [role, setRole] = useState<"owner" | "staff">("staff");
-  const [permissions, setPermissions] = useState<{ orders?: boolean; sales?: boolean; billing?: boolean; inventory?: boolean; repairs?: boolean; paymentQr?: boolean }>({});
+  const [permissions, setPermissions] = useState<{
+    orders?: boolean;
+    sales?: boolean;
+    billing?: boolean;
+    inventory?: boolean;
+    repairs?: boolean;
+    paymentQr?: boolean;
+  }>({});
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [adminChallenge, setAdminChallenge] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState("");
@@ -178,19 +220,19 @@ export default function Admin() {
       ? "orders"
       : parts[0] === "billing"
         ? "billing"
-      : (parts[0] === "payment-qr" || parts[0] === "qr")
-        ? "qr"
-        : parts[0] === "repairs"
-          ? "repairs"
-      : parts[0] === "sales"
-        ? "sales"
-      : parts[0] === "staff"
-        ? "staff"
-      : parts[0] === "phone-catalogue"
-        ? "catalogue"
-        : inventoryCategory !== "all" || parts[0] === "inventory"
-          ? "products"
-          : "dashboard";
+        : parts[0] === "payment-qr" || parts[0] === "qr"
+          ? "qr"
+          : parts[0] === "repairs"
+            ? "repairs"
+            : parts[0] === "sales"
+              ? "sales"
+              : parts[0] === "staff"
+                ? "staff"
+                : parts[0] === "phone-catalogue"
+                  ? "catalogue"
+                  : inventoryCategory !== "all" || parts[0] === "inventory"
+                    ? "products"
+                    : "dashboard";
   const listPath =
     inventoryCategory === "all"
       ? "/not-admin/inventory"
@@ -229,20 +271,32 @@ export default function Admin() {
   const [catalogueBrand, setCatalogueBrand] = useState("");
   const [catalogueModel, setCatalogueModel] = useState("");
   const [catalogueVariant, setCatalogueVariant] = useState("");
-  const [catalogueMode, setCatalogueMode] = useState<"catalogue" | "manual">("catalogue");
+  const [catalogueMode, setCatalogueMode] = useState<"catalogue" | "manual">(
+    "catalogue",
+  );
   const [catalogueFilled, setCatalogueFilled] = useState(false);
-  const [catalogueImageFilter, setCatalogueImageFilter] = useState<"all" | 3 | 2 | 1 | 0>("all");
+  const [catalogueImageFilter, setCatalogueImageFilter] = useState<
+    "all" | 3 | 2 | 1 | 0
+  >("all");
   const [catalogueSearch, setCatalogueSearch] = useState("");
   const [catalogueAdvancedOpen, setCatalogueAdvancedOpen] = useState(false);
   const [cataloguePickerOpen, setCataloguePickerOpen] = useState(false);
   const [discardPrompt, setDiscardPrompt] = useState(false);
-  const [salesRange, setSalesRange] = useState<"today" | "7days" | "month" | "all">("today");
+  const [salesRange, setSalesRange] = useState<
+    "today" | "7days" | "month" | "all"
+  >("today");
   useEffect(() => {
     if (productEditorOpen)
       document.getElementById("product-editor-title")?.focus();
   }, [productEditorOpen]);
   useEffect(() => {
-    if (!user || !productEditorOpen || !(draft.category === "new" || draft.category === "used") || cataloguePhones.length) return;
+    if (
+      !user ||
+      !productEditorOpen ||
+      !(draft.category === "new" || draft.category === "used") ||
+      cataloguePhones.length
+    )
+      return;
     void api<{ phones: CataloguePhone[] }>("/admin/phone-catalogue")
       .then((result) => setCataloguePhones(result.phones))
       .catch(fail);
@@ -261,9 +315,9 @@ export default function Admin() {
     status: "Completed" | "Cancelled";
   } | null>(null);
   const [query, setQuery] = useState("");
-  const [productFilter, setProductFilter] = useState<"all" | "low-stock" | "review">(
-    "all",
-  );
+  const [productFilter, setProductFilter] = useState<
+    "all" | "low-stock" | "review"
+  >("all");
   const [orderFilter, setOrderFilter] = useState<
     | "all"
     | "pending"
@@ -285,20 +339,36 @@ export default function Admin() {
     if (salesRange === "all") return true;
     const date = new Date(order.handover?.date || order.date);
     const now = new Date();
-    if (salesRange === "today") return date.toDateString() === now.toDateString();
-    if (salesRange === "month") return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    if (salesRange === "today")
+      return date.toDateString() === now.toDateString();
+    if (salesRange === "month")
+      return (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth()
+      );
     return now.getTime() - date.getTime() <= 7 * 86400000;
   });
-  const filteredSalesTotal = salesOrders.reduce((sum, order) => sum + order.total, 0);
+  const filteredSalesTotal = salesOrders.reduce(
+    (sum, order) => sum + order.total,
+    0,
+  );
   const lowStock = products.filter(
     (product) =>
       product.isSample === false &&
       product.stockQuantity !== null &&
       product.stockQuantity <= 3,
   );
-  const needsReview = products.filter((product) => !product.reviewedAt || Date.now() - Date.parse(product.reviewedAt) > 30 * 86400000);
+  const needsReview = products.filter(
+    (product) =>
+      !product.reviewedAt ||
+      Date.now() - Date.parse(product.reviewedAt) > 30 * 86400000,
+  );
   const shownProducts = (
-    productFilter === "low-stock" ? lowStock : productFilter === "review" ? needsReview : products
+    productFilter === "low-stock"
+      ? lowStock
+      : productFilter === "review"
+        ? needsReview
+        : products
   ).filter(
     (product) =>
       (inventoryCategory === "all" || product.category === inventoryCategory) &&
@@ -343,7 +413,11 @@ export default function Admin() {
   function mayDiscard() {
     return (
       !dirty ||
-      window.confirm(translateCurrent("You have unsaved product changes. Leave without saving?"))
+      window.confirm(
+        translateCurrent(
+          "You have unsaved product changes. Leave without saving?",
+        ),
+      )
     );
   }
   useEffect(() => {
@@ -379,7 +453,9 @@ export default function Admin() {
     if (
       previousPath.current !== location.pathname &&
       dirty &&
-      !window.confirm(t("You have unsaved product changes. Leave without saving?"))
+      !window.confirm(
+        t("You have unsaved product changes. Leave without saving?"),
+      )
     ) {
       restoringPath.current = true;
       navigate(previousPath.current, { replace: true });
@@ -403,7 +479,13 @@ export default function Admin() {
       return;
     }
     const next = product
-      ? { ...product, images: product.images?.length ? [...product.images] : [product.image], specs: { ...product.specs } }
+      ? {
+          ...product,
+          images: product.images?.length
+            ? [...product.images]
+            : [product.image],
+          specs: { ...product.specs },
+        }
       : {
           ...freshProduct(),
           category:
@@ -501,8 +583,11 @@ export default function Admin() {
     setBaseline(draftKey(next, initialSpecs));
     setProductEditorOpen(false);
     setDraft(next);
-    setCatalogueBrand(""); setCatalogueModel(""); setCatalogueVariant("");
-    setCatalogueMode("catalogue"); setCatalogueFilled(false);
+    setCatalogueBrand("");
+    setCatalogueModel("");
+    setCatalogueVariant("");
+    setCatalogueMode("catalogue");
+    setCatalogueFilled(false);
     setCatalogueImageFilter("all");
     setCatalogueSearch("");
     setCatalogueAdvancedOpen(false);
@@ -510,14 +595,34 @@ export default function Admin() {
     setSpecRows(initialSpecs);
     setBaseline(draftKey(next, initialSpecs));
   }
-  const catalogueDeviceRows = Array.from(new Map(cataloguePhones.map((phone) => [phone.deviceId, phone])).values());
-  const imageCountMatches = (phone: CataloguePhone) => catalogueImageFilter === "all" || (catalogueImageFilter === 3 ? (phone.catalogueImageCount || 0) >= 3 : (phone.catalogueImageCount || 0) === catalogueImageFilter);
-  const catalogueCards = catalogueDeviceRows.filter((phone) => imageCountMatches(phone) && `${phone.brand} ${phone.model}`.toLowerCase().includes(catalogueSearch.toLowerCase()));
-  const catalogueModels = cataloguePhones.filter((phone) => phone.brand === catalogueBrand && imageCountMatches(phone));
-  const catalogueVariants = catalogueModels.filter((phone) => phone.model === catalogueModel);
-  const uniqueCatalogueVariants = Array.from(new Map(catalogueVariants.map((phone) => [phone.variant, phone])).values());
+  const catalogueDeviceRows = Array.from(
+    new Map(cataloguePhones.map((phone) => [phone.deviceId, phone])).values(),
+  );
+  const imageCountMatches = (phone: CataloguePhone) =>
+    catalogueImageFilter === "all" ||
+    (catalogueImageFilter === 3
+      ? (phone.catalogueImageCount || 0) >= 3
+      : (phone.catalogueImageCount || 0) === catalogueImageFilter);
+  const catalogueCards = catalogueDeviceRows.filter(
+    (phone) =>
+      imageCountMatches(phone) &&
+      `${phone.brand} ${phone.model}`
+        .toLowerCase()
+        .includes(catalogueSearch.toLowerCase()),
+  );
+  const catalogueModels = cataloguePhones.filter(
+    (phone) => phone.brand === catalogueBrand && imageCountMatches(phone),
+  );
+  const catalogueVariants = catalogueModels.filter(
+    (phone) => phone.model === catalogueModel,
+  );
+  const uniqueCatalogueVariants = Array.from(
+    new Map(catalogueVariants.map((phone) => [phone.variant, phone])).values(),
+  );
   function fillFromCatalogue() {
-    const selected = uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant);
+    const selected = uniqueCatalogueVariants.find(
+      (phone) => phone.variant === catalogueVariant,
+    );
     if (!selected) return;
     const rows = Object.entries(selected.specs)
       .filter(([name]) => name !== "RAM" && name !== "Storage")
@@ -530,7 +635,9 @@ export default function Admin() {
       storage: selected.storage,
       image: "/assets/phone.svg",
       images: ["/assets/phone.svg"],
-      description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}`,
+      description:
+        current.description ||
+        `${selected.brand} ${selected.model} · ${selected.variant}`,
     }));
     setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...rows]);
     setCatalogueFilled(true);
@@ -612,9 +719,13 @@ export default function Admin() {
   }
   useEffect(() => {
     let active = true;
-    api<{ user: { username: string; role: "owner" | "staff"; permissions?: typeof permissions } | null }>(
-      "/admin/session",
-    )
+    api<{
+      user: {
+        username: string;
+        role: "owner" | "staff";
+        permissions?: typeof permissions;
+      } | null;
+    }>("/admin/session")
       .then((result) => {
         if (active) {
           setUser(result.user?.username || null);
@@ -651,16 +762,50 @@ export default function Admin() {
     setBusy("login");
     setError("");
     try {
-      const result = await api<{
-        user: { username: string; role: "owner" | "staff"; permissions?: typeof permissions };
-      }>("/admin/login", {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-      });
+      const result = adminChallenge
+        ? await api<{
+            user?: {
+              username: string;
+              role: "owner" | "staff";
+              permissions?: typeof permissions;
+            };
+            mfaRequired?: boolean;
+            challengeId?: string;
+          }>("/admin/login/verify", {
+            method: "POST",
+            body: JSON.stringify({
+              challengeId: adminChallenge,
+              code: adminCode,
+            }),
+          })
+        : await api<{
+            user?: {
+              username: string;
+              role: "owner" | "staff";
+              permissions?: typeof permissions;
+            };
+            mfaRequired?: boolean;
+            challengeId?: string;
+          }>("/admin/login", {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+          });
+      if (result.mfaRequired && result.challengeId) {
+        setAdminChallenge(result.challengeId);
+        setAdminCode("");
+        setPassword("");
+        setNotice("We emailed a sign-in code. Enter it within five minutes.");
+        return;
+      }
+      if (!result.user)
+        throw new Error("Admin sign-in could not be completed.");
       setUser(result.user.username);
       setRole(result.user.role);
       setPermissions(result.user.permissions || {});
       setPassword("");
+      setAdminChallenge("");
+      setAdminCode("");
+      setNotice("");
     } catch (error) {
       fail(error);
     } finally {
@@ -711,17 +856,65 @@ export default function Admin() {
     setNotice("");
     setBusy("save");
     try {
-      const selectedCatalogue = uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant);
-      const catalogueDraft = selectedCatalogue && catalogueMode === "catalogue"
-        ? { ...draft, brand: selectedCatalogue.brand, name: selectedCatalogue.model, ram: selectedCatalogue.ram ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]) : undefined), storage: selectedCatalogue.storage ?? (Number.isFinite(Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1])) ? Number(selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1]) : undefined), catalogueDeviceId: selectedCatalogue.deviceId }
-        : draft;
+      const selectedCatalogue = uniqueCatalogueVariants.find(
+        (phone) => phone.variant === catalogueVariant,
+      );
+      const catalogueDraft =
+        selectedCatalogue && catalogueMode === "catalogue"
+          ? {
+              ...draft,
+              brand: selectedCatalogue.brand,
+              name: selectedCatalogue.model,
+              ram:
+                selectedCatalogue.ram ??
+                (Number.isFinite(
+                  Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]),
+                )
+                  ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])
+                  : undefined),
+              storage:
+                selectedCatalogue.storage ??
+                (Number.isFinite(
+                  Number(
+                    selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1],
+                  ),
+                )
+                  ? Number(
+                      selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1],
+                    )
+                  : undefined),
+              catalogueDeviceId: selectedCatalogue.deviceId,
+            }
+          : draft;
       if (catalogueDraft.category === "used") {
-        if (!catalogueDraft.condition) throw new Error("Select a condition grade for this used phone.");
-        if (catalogueDraft.battery === undefined || !Number.isInteger(catalogueDraft.battery) || catalogueDraft.battery < 0 || catalogueDraft.battery > 100)
-          throw new Error("Enter battery health from 0 to 100 for this used phone.");
-        if (!productImages(catalogueDraft).some((image) => image.startsWith("/api/images/upload-")))
-          throw new Error("Upload at least one actual device photo for this used phone.");
-        if ((catalogueDraft.stockQuantity || 0) > 1 && !window.confirm(t("Use stock above 1 only when the used phones are genuinely interchangeable in condition, battery, photos, accessories, defects, and price."))) return;
+        if (!catalogueDraft.condition)
+          throw new Error("Select a condition grade for this used phone.");
+        if (
+          catalogueDraft.battery === undefined ||
+          !Number.isInteger(catalogueDraft.battery) ||
+          catalogueDraft.battery < 0 ||
+          catalogueDraft.battery > 100
+        )
+          throw new Error(
+            "Enter battery health from 0 to 100 for this used phone.",
+          );
+        if (
+          !productImages(catalogueDraft).some((image) =>
+            image.startsWith("/api/images/upload-"),
+          )
+        )
+          throw new Error(
+            "Upload at least one actual device photo for this used phone.",
+          );
+        if (
+          (catalogueDraft.stockQuantity || 0) > 1 &&
+          !window.confirm(
+            t(
+              "Use stock above 1 only when the used phones are genuinely interchangeable in condition, battery, photos, accessories, defects, and price.",
+            ),
+          )
+        )
+          return;
       }
       const specs: Record<string, string> = {};
       for (const row of specRows) {
@@ -778,7 +971,11 @@ export default function Admin() {
       setBusy("");
     }
   }
-  async function updateStatus(order: Order, status: Order["status"], pickupReference?: string) {
+  async function updateStatus(
+    order: Order,
+    status: Order["status"],
+    pickupReference?: string,
+  ) {
     setBusy(order.id);
     setError("");
     setNotice("");
@@ -802,12 +999,22 @@ export default function Admin() {
     }
   }
   async function reviewPayment(order: Order, status: "PAID" | "REJECTED") {
-    setBusy(`payment-${order.id}`); setError("");
+    setBusy(`payment-${order.id}`);
+    setError("");
     try {
-      const result = await api<{ order: Order }>(`/admin/orders/${encodeURIComponent(order.id)}/payment`, { method: "PATCH", body: JSON.stringify({ status }) });
-      setOrders((current) => current.map((item) => item.id === order.id ? result.order : item));
+      const result = await api<{ order: Order }>(
+        `/admin/orders/${encodeURIComponent(order.id)}/payment`,
+        { method: "PATCH", body: JSON.stringify({ status }) },
+      );
+      setOrders((current) =>
+        current.map((item) => (item.id === order.id ? result.order : item)),
+      );
       setNotice(status === "PAID" ? "Payment verified." : "Payment rejected.");
-    } catch (error) { fail(error); } finally { setBusy(""); }
+    } catch (error) {
+      fail(error);
+    } finally {
+      setBusy("");
+    }
   }
   async function printOrderBill(order: Order) {
     setBusy(`bill-${order.id}`);
@@ -815,7 +1022,9 @@ export default function Admin() {
     try {
       let billId: string | undefined;
       if (order.billIssued) {
-        const bills = await api<{ bills: { id: string; orderId: string | null }[] }>("/admin/bills");
+        const bills = await api<{
+          bills: { id: string; orderId: string | null }[];
+        }>("/admin/bills");
         billId = bills.bills.find((bill) => bill.orderId === order.id)?.id;
       } else {
         const result = await api<{ bill: { id: string } }>("/admin/bills", {
@@ -826,7 +1035,11 @@ export default function Admin() {
         await loadOrders();
       }
       if (!billId) throw new Error("Bill not found for this order.");
-      window.open(`/api/admin/bills/${encodeURIComponent(billId)}/pdf`, "_blank", "noopener,noreferrer");
+      window.open(
+        `/api/admin/bills/${encodeURIComponent(billId)}/pdf`,
+        "_blank",
+        "noopener,noreferrer",
+      );
     } catch (error) {
       fail(error);
     } finally {
@@ -858,33 +1071,74 @@ export default function Admin() {
             <LockKeyhole size={24} />
           </span>
           <h1>{t("Welcome back.")}</h1>
-          <p>{t("Sign in to manage products and pickup orders.")}</p>
-          <label htmlFor="admin-username">{t("Username")}</label>
-          <input
-            id="admin-username"
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            maxLength={100}
-            required
-          />
-          <label htmlFor="admin-password">{t("Password")}</label>
-          <input
-            id="admin-password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            maxLength={200}
-            required
-          />
+          {adminChallenge ? (
+            <>
+              <p>
+                {t("We emailed a sign-in code. Enter it within five minutes.")}
+              </p>
+              <label htmlFor="admin-verification-code">
+                {t("Verification code")}
+              </label>
+              <input
+                id="admin-verification-code"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                value={adminCode}
+                onChange={(e) =>
+                  setAdminCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                maxLength={6}
+                required
+              />
+              <button
+                type="button"
+                className="text-link"
+                disabled={busy === "login"}
+                onClick={() => {
+                  setAdminChallenge("");
+                  setAdminCode("");
+                  setNotice("");
+                }}
+              >
+                {t("Back to password")}
+              </button>
+            </>
+          ) : (
+            <>
+              <p>{t("Sign in to manage products and pickup orders.")}</p>
+              <label htmlFor="admin-username">{t("Username")}</label>
+              <input
+                id="admin-username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                maxLength={100}
+                required
+              />
+              <label htmlFor="admin-password">{t("Password")}</label>
+              <input
+                id="admin-password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                maxLength={200}
+                required
+              />
+            </>
+          )}
           {error && (
             <p className="field-error" role="alert">
               {t(error)}
             </p>
           )}
+          {notice && <p role="status">{t(notice)}</p>}
           <button className="button dark full" disabled={busy === "login"}>
-            {busy === "login" ? t("Signing in…") : t("Sign in")}
+            {busy === "login"
+              ? t("Signing in…")
+              : adminChallenge
+                ? t("Verify and sign in")
+                : t("Sign in")}
           </button>
           <Link className="text-link" to="/">
             {t("Back to the shop ")}
@@ -927,15 +1181,16 @@ export default function Admin() {
             aria-orientation="vertical"
           >
             {adminSections
-              .filter(
-                (section) => {
-                  if (role === "owner") return true;
-                  if (section.value === "staff") return false;
-                  if (section.value === "qr") return !!permissions.paymentQr;
-                  const permission = section.value === "products" ? "inventory" : section.value;
-                  return permissions[permission as keyof typeof permissions] !== false;
-                },
-              )
+              .filter((section) => {
+                if (role === "owner") return true;
+                if (section.value === "staff") return false;
+                if (section.value === "qr") return !!permissions.paymentQr;
+                const permission =
+                  section.value === "products" ? "inventory" : section.value;
+                return (
+                  permissions[permission as keyof typeof permissions] !== false
+                );
+              })
               .map((section) => {
                 const { value, label, Icon, panel, id } = section;
                 const category =
@@ -1221,7 +1476,12 @@ export default function Admin() {
                     >
                       {t("Low stock")}
                     </button>
-                    <button aria-pressed={productFilter === "review"} onClick={() => setProductFilter("review")}>{t("Needs review")} ({needsReview.length})</button>
+                    <button
+                      aria-pressed={productFilter === "review"}
+                      onClick={() => setProductFilter("review")}
+                    >
+                      {t("Needs review")} ({needsReview.length})
+                    </button>
                   </div>
                   {productFilter === "low-stock" && (
                     <p className="admin-help">
@@ -1256,7 +1516,11 @@ export default function Admin() {
                                   v0: String(p.stockQuantity),
                                 })}
                           </span>
-                          <small>{p.reviewedAt ? `${t("Price and stock checked")}: ${new Date(p.reviewedAt).toLocaleDateString()}` : t("Price and stock have not been reviewed")}</small>
+                          <small>
+                            {p.reviewedAt
+                              ? `${t("Price and stock checked")}: ${new Date(p.reviewedAt).toLocaleDateString()}`
+                              : t("Price and stock have not been reviewed")}
+                          </small>
                         </div>
                         <QuickStock
                           product={p}
@@ -1265,7 +1529,20 @@ export default function Admin() {
                           onError={fail}
                         />
                         <div className="admin-product-actions">
-                          <button className="button white" type="button" disabled={!!busy} onClick={() => void api(`/admin/products/${p.id}/review`, { method: "POST" }).then(() => refresh()).catch(fail)}>{t("Mark reviewed")}</button>
+                          <button
+                            className="button white"
+                            type="button"
+                            disabled={!!busy}
+                            onClick={() =>
+                              void api(`/admin/products/${p.id}/review`, {
+                                method: "POST",
+                              })
+                                .then(() => refresh())
+                                .catch(fail)
+                            }
+                          >
+                            {t("Mark reviewed")}
+                          </button>
                           <button
                             className="icon-button"
                             disabled={!!busy}
@@ -1302,591 +1579,1116 @@ export default function Admin() {
                 </section>
               )}
               {productEditorOpen && (
-                <div className="admin-editor-overlay" role="dialog" aria-modal="true" aria-labelledby="product-editor-title">
-                <form
-                  className={`admin-panel admin-editor${!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${draft.category === "accessory" ? " accessory-simple" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
-                  id="product-editor"
-                  onSubmit={saveProduct}
-                  noValidate
+                <div
+                  className="admin-editor-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="product-editor-title"
                 >
-                  <button
-                    type="button"
-                    className="button white inventory-back"
-                    disabled={!!busy}
-                    onClick={() => dirty ? setDiscardPrompt(true) : resetDraft()}
+                  <form
+                    className={`admin-panel admin-editor${!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${draft.category === "accessory" ? " accessory-simple" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
+                    id="product-editor"
+                    onSubmit={saveProduct}
+                    noValidate
                   >
-                    {t("Back to inventory")}
-                  </button>
-                  <button
-                    type="button"
-                    className="icon-button admin-editor-close"
-                    aria-label={t("Close editor")}
-                    disabled={!!busy}
-                    onClick={() => dirty ? setDiscardPrompt(true) : resetDraft()}
-                  >
-                    ×
-                  </button>
-                  <h2 id="product-editor-title" tabIndex={-1}>
-                    {draft.id ? t("Edit product") : t("Add a product")}
-                  </h2>
-                  {!draft.id && (draft.category === "new" || draft.category === "used") && (
-                    <div className="admin-form-row catalogue-mode-switch" role="group" aria-label={t("New phone source")}>
-                      <button type="button" className={`button ${catalogueMode === "catalogue" ? "dark" : "white"}`} onClick={() => { setCatalogueMode("catalogue"); setCatalogueFilled(false); }}>{t("Use Catalogue")}</button>
-                      <button type="button" className={`button ${catalogueMode === "manual" ? "dark" : "white"}`} onClick={() => setCatalogueMode("manual")}>{t("Add Manually")}</button>
-                    </div>
-                  )}
-                  <fieldset className="editor-section catalogue-basic">
-                    <legend>{t("Basic details")}</legend>
-                    <label htmlFor="product-name">{t("Product name *")}</label>
-                    <input
-                      id="product-name"
-                      value={draft.name}
-                      readOnly={!draft.id && catalogueMode === "catalogue" && catalogueFilled}
-                      maxLength={100}
-                      minLength={2}
-                      required={!!draft.id || catalogueMode !== "catalogue"}
-                      onChange={(e) =>
-                        setDraft({ ...draft, name: e.target.value })
+                    <button
+                      type="button"
+                      className="button white inventory-back"
+                      disabled={!!busy}
+                      onClick={() =>
+                        dirty ? setDiscardPrompt(true) : resetDraft()
                       }
-                    />
-                    <label htmlFor="product-brand">{t("Brand *")}</label>
-                    <input
-                      id="product-brand"
-                      value={draft.brand}
-                      readOnly={!draft.id && catalogueMode === "catalogue" && catalogueFilled}
-                      maxLength={60}
-                      required={!!draft.id || catalogueMode !== "catalogue"}
-                      onChange={(e) =>
-                        setDraft({ ...draft, brand: e.target.value })
+                    >
+                      {t("Back to inventory")}
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-button admin-editor-close"
+                      aria-label={t("Close editor")}
+                      disabled={!!busy}
+                      onClick={() =>
+                        dirty ? setDiscardPrompt(true) : resetDraft()
                       }
-                    />
-                    {!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" && (
-                      <button type="button" className="button white catalogue-picker-toggle" onClick={() => setCataloguePickerOpen((open) => !open)}>{cataloguePickerOpen ? t("Hide phone catalogue") : t("Choose phone from catalogue")}</button>
-                    )}
-                    {!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" && cataloguePickerOpen && (
-                      <fieldset className="catalogue-autofill editor-section">
-                        <legend>{t("Fill from phone catalogue")}</legend>
-                        <div className="admin-filter-bar catalogue-image-filters" aria-label={t("Filter catalogue phones by image count")}>
-                          {(["all", 3, 2, 1, 0] as const).map((filter) => {
-                            const count = filter === "all" ? catalogueDeviceRows.length : catalogueDeviceRows.filter((phone) => filter === 3 ? (phone.catalogueImageCount || 0) >= 3 : (phone.catalogueImageCount || 0) === filter).length;
-                            const label = filter === "all" ? t("All") : filter === 0 ? t("No Photos") : `${filter} ${filter === 1 ? t("Photo") : t("Photos")}`;
-                            return <button key={String(filter)} type="button" aria-pressed={catalogueImageFilter === filter} onClick={() => { setCatalogueImageFilter(filter); setCatalogueModel(""); setCatalogueVariant(""); }}>{label} ({count})</button>;
-                          })}
-                        </div>
-                        <label htmlFor="catalogue-search">{t("Search phone model")}</label>
-                        <input id="catalogue-search" className="catalogue-search" value={catalogueSearch} onChange={(event) => setCatalogueSearch(event.target.value)} placeholder={t("Search by brand, model or keyword…")} />
-                        <div className="catalogue-phone-grid" role="listbox" aria-label={t("Catalogue phone models")}>
-                          {catalogueCards.slice(0, 60).map((phone) => { const count = phone.catalogueImageCount || 0; const selected = catalogueBrand === phone.brand && catalogueModel === phone.model; return <button type="button" role="option" aria-selected={selected} className={`catalogue-phone-card${selected ? " selected" : ""}`} key={phone.deviceId} onClick={() => { setCatalogueBrand(phone.brand); setCatalogueModel(phone.model); setCatalogueVariant(""); }}>
-                            <SafeImage className="catalogue-phone-thumb" src={phone.catalogueImage || "/assets/phone.svg"} alt="" />
-                            <strong>{phone.brand} {phone.model}</strong>
-                            <span className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}>{count >= 3 ? "3+ Photos" : count === 1 ? "1 Photo" : `${count} Photos`}</span>
-                            <small>{Array.from(new Set(cataloguePhones.filter((item) => item.deviceId === phone.deviceId).map((item) => item.variant.replace(/^.*?·\s*/, "")).filter(Boolean))).join(" · ")}</small>
-                          </button>; })}
-                        </div>
-                        {!catalogueCards.length && <p className="admin-empty">{t("No catalogue phones match this filter.")}</p>}
-                        {catalogueModel && (() => { const phone = catalogueModels.find((item) => item.model === catalogueModel); const count = phone?.catalogueImageCount || 0; return <p className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}>{count >= 3 ? "3+ Photos" : count === 1 ? "1 Photo" : `${count} Photos`}</p>; })()}
-                        <label htmlFor="catalogue-variant">{t("Catalogue variant")}</label>
-                        <select id="catalogue-variant" value={catalogueVariant} disabled={!catalogueModel} onChange={(event) => { setCatalogueVariant(event.target.value); const selected = uniqueCatalogueVariants.find((phone) => phone.variant === event.target.value); if (selected) { setDraft((current) => ({ ...current, brand: selected.brand, name: selected.model, ram: selected.ram, storage: selected.storage, image: "/assets/phone.svg", images: ["/assets/phone.svg"], description: current.description || `${selected.brand} ${selected.model} · ${selected.variant}` })); setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...Object.entries(selected.specs).filter(([name]) => name !== "RAM" && name !== "Storage").map(([name, value]) => ({ name, value }))]); setCatalogueFilled(true); setCataloguePickerOpen(false); } }}>
-                          <option value="">{t("Choose a RAM/storage variant")}</option>
-                          {uniqueCatalogueVariants.map((phone) => <option key={`${phone.deviceId}-${phone.variant}`} value={phone.variant}>{phone.variant}</option>)}
-                        </select>
-                        <button type="button" className="button white" disabled={!catalogueVariant || busy === "save"} onClick={fillFromCatalogue}>{t("Fill from Catalogue")}</button>
-                        {uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.catalogueImage && (
-                          <SafeImage
-                            className="admin-catalogue-preview"
-                            src={uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.catalogueImage || ""}
-                            alt={t("Catalogue image preview")}
-                          />
-                        )}
-                      </fieldset>
-                    )}
-                    <div className="admin-form-row">
-                      <div>
-                        <label htmlFor="product-category">
-                          {t("Category")}
-                        </label>
-                        <select
-                          id="product-category"
-                          className="admin-category-select"
-                          value={draft.category}
-                          disabled={busy === "photo"}
-                          onChange={(e) => {
-                            const category = e.target.value as Category;
-                            const image = draft.image.startsWith("/api/images/")
-                              ? draft.image
-                              : category === "accessory"
-                                ? "/assets/cover.svg"
-                                : "/assets/phone.svg";
-                            setDraft({
-                              ...draft,
-                              category,
-                              stockQuantity: !draft.id && category === "used" ? 1 : draft.stockQuantity,
-                              image,
-                              images: [
-                                image,
-                                ...productImages(draft).filter(
-                                  (value) =>
-                                    value !== draft.image && value !== image,
-                                ),
-                              ],
-                              ram: draft.ram || 8,
-                              storage: draft.storage || 128,
-                              condition: draft.condition,
-                              battery: draft.battery,
-                              accessoryCategory:
-                                draft.accessoryCategory || "Mobile Covers",
-                            });
-                          }}
+                    >
+                      ×
+                    </button>
+                    <h2 id="product-editor-title" tabIndex={-1}>
+                      {draft.id ? t("Edit product") : t("Add a product")}
+                    </h2>
+                    {!draft.id &&
+                      (draft.category === "new" ||
+                        draft.category === "used") && (
+                        <div
+                          className="admin-form-row catalogue-mode-switch"
+                          role="group"
+                          aria-label={t("New phone source")}
                         >
-                          <option value="new">{t("New mobile")}</option>
-                          <option value="used">{t("Second-hand set")}</option>
-                          <option value="accessory">{t("Accessory")}</option>
-                        </select>
-                      </div>
-                    </div>
-                    {draft.category !== "accessory" ? (
+                          <button
+                            type="button"
+                            className={`button ${catalogueMode === "catalogue" ? "dark" : "white"}`}
+                            onClick={() => {
+                              setCatalogueMode("catalogue");
+                              setCatalogueFilled(false);
+                            }}
+                          >
+                            {t("Use Catalogue")}
+                          </button>
+                          <button
+                            type="button"
+                            className={`button ${catalogueMode === "manual" ? "dark" : "white"}`}
+                            onClick={() => setCatalogueMode("manual")}
+                          >
+                            {t("Add Manually")}
+                          </button>
+                        </div>
+                      )}
+                    <fieldset className="editor-section catalogue-basic">
+                      <legend>{t("Basic details")}</legend>
+                      <label htmlFor="product-name">
+                        {t("Product name *")}
+                      </label>
+                      <input
+                        id="product-name"
+                        value={draft.name}
+                        readOnly={
+                          !draft.id &&
+                          catalogueMode === "catalogue" &&
+                          catalogueFilled
+                        }
+                        maxLength={100}
+                        minLength={2}
+                        required={!!draft.id || catalogueMode !== "catalogue"}
+                        onChange={(e) =>
+                          setDraft({ ...draft, name: e.target.value })
+                        }
+                      />
+                      <label htmlFor="product-brand">{t("Brand *")}</label>
+                      <input
+                        id="product-brand"
+                        value={draft.brand}
+                        readOnly={
+                          !draft.id &&
+                          catalogueMode === "catalogue" &&
+                          catalogueFilled
+                        }
+                        maxLength={60}
+                        required={!!draft.id || catalogueMode !== "catalogue"}
+                        onChange={(e) =>
+                          setDraft({ ...draft, brand: e.target.value })
+                        }
+                      />
+                      {!draft.id &&
+                        (draft.category === "new" ||
+                          draft.category === "used") &&
+                        catalogueMode === "catalogue" && (
+                          <button
+                            type="button"
+                            className="button white catalogue-picker-toggle"
+                            onClick={() =>
+                              setCataloguePickerOpen((open) => !open)
+                            }
+                          >
+                            {cataloguePickerOpen
+                              ? t("Hide phone catalogue")
+                              : t("Choose phone from catalogue")}
+                          </button>
+                        )}
+                      {!draft.id &&
+                        (draft.category === "new" ||
+                          draft.category === "used") &&
+                        catalogueMode === "catalogue" &&
+                        cataloguePickerOpen && (
+                          <fieldset className="catalogue-autofill editor-section">
+                            <legend>{t("Fill from phone catalogue")}</legend>
+                            <div
+                              className="admin-filter-bar catalogue-image-filters"
+                              aria-label={t(
+                                "Filter catalogue phones by image count",
+                              )}
+                            >
+                              {(["all", 3, 2, 1, 0] as const).map((filter) => {
+                                const count =
+                                  filter === "all"
+                                    ? catalogueDeviceRows.length
+                                    : catalogueDeviceRows.filter((phone) =>
+                                        filter === 3
+                                          ? (phone.catalogueImageCount || 0) >=
+                                            3
+                                          : (phone.catalogueImageCount || 0) ===
+                                            filter,
+                                      ).length;
+                                const label =
+                                  filter === "all"
+                                    ? t("All")
+                                    : filter === 0
+                                      ? t("No Photos")
+                                      : `${filter} ${filter === 1 ? t("Photo") : t("Photos")}`;
+                                return (
+                                  <button
+                                    key={String(filter)}
+                                    type="button"
+                                    aria-pressed={
+                                      catalogueImageFilter === filter
+                                    }
+                                    onClick={() => {
+                                      setCatalogueImageFilter(filter);
+                                      setCatalogueModel("");
+                                      setCatalogueVariant("");
+                                    }}
+                                  >
+                                    {label} ({count})
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <label htmlFor="catalogue-search">
+                              {t("Search phone model")}
+                            </label>
+                            <input
+                              id="catalogue-search"
+                              className="catalogue-search"
+                              value={catalogueSearch}
+                              onChange={(event) =>
+                                setCatalogueSearch(event.target.value)
+                              }
+                              placeholder={t(
+                                "Search by brand, model or keyword…",
+                              )}
+                            />
+                            <div
+                              className="catalogue-phone-grid"
+                              role="listbox"
+                              aria-label={t("Catalogue phone models")}
+                            >
+                              {catalogueCards.slice(0, 60).map((phone) => {
+                                const count = phone.catalogueImageCount || 0;
+                                const selected =
+                                  catalogueBrand === phone.brand &&
+                                  catalogueModel === phone.model;
+                                return (
+                                  <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={selected}
+                                    className={`catalogue-phone-card${selected ? " selected" : ""}`}
+                                    key={phone.deviceId}
+                                    onClick={() => {
+                                      setCatalogueBrand(phone.brand);
+                                      setCatalogueModel(phone.model);
+                                      setCatalogueVariant("");
+                                    }}
+                                  >
+                                    <SafeImage
+                                      className="catalogue-phone-thumb"
+                                      src={
+                                        phone.catalogueImage ||
+                                        "/assets/phone.svg"
+                                      }
+                                      alt=""
+                                    />
+                                    <strong>
+                                      {phone.brand} {phone.model}
+                                    </strong>
+                                    <span
+                                      className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}
+                                    >
+                                      {count >= 3
+                                        ? "3+ Photos"
+                                        : count === 1
+                                          ? "1 Photo"
+                                          : `${count} Photos`}
+                                    </span>
+                                    <small>
+                                      {Array.from(
+                                        new Set(
+                                          cataloguePhones
+                                            .filter(
+                                              (item) =>
+                                                item.deviceId ===
+                                                phone.deviceId,
+                                            )
+                                            .map((item) =>
+                                              item.variant.replace(
+                                                /^.*?·\s*/,
+                                                "",
+                                              ),
+                                            )
+                                            .filter(Boolean),
+                                        ),
+                                      ).join(" · ")}
+                                    </small>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {!catalogueCards.length && (
+                              <p className="admin-empty">
+                                {t("No catalogue phones match this filter.")}
+                              </p>
+                            )}
+                            {catalogueModel &&
+                              (() => {
+                                const phone = catalogueModels.find(
+                                  (item) => item.model === catalogueModel,
+                                );
+                                const count = phone?.catalogueImageCount || 0;
+                                return (
+                                  <p
+                                    className={`catalogue-image-count catalogue-image-count-${count >= 3 ? 3 : count}`}
+                                  >
+                                    {count >= 3
+                                      ? "3+ Photos"
+                                      : count === 1
+                                        ? "1 Photo"
+                                        : `${count} Photos`}
+                                  </p>
+                                );
+                              })()}
+                            <label htmlFor="catalogue-variant">
+                              {t("Catalogue variant")}
+                            </label>
+                            <select
+                              id="catalogue-variant"
+                              value={catalogueVariant}
+                              disabled={!catalogueModel}
+                              onChange={(event) => {
+                                setCatalogueVariant(event.target.value);
+                                const selected = uniqueCatalogueVariants.find(
+                                  (phone) =>
+                                    phone.variant === event.target.value,
+                                );
+                                if (selected) {
+                                  setDraft((current) => ({
+                                    ...current,
+                                    brand: selected.brand,
+                                    name: selected.model,
+                                    ram: selected.ram,
+                                    storage: selected.storage,
+                                    image: "/assets/phone.svg",
+                                    images: ["/assets/phone.svg"],
+                                    description:
+                                      current.description ||
+                                      `${selected.brand} ${selected.model} · ${selected.variant}`,
+                                  }));
+                                  setSpecRows([
+                                    {
+                                      name: "Warranty",
+                                      value: "Confirm with shop",
+                                    },
+                                    ...Object.entries(selected.specs)
+                                      .filter(
+                                        ([name]) =>
+                                          name !== "RAM" && name !== "Storage",
+                                      )
+                                      .map(([name, value]) => ({
+                                        name,
+                                        value,
+                                      })),
+                                  ]);
+                                  setCatalogueFilled(true);
+                                  setCataloguePickerOpen(false);
+                                }
+                              }}
+                            >
+                              <option value="">
+                                {t("Choose a RAM/storage variant")}
+                              </option>
+                              {uniqueCatalogueVariants.map((phone) => (
+                                <option
+                                  key={`${phone.deviceId}-${phone.variant}`}
+                                  value={phone.variant}
+                                >
+                                  {phone.variant}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className="button white"
+                              disabled={!catalogueVariant || busy === "save"}
+                              onClick={fillFromCatalogue}
+                            >
+                              {t("Fill from Catalogue")}
+                            </button>
+                            {uniqueCatalogueVariants.find(
+                              (phone) => phone.variant === catalogueVariant,
+                            )?.catalogueImage && (
+                              <SafeImage
+                                className="admin-catalogue-preview"
+                                src={
+                                  uniqueCatalogueVariants.find(
+                                    (phone) =>
+                                      phone.variant === catalogueVariant,
+                                  )?.catalogueImage || ""
+                                }
+                                alt={t("Catalogue image preview")}
+                              />
+                            )}
+                          </fieldset>
+                        )}
                       <div className="admin-form-row">
                         <div>
-                          <label htmlFor="product-ram">{t("RAM (GB)")}</label>
-                          <input
-                            id="product-ram"
-                            type="number"
-                            min={1}
-                            max={64}
-                            step={1}
-                            value={draft.ram ?? ""}
-                            onChange={(e) =>
-                              setDraft({
-                                ...draft,
-                                ram: e.target.value
-                                  ? e.target.valueAsNumber
-                                  : undefined,
-                              })
-                            }
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="product-storage">
-                            {t(`Storage (GB)${catalogueMode === "catalogue" ? "" : " *"}`)}
+                          <label htmlFor="product-category">
+                            {t("Category")}
                           </label>
-                          <input
-                            id="product-storage"
-                            type="number"
-                            min={16}
-                            max={2048}
-                            step={1}
-                            value={draft.storage ?? ""}
-                            required={!!draft.id || catalogueMode !== "catalogue"}
-                            onChange={(e) =>
+                          <select
+                            id="product-category"
+                            className="admin-category-select"
+                            value={draft.category}
+                            disabled={busy === "photo"}
+                            onChange={(e) => {
+                              const category = e.target.value as Category;
+                              const image = draft.image.startsWith(
+                                "/api/images/",
+                              )
+                                ? draft.image
+                                : category === "accessory"
+                                  ? "/assets/cover.svg"
+                                  : "/assets/phone.svg";
                               setDraft({
                                 ...draft,
-                                storage: e.target.value
-                                  ? e.target.valueAsNumber
-                                  : undefined,
-                              })
-                            }
-                          />
+                                category,
+                                stockQuantity:
+                                  !draft.id && category === "used"
+                                    ? 1
+                                    : draft.stockQuantity,
+                                image,
+                                images: [
+                                  image,
+                                  ...productImages(draft).filter(
+                                    (value) =>
+                                      value !== draft.image && value !== image,
+                                  ),
+                                ],
+                                ram: draft.ram || 8,
+                                storage: draft.storage || 128,
+                                condition: draft.condition,
+                                battery: draft.battery,
+                                accessoryCategory:
+                                  draft.accessoryCategory || "Mobile Covers",
+                              });
+                            }}
+                          >
+                            <option value="new">{t("New mobile")}</option>
+                            <option value="used">{t("Second-hand set")}</option>
+                            <option value="accessory">{t("Accessory")}</option>
+                          </select>
                         </div>
                       </div>
-                    ) : (
-                      <>
-                        <label htmlFor="product-accessory-category">
-                          {t("Accessory category")}
+                      {draft.category !== "accessory" ? (
+                        <div className="admin-form-row">
+                          <div>
+                            <label htmlFor="product-ram">{t("RAM (GB)")}</label>
+                            <input
+                              id="product-ram"
+                              type="number"
+                              min={1}
+                              max={64}
+                              step={1}
+                              value={draft.ram ?? ""}
+                              onChange={(e) =>
+                                setDraft({
+                                  ...draft,
+                                  ram: e.target.value
+                                    ? e.target.valueAsNumber
+                                    : undefined,
+                                })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="product-storage">
+                              {t(
+                                `Storage (GB)${catalogueMode === "catalogue" ? "" : " *"}`,
+                              )}
+                            </label>
+                            <input
+                              id="product-storage"
+                              type="number"
+                              min={16}
+                              max={2048}
+                              step={1}
+                              value={draft.storage ?? ""}
+                              required={
+                                !!draft.id || catalogueMode !== "catalogue"
+                              }
+                              onChange={(e) =>
+                                setDraft({
+                                  ...draft,
+                                  storage: e.target.value
+                                    ? e.target.valueAsNumber
+                                    : undefined,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <label htmlFor="product-accessory-category">
+                            {t("Accessory category")}
+                          </label>
+                          <select
+                            id="product-accessory-category"
+                            value={
+                              draft.accessoryCategory || accessoryCategories[0]
+                            }
+                            onChange={(e) =>
+                              setDraft({
+                                ...draft,
+                                accessoryCategory: e.target.value,
+                              })
+                            }
+                          >
+                            {accessoryCategories.map((category) => (
+                              <option key={category} value={category}>
+                                {t(category)}
+                              </option>
+                            ))}
+                          </select>
+                        </>
+                      )}
+                      {draft.category === "used" && (
+                        <div className="used-phone-details">
+                          <div className="admin-form-row">
+                            <div>
+                              <label htmlFor="product-condition">
+                                {t("Condition")}
+                              </label>
+                              <select
+                                id="product-condition"
+                                value={draft.condition || ""}
+                                onChange={(e) =>
+                                  setDraft({
+                                    ...draft,
+                                    condition: e.target
+                                      .value as Product["condition"],
+                                  })
+                                }
+                              >
+                                <option value="" disabled>
+                                  {t("Inspection pending")}
+                                </option>
+                                {["Like New", "Excellent", "Good", "Fair"].map(
+                                  (condition) => (
+                                    <option key={condition} value={condition}>
+                                      {t(condition)}
+                                    </option>
+                                  ),
+                                )}
+                              </select>
+                              <small>
+                                {t(
+                                  "Like New: minimal wear · Excellent: minor wear · Good: visible normal wear · Fair: noticeable wear and disclosed issues",
+                                )}
+                              </small>
+                            </div>
+                            <div>
+                              <label htmlFor="product-battery">
+                                {t("Battery health (%)")}
+                              </label>
+                              <input
+                                id="product-battery"
+                                type="number"
+                                min={0}
+                                max={100}
+                                step={1}
+                                value={draft.battery ?? ""}
+                                onChange={(e) =>
+                                  setDraft({
+                                    ...draft,
+                                    battery: e.target.value
+                                      ? e.target.valueAsNumber
+                                      : undefined,
+                                  })
+                                }
+                              />
+                            </div>
+                          </div>
+                          <fieldset className="used-inspection-editor">
+                            <legend>{t("Used-phone inspection")}</legend>
+                            {(
+                              [
+                                "screen",
+                                "body",
+                                "cameras",
+                                "charging",
+                                "speakers",
+                                "microphone",
+                                "buttons",
+                                "biometrics",
+                                "network",
+                                "wireless",
+                              ] as const
+                            ).map((key) => (
+                              <label key={key}>
+                                {t(key)}
+                                <select
+                                  value={
+                                    draft.inspection?.checks?.[key] ||
+                                    "not_checked"
+                                  }
+                                  onChange={(event) =>
+                                    setDraft({
+                                      ...draft,
+                                      inspection: {
+                                        checks: {
+                                          screen: "not_checked",
+                                          body: "not_checked",
+                                          cameras: "not_checked",
+                                          charging: "not_checked",
+                                          speakers: "not_checked",
+                                          microphone: "not_checked",
+                                          buttons: "not_checked",
+                                          biometrics: "not_checked",
+                                          network: "not_checked",
+                                          wireless: "not_checked",
+                                          ...draft.inspection?.checks,
+                                          [key]: event.target.value as
+                                            "not_checked" | "passed" | "issue",
+                                        },
+                                        defects:
+                                          draft.inspection?.defects || "",
+                                        included:
+                                          draft.inspection?.included || "",
+                                      },
+                                    })
+                                  }
+                                >
+                                  <option value="not_checked">
+                                    {t("Not checked")}
+                                  </option>
+                                  <option value="passed">{t("Passed")}</option>
+                                  <option value="issue">
+                                    {t("Issue found")}
+                                  </option>
+                                </select>
+                              </label>
+                            ))}
+                            <label>
+                              {t("What changed in this phone?")}
+                              <textarea
+                                maxLength={500}
+                                placeholder={t(
+                                  "Describe scratches, replaced parts, repairs, or other changes",
+                                )}
+                                value={draft.inspection?.defects || ""}
+                                onChange={(event) =>
+                                  setDraft({
+                                    ...draft,
+                                    inspection: {
+                                      checks: {
+                                        screen: "not_checked",
+                                        body: "not_checked",
+                                        cameras: "not_checked",
+                                        charging: "not_checked",
+                                        speakers: "not_checked",
+                                        microphone: "not_checked",
+                                        buttons: "not_checked",
+                                        biometrics: "not_checked",
+                                        network: "not_checked",
+                                        wireless: "not_checked",
+                                        ...draft.inspection?.checks,
+                                      },
+                                      defects: event.target.value,
+                                      included:
+                                        draft.inspection?.included || "",
+                                    },
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              {t("Included accessories")}
+                              <input
+                                maxLength={300}
+                                value={draft.inspection?.included || ""}
+                                onChange={(event) =>
+                                  setDraft({
+                                    ...draft,
+                                    inspection: {
+                                      checks: {
+                                        screen: "not_checked",
+                                        body: "not_checked",
+                                        cameras: "not_checked",
+                                        charging: "not_checked",
+                                        speakers: "not_checked",
+                                        microphone: "not_checked",
+                                        buttons: "not_checked",
+                                        biometrics: "not_checked",
+                                        network: "not_checked",
+                                        wireless: "not_checked",
+                                        ...draft.inspection?.checks,
+                                      },
+                                      defects: draft.inspection?.defects || "",
+                                      included: event.target.value,
+                                    },
+                                  })
+                                }
+                              />
+                            </label>
+                          </fieldset>
+                        </div>
+                      )}
+                    </fieldset>
+                    <fieldset className="editor-section catalogue-advanced">
+                      <legend>{t("Photos")}</legend>
+                      <label htmlFor="product-image">{t("Illustration")}</label>
+                      <select
+                        id="product-image"
+                        disabled={busy === "photo"}
+                        value={draft.image}
+                        onChange={(e) => {
+                          const image = e.target.value;
+                          setDraft({
+                            ...draft,
+                            image,
+                            images: [
+                              image,
+                              ...productImages(draft).filter(
+                                (value) =>
+                                  value !== draft.image && value !== image,
+                              ),
+                            ],
+                          });
+                        }}
+                      >
+                        {draft.image.startsWith("/api/images/") && (
+                          <option value={draft.image}>
+                            {t("Uploaded product photo")}
+                          </option>
+                        )}
+                        {[
+                          ["phone", "Phone"],
+                          ["cover", "Cover / protector"],
+                          ["charger", "Charger"],
+                          ["earbuds", "Earbuds / earphones"],
+                          ["speaker", "Speaker"],
+                          ["bulb", "Bulb"],
+                        ].map(([key, label]) => (
+                          <option key={key} value={`/assets/${key}.svg`}>
+                            {t(label)}
+                          </option>
+                        ))}
+                      </select>
+                      <label
+                        className="admin-field-label"
+                        htmlFor="product-photo"
+                      >
+                        {t("Product photo")}
+                      </label>
+                      <label
+                        className="button white admin-upload-button"
+                        htmlFor="product-photo"
+                      >
+                        {t("Upload product photos")}
+                      </label>
+                      <input
+                        id="product-photo"
+                        className="admin-file-input"
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={!!busy}
+                        onChange={(e) => {
+                          void uploadPhotos(e.target.files || undefined);
+                          e.target.value = "";
+                        }}
+                      />
+                      <span className="admin-help">
+                        {t(
+                          "Add up to six photos. JPG, PNG, or WebP · up to 5 MB each. Choose the cover photo below.",
+                        )}
+                      </span>
+                      <div className="admin-photo-grid">
+                        {productImages(draft).map((image, index, photos) => {
+                          const cataloguePreview =
+                            image === "/assets/phone.svg"
+                              ? draft.catalogueImage?.url
+                              : undefined;
+                          const displayImage = cataloguePreview || image;
+                          return (
+                            <div className="admin-photo-tile" key={image}>
+                              <SafeImage
+                                src={displayImage}
+                                alt={t("Product photo {{v0}} preview", {
+                                  v0: String(index + 1),
+                                })}
+                              />
+                              <strong>
+                                {cataloguePreview
+                                  ? t("Catalogue image preview")
+                                  : index === 0
+                                    ? t("Cover photo")
+                                    : t("Photo {{v0}}", {
+                                        v0: String(index + 1),
+                                      })}
+                              </strong>
+                              <button
+                                type="button"
+                                disabled={!!busy || index === 0}
+                                title={
+                                  index === 0
+                                    ? t("This is already the cover photo")
+                                    : t("Make this photo the cover")
+                                }
+                                aria-label={t("Make photo {{v0}} cover", {
+                                  v0: String(index + 1),
+                                })}
+                                onClick={() => {
+                                  const images = [
+                                    image,
+                                    ...photos.filter(
+                                      (value) => value !== image,
+                                    ),
+                                  ];
+                                  setDraft({ ...draft, image, images });
+                                }}
+                              >
+                                {t("Use as cover")}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!!busy || photos.length === 1}
+                                title={
+                                  photos.length === 1
+                                    ? t(
+                                        "Add another photo before removing this one",
+                                      )
+                                    : t("Remove this photo")
+                                }
+                                aria-label={t("Remove photo {{v0}}", {
+                                  v0: String(index + 1),
+                                })}
+                                onClick={() => {
+                                  const images = photos.filter(
+                                    (value) => value !== image,
+                                  );
+                                  setDraft({
+                                    ...draft,
+                                    image: images[0],
+                                    images,
+                                  });
+                                }}
+                              >
+                                {t("Remove")}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </fieldset>
+                    <fieldset className="editor-section catalogue-store-details">
+                      <legend>{t("Store details")}</legend>
+                      <div className="admin-form-row">
+                        <label>
+                          {t("Price (NPR) *")}
+                          <input
+                            id="catalogue-price"
+                            type="number"
+                            min={0}
+                            max={100000000}
+                            step={1}
+                            value={
+                              Number.isFinite(draft.price) && draft.price > 0
+                                ? draft.price
+                                : ""
+                            }
+                            required
+                            onChange={(e) =>
+                              setDraft({
+                                ...draft,
+                                price:
+                                  e.target.value === ""
+                                    ? 0
+                                    : Number(e.target.value),
+                              })
+                            }
+                          />
                         </label>
-                        <select
-                          id="product-accessory-category"
+                        <label>
+                          {t("Stock *")}
+                          <input
+                            id="catalogue-stock"
+                            type="number"
+                            min={0}
+                            max={1000000}
+                            step={1}
+                            value={
+                              draft.stockQuantity !== null &&
+                              Number.isFinite(draft.stockQuantity)
+                                ? draft.stockQuantity
+                                : ""
+                            }
+                            required
+                            onChange={(e) =>
+                              setDraft({
+                                ...draft,
+                                stockQuantity:
+                                  e.target.value === ""
+                                    ? 0
+                                    : Number(e.target.value),
+                              })
+                            }
+                          />
+                        </label>
+                      </div>
+                      <div className="admin-form-row">
+                        <label>
+                          {t("Color")}
+                          <input
+                            value={draft.color || ""}
+                            onChange={(e) =>
+                              setDraft({ ...draft, color: e.target.value })
+                            }
+                          />
+                        </label>
+                        <label>
+                          {t("Warranty")}
+                          <input
+                            value={
+                              specRows.find((row) => row.name === "Warranty")
+                                ?.value || ""
+                            }
+                            onChange={(e) =>
+                              setSpecRows(
+                                specRows.map((row) =>
+                                  row.name === "Warranty"
+                                    ? { ...row, value: e.target.value }
+                                    : row,
+                                ),
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+                      {uniqueCatalogueVariants.find(
+                        (phone) => phone.variant === catalogueVariant,
+                      ) &&
+                        (!uniqueCatalogueVariants.find(
+                          (phone) => phone.variant === catalogueVariant,
+                        )?.ram ||
+                          !uniqueCatalogueVariants.find(
+                            (phone) => phone.variant === catalogueVariant,
+                          )?.storage) && (
+                          <p className="summary-note">
+                            {t(
+                              "Only the catalogue values are applied; missing RAM or storage is left blank.",
+                            )}
+                          </p>
+                        )}
+                      <p className="summary-note">
+                        ✓{" "}
+                        {t(
+                          "Specifications automatically loaded from catalogue",
+                        )}
+                        <br />✓ {t("Catalogue image automatically connected")}
+                      </p>
+                      <button
+                        type="button"
+                        className="button white"
+                        onClick={() =>
+                          setCatalogueAdvancedOpen((open) => !open)
+                        }
+                      >
+                        {catalogueAdvancedOpen
+                          ? t("Hide catalogue details")
+                          : t("View / edit catalogue details")}
+                      </button>
+                    </fieldset>
+                    <div className="catalogue-advanced catalogue-advanced accessory-hide">
+                      <ProductFinanceEditor draft={draft} onChange={setDraft} />
+                    </div>
+                    <fieldset className="editor-section catalogue-advanced accessory-hide">
+                      <legend>{t("Descriptions & specifications")}</legend>
+                      <label htmlFor="product-description">
+                        {t("English description *")}
+                      </label>
+                      <textarea
+                        id="product-description"
+                        rows={4}
+                        value={draft.description}
+                        maxLength={2000}
+                        required={!!draft.id || catalogueMode !== "catalogue"}
+                        onChange={(e) =>
+                          setDraft({ ...draft, description: e.target.value })
+                        }
+                      />
+                      <label htmlFor="product-description-ne">
+                        {t("Nepali description")}
+                      </label>
+                      <textarea
+                        id="product-description-ne"
+                        lang="ne"
+                        rows={4}
+                        maxLength={2000}
+                        value={draft.descriptionNe || ""}
+                        onChange={(e) =>
+                          setDraft({ ...draft, descriptionNe: e.target.value })
+                        }
+                      />
+                      <p className="summary-note">
+                        {t(
+                          "English is shown when a Nepali description is unavailable.",
+                        )}
+                      </p>
+                      <h3>{t("Specifications")}</h3>
+                      <div className="specification-rows">
+                        {specRows.map((row, index) => (
+                          <div className="specification-row" key={index}>
+                            <input
+                              aria-label={t("Specification {{v0}} name", {
+                                v0: String(index + 1),
+                              })}
+                              placeholder={t("Name")}
+                              value={row.name}
+                              maxLength={50}
+                              onChange={(e) =>
+                                setSpecRows(
+                                  specRows.map((item, i) =>
+                                    i === index
+                                      ? { ...item, name: e.target.value }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            />
+                            <input
+                              aria-label={t("Specification {{v0}} value", {
+                                v0: String(index + 1),
+                              })}
+                              placeholder={t("Value")}
+                              maxLength={200}
+                              value={row.value}
+                              onChange={(e) =>
+                                setSpecRows(
+                                  specRows.map((item, i) =>
+                                    i === index
+                                      ? { ...item, value: e.target.value }
+                                      : item,
+                                  ),
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              className="icon-button"
+                              aria-label={t("Remove specification {{v0}}", {
+                                v0: String(index + 1),
+                              })}
+                              onClick={() =>
+                                setSpecRows(
+                                  specRows.filter((_, i) => i !== index),
+                                )
+                              }
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        className="button white"
+                        disabled={specRows.length >= 20}
+                        onClick={() =>
+                          setSpecRows([...specRows, { name: "", value: "" }])
+                        }
+                      >
+                        {t("Add specification")}
+                      </button>
+                    </fieldset>
+                    <fieldset className="editor-section catalogue-advanced accessory-hide">
+                      <legend>{t("Price & stock")}</legend>
+                      <div>
+                        <label htmlFor="product-price">
+                          {t("Price (NPR) *")}
+                        </label>
+                        <input
+                          id="product-price"
+                          type="number"
+                          min={0}
+                          max={100000000}
+                          step={1}
                           value={
-                            draft.accessoryCategory || accessoryCategories[0]
+                            Number.isFinite(draft.price) ? draft.price : ""
                           }
+                          required={!!draft.id || catalogueMode !== "catalogue"}
                           onChange={(e) =>
                             setDraft({
                               ...draft,
-                              accessoryCategory: e.target.value,
+                              price: e.target.valueAsNumber,
                             })
                           }
-                        >
-                          {accessoryCategories.map((category) => (
-                            <option key={category} value={category}>
-                              {t(category)}
-                            </option>
-                          ))}
-                        </select>
-                      </>
-                    )}
-                    {draft.category === "used" && (
-                      <div className="used-phone-details"><div className="admin-form-row">
-                        <div>
-                          <label htmlFor="product-condition">
-                            {t("Condition")}
-                          </label>
-                          <select
-                            id="product-condition"
-                            value={draft.condition || ""}
-                            onChange={(e) =>
-                              setDraft({
-                                ...draft,
-                                condition: e.target
-                                  .value as Product["condition"],
-                              })
-                            }
-                          >
-                            <option value="" disabled>
-                              {t("Inspection pending")}
-                            </option>
-                            {["Like New", "Excellent", "Good", "Fair"].map(
-                              (condition) => (
-                                <option key={condition} value={condition}>
-                                  {t(condition)}
-                                </option>
-                              ),
-                            )}
-                          </select>
-                          <small>{t("Like New: minimal wear · Excellent: minor wear · Good: visible normal wear · Fair: noticeable wear and disclosed issues")}</small>
-                        </div>
-                        <div>
-                          <label htmlFor="product-battery">
-                            {t("Battery health (%)")}
-                          </label>
-                          <input
-                            id="product-battery"
-                            type="number"
-                            min={0}
-                            max={100}
-                            step={1}
-                            value={draft.battery ?? ""}
-                            onChange={(e) =>
-                              setDraft({
-                                ...draft,
-                                battery: e.target.value
-                                  ? e.target.valueAsNumber
-                                  : undefined,
-                              })
-                            }
-                          />
-                        </div>
+                        />
                       </div>
-                      <fieldset className="used-inspection-editor">
-                        <legend>{t("Used-phone inspection")}</legend>
-                        {(["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"] as const).map((key) => <label key={key}>{t(key)}
-                          <select value={draft.inspection?.checks?.[key] || "not_checked"} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks, [key]: event.target.value as "not_checked" | "passed" | "issue" }, defects: draft.inspection?.defects || "", included: draft.inspection?.included || "" } })}>
-                            <option value="not_checked">{t("Not checked")}</option><option value="passed">{t("Passed")}</option><option value="issue">{t("Issue found")}</option>
-                          </select>
-                        </label>)}
-                        <label>{t("What changed in this phone?")}<textarea maxLength={500} placeholder={t("Describe scratches, replaced parts, repairs, or other changes")} value={draft.inspection?.defects || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks }, defects: event.target.value, included: draft.inspection?.included || "" } })} /></label>
-                        <label>{t("Included accessories")}<input maxLength={300} value={draft.inspection?.included || ""} onChange={(event) => setDraft({ ...draft, inspection: { checks: { screen: "not_checked", body: "not_checked", cameras: "not_checked", charging: "not_checked", speakers: "not_checked", microphone: "not_checked", buttons: "not_checked", biometrics: "not_checked", network: "not_checked", wireless: "not_checked", ...draft.inspection?.checks }, defects: draft.inspection?.defects || "", included: event.target.value } })} /></label>
-                      </fieldset></div>
-                    )}
-                  </fieldset>
-                  <fieldset className="editor-section catalogue-advanced">
-                    <legend>{t("Photos")}</legend>
-                    <label htmlFor="product-image">{t("Illustration")}</label>
-                    <select
-                      id="product-image"
-                      disabled={busy === "photo"}
-                      value={draft.image}
-                      onChange={(e) => {
-                        const image = e.target.value;
-                        setDraft({
-                          ...draft,
-                          image,
-                          images: [
-                            image,
-                            ...productImages(draft).filter(
-                              (value) =>
-                                value !== draft.image && value !== image,
-                            ),
-                          ],
-                        });
-                      }}
-                    >
-                      {draft.image.startsWith("/api/images/") && (
-                        <option value={draft.image}>
-                          {t("Uploaded product photo")}
-                        </option>
-                      )}
-                      {[
-                        ["phone", "Phone"],
-                        ["cover", "Cover / protector"],
-                        ["charger", "Charger"],
-                        ["earbuds", "Earbuds / earphones"],
-                        ["speaker", "Speaker"],
-                        ["bulb", "Bulb"],
-                      ].map(([key, label]) => (
-                        <option key={key} value={`/assets/${key}.svg`}>
-                          {t(label)}
-                        </option>
-                      ))}
-                    </select>
-                    <label className="admin-field-label" htmlFor="product-photo">{t("Product photo")}</label>
-                    <label className="button white admin-upload-button" htmlFor="product-photo">{t("Upload product photos")}</label>
-                    <input
-                      id="product-photo"
-                      className="admin-file-input"
-                      type="file"
-                      multiple
-                      accept="image/jpeg,image/png,image/webp"
-                      disabled={!!busy}
-                      onChange={(e) => {
-                        void uploadPhotos(e.target.files || undefined);
-                        e.target.value = "";
-                      }}
-                    />
-                    <span className="admin-help">
-                      {t(
-                        "Add up to six photos. JPG, PNG, or WebP · up to 5 MB each. Choose the cover photo below.",
-                      )}
-                    </span>
-                    <div className="admin-photo-grid">
-                      {productImages(draft).map((image, index, photos) => {
-                        const cataloguePreview = image === "/assets/phone.svg" ? draft.catalogueImage?.url : undefined;
-                        const displayImage = cataloguePreview || image;
-                        return (
-                        <div className="admin-photo-tile" key={image}>
-                          <SafeImage
-                            src={displayImage}
-                            alt={t("Product photo {{v0}} preview", {
-                              v0: String(index + 1),
-                            })}
-                          />
-                          <strong>
-                            {cataloguePreview
-                              ? t("Catalogue image preview")
-                              : index === 0
-                                ? t("Cover photo")
-                                : t("Photo {{v0}}", { v0: String(index + 1) })}
-                          </strong>
-                          <button
-                            type="button"
-                            disabled={!!busy || index === 0}
-                            title={index === 0 ? t("This is already the cover photo") : t("Make this photo the cover")}
-                            aria-label={t("Make photo {{v0}} cover", {
-                              v0: String(index + 1),
-                            })}
-                            onClick={() => {
-                              const images = [
-                                image,
-                                ...photos.filter((value) => value !== image),
-                              ];
-                              setDraft({ ...draft, image, images });
-                            }}
-                          >
-                            {t("Use as cover")}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={!!busy || photos.length === 1}
-                            title={photos.length === 1 ? t("Add another photo before removing this one") : t("Remove this photo")}
-                            aria-label={t("Remove photo {{v0}}", {
-                              v0: String(index + 1),
-                            })}
-                            onClick={() => {
-                              const images = photos.filter(
-                                (value) => value !== image,
-                              );
-                              setDraft({ ...draft, image: images[0], images });
-                            }}
-                          >
-                            {t("Remove")}
-                          </button>
-                        </div>
-                        );
-                      })}
-                    </div>
-                  </fieldset>
-                  <fieldset className="editor-section catalogue-store-details">
-                    <legend>{t("Store details")}</legend>
-                    <div className="admin-form-row"><label>{t("Price (NPR) *")}<input id="catalogue-price" type="number" min={0} max={100000000} step={1} value={Number.isFinite(draft.price) && draft.price > 0 ? draft.price : ""} required onChange={(e) => setDraft({ ...draft, price: e.target.value === "" ? 0 : Number(e.target.value) })} /></label><label>{t("Stock *")}<input id="catalogue-stock" type="number" min={0} max={1000000} step={1} value={draft.stockQuantity !== null && Number.isFinite(draft.stockQuantity) ? draft.stockQuantity : ""} required onChange={(e) => setDraft({ ...draft, stockQuantity: e.target.value === "" ? 0 : Number(e.target.value) })} /></label></div>
-                    <div className="admin-form-row"><label>{t("Color")}<input value={draft.color || ""} onChange={(e) => setDraft({ ...draft, color: e.target.value })} /></label><label>{t("Warranty")}<input value={specRows.find((row) => row.name === "Warranty")?.value || ""} onChange={(e) => setSpecRows(specRows.map((row) => row.name === "Warranty" ? { ...row, value: e.target.value } : row))} /></label></div>
-                    {uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant) && (!uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.ram || !uniqueCatalogueVariants.find((phone) => phone.variant === catalogueVariant)?.storage) && <p className="summary-note">{t("Only the catalogue values are applied; missing RAM or storage is left blank.")}</p>}
-                    <p className="summary-note">✓ {t("Specifications automatically loaded from catalogue")}<br />✓ {t("Catalogue image automatically connected")}</p>
-                    <button type="button" className="button white" onClick={() => setCatalogueAdvancedOpen((open) => !open)}>{catalogueAdvancedOpen ? t("Hide catalogue details") : t("View / edit catalogue details")}</button>
-                  </fieldset>
-                  <div className="catalogue-advanced catalogue-advanced accessory-hide"><ProductFinanceEditor draft={draft} onChange={setDraft} /></div>
-                  <fieldset className="editor-section catalogue-advanced accessory-hide">
-                    <legend>{t("Descriptions & specifications")}</legend>
-                    <label htmlFor="product-description">
-                      {t("English description *")}
-                    </label>
-                    <textarea
-                      id="product-description"
-                      rows={4}
-                      value={draft.description}
-                      maxLength={2000}
-                      required={!!draft.id || catalogueMode !== "catalogue"}
-                      onChange={(e) =>
-                        setDraft({ ...draft, description: e.target.value })
-                      }
-                    />
-                    <label htmlFor="product-description-ne">
-                      {t("Nepali description")}
-                    </label>
-                    <textarea
-                      id="product-description-ne"
-                      lang="ne"
-                      rows={4}
-                      maxLength={2000}
-                      value={draft.descriptionNe || ""}
-                      onChange={(e) =>
-                        setDraft({ ...draft, descriptionNe: e.target.value })
-                      }
-                    />
-                    <p className="summary-note">
-                      {t(
-                        "English is shown when a Nepali description is unavailable.",
-                      )}
-                    </p>
-                    <h3>{t("Specifications")}</h3>
-                    <div className="specification-rows">
-                      {specRows.map((row, index) => (
-                        <div className="specification-row" key={index}>
-                          <input
-                            aria-label={t("Specification {{v0}} name", {
-                              v0: String(index + 1),
-                            })}
-                            placeholder={t("Name")}
-                            value={row.name}
-                            maxLength={50}
-                            onChange={(e) =>
-                              setSpecRows(
-                                specRows.map((item, i) =>
-                                  i === index
-                                    ? { ...item, name: e.target.value }
-                                    : item,
-                                ),
-                              )
-                            }
-                          />
-                          <input
-                            aria-label={t("Specification {{v0}} value", {
-                              v0: String(index + 1),
-                            })}
-                            placeholder={t("Value")}
-                            maxLength={200}
-                            value={row.value}
-                            onChange={(e) =>
-                              setSpecRows(
-                                specRows.map((item, i) =>
-                                  i === index
-                                    ? { ...item, value: e.target.value }
-                                    : item,
-                                ),
-                              )
-                            }
-                          />
-                          <button
-                            type="button"
-                            className="icon-button"
-                            aria-label={t("Remove specification {{v0}}", {
-                              v0: String(index + 1),
-                            })}
-                            onClick={() =>
-                              setSpecRows(
-                                specRows.filter((_, i) => i !== index),
-                              )
-                            }
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      className="button white"
-                      disabled={specRows.length >= 20}
-                      onClick={() =>
-                        setSpecRows([...specRows, { name: "", value: "" }])
-                      }
-                    >
-                      {t("Add specification")}
-                    </button>
-                  </fieldset>
-                  <fieldset className="editor-section catalogue-advanced accessory-hide">
-                    <legend>{t("Price & stock")}</legend>
-                    <div>
-                      <label htmlFor="product-price">
-                        {t("Price (NPR) *")}
+                      <label className="admin-check">
+                        <input
+                          type="checkbox"
+                          checked={draft.priceIsEstimate === true}
+                          onChange={(e) =>
+                            setDraft({
+                              ...draft,
+                              priceIsEstimate: e.target.checked,
+                              isSample: false,
+                            })
+                          }
+                        />
+                        <span>
+                          {t(
+                            "Temporary estimated price — confirm before selling",
+                          )}
+                        </span>
+                      </label>
+                      <label htmlFor="product-stock">
+                        {t("Stock quantity *")}
                       </label>
                       <input
-                        id="product-price"
+                        id="product-stock"
                         type="number"
                         min={0}
-                        max={100000000}
+                        max={1000000}
                         step={1}
-                        value={Number.isFinite(draft.price) ? draft.price : ""}
-                        required={!!draft.id || catalogueMode !== "catalogue"}
-                        onChange={(e) =>
-                          setDraft({ ...draft, price: e.target.valueAsNumber })
+                        value={
+                          draft.stockQuantity !== null &&
+                          Number.isFinite(draft.stockQuantity)
+                            ? draft.stockQuantity
+                            : ""
                         }
-                      />
-                    </div>
-                    <label className="admin-check">
-                      <input
-                        type="checkbox"
-                        checked={draft.priceIsEstimate === true}
+                        required={!!draft.id || catalogueMode !== "catalogue"}
                         onChange={(e) =>
                           setDraft({
                             ...draft,
-                            priceIsEstimate: e.target.checked,
-                            isSample: false,
+                            stockQuantity: e.target.valueAsNumber,
                           })
                         }
                       />
-                      <span>
+                      <p className="summary-note">
                         {t(
-                          "Temporary estimated price — confirm before selling",
+                          "Enter units available for new orders. Existing orders already reserve their units. Set 0 for out of stock.",
                         )}
-                      </span>
-                    </label>
-                    <label htmlFor="product-stock">
-                      {t("Stock quantity *")}
-                    </label>
-                    <input
-                      id="product-stock"
-                      type="number"
-                      min={0}
-                      max={1000000}
-                      step={1}
-                      value={
-                        draft.stockQuantity !== null &&
-                        Number.isFinite(draft.stockQuantity)
-                          ? draft.stockQuantity
-                          : ""
-                      }
-                      required={!!draft.id || catalogueMode !== "catalogue"}
-                      onChange={(e) =>
-                        setDraft({
-                          ...draft,
-                          stockQuantity: e.target.valueAsNumber,
-                        })
-                      }
-                    />
-                    <p className="summary-note">
-                      {t(
-                        "Enter units available for new orders. Existing orders already reserve their units. Set 0 for out of stock.",
-                      )}
-                    </p>
-                  </fieldset>
-                  <div className="button-row editor-save-bar">
-                    <button
-                      className="button dark"
-                      type="submit"
-                      disabled={!!busy}
-                    >
-                      {busy === "save" ? t("Saving…") : t("Save product")}
-                    </button>
-                    {(draft.id || dirty) && (
+                      </p>
+                    </fieldset>
+                    <div className="button-row editor-save-bar">
                       <button
-                        className="button white"
-                        type="button"
+                        className="button dark"
+                        type="submit"
                         disabled={!!busy}
-                        onClick={() => resetDraft()}
                       >
-                        {t("Cancel editing")}
+                        {busy === "save" ? t("Saving…") : t("Save product")}
                       </button>
-                    )}
-                  </div>
-                </form>
+                      {(draft.id || dirty) && (
+                        <button
+                          className="button white"
+                          type="button"
+                          disabled={!!busy}
+                          onClick={() => resetDraft()}
+                        >
+                          {t("Cancel editing")}
+                        </button>
+                      )}
+                    </div>
+                  </form>
                 </div>
               )}
             </div>
@@ -1894,14 +2696,121 @@ export default function Admin() {
           {tab === "staff" && role === "owner" && (
             <StaffManager onError={fail} />
           )}
-          {tab === "sales" && <section className="admin-panel admin-sales-page" id="admin-sales" role="tabpanel" aria-labelledby="sales-tab">
-            <div className="admin-sales-heading"><div><span className="eyebrow">{t("Shop admin")} / {t("Sales")}</span><h2>{t("Sales")}</h2></div><div className="sales-periods">{([["today", "Today"], ["7days", "7 Days"], ["month", "This Month"], ["all", "All Time"]] as const).map(([value, label]) => <button key={value} className={salesRange === value ? "active" : ""} onClick={() => setSalesRange(value)}>{t(label)}</button>)}<button className="button dark" onClick={() => setTab("billing")}>＋ {t("Record shop sale")}</button></div></div>
-            <div className="sales-summary-cards"><div><span>{t("Total sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Website sales")}</span><strong>{money(filteredSalesTotal)}</strong></div><div><span>{t("Shop sales")}</span><strong>{money(0)}</strong></div></div>
-            <div className="admin-sales-history"><div className="admin-panel-title"><h3>{t("Recent sales")}</h3></div>{salesOrders.map((order) => <div className="admin-sales-row" key={order.id}><span><strong>#{order.id}</strong><small>{new Date(order.date).toLocaleString()} · {t("Website")}</small></span><span>{order.name}</span><span>{order.payment?.method === "MANUAL_QR" ? t("Manual QR") : order.payment?.method === "ESEWA" ? "eSewa" : t("Pay at shop")}</span><strong>{money(order.total)}</strong><button className="button white" onClick={() => setSelectedOrderId(order.id)}>{t("View")}</button></div>)}{!salesOrders.length && <p>{t("No completed sales in this period.")}</p>}</div>
-          </section>}
-          {tab === "billing" && <div id="admin-billing" role="tabpanel" aria-labelledby="billing-tab"><AdminBilling products={products} onStockChanged={refresh} /></div>}
-          {tab === "qr" && <div id="admin-payment-qr" role="tabpanel" aria-labelledby="payment-qr-tab"><AdminPaymentQr /></div>}
-          {tab === "repairs" && <div id="admin-repairs" role="tabpanel" aria-labelledby="repairs-tab"><AdminRepairs /></div>}
+          {tab === "sales" && (
+            <section
+              className="admin-panel admin-sales-page"
+              id="admin-sales"
+              role="tabpanel"
+              aria-labelledby="sales-tab"
+            >
+              <div className="admin-sales-heading">
+                <div>
+                  <span className="eyebrow">
+                    {t("Shop admin")} / {t("Sales")}
+                  </span>
+                  <h2>{t("Sales")}</h2>
+                </div>
+                <div className="sales-periods">
+                  {(
+                    [
+                      ["today", "Today"],
+                      ["7days", "7 Days"],
+                      ["month", "This Month"],
+                      ["all", "All Time"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      className={salesRange === value ? "active" : ""}
+                      onClick={() => setSalesRange(value)}
+                    >
+                      {t(label)}
+                    </button>
+                  ))}
+                  <button
+                    className="button dark"
+                    onClick={() => setTab("billing")}
+                  >
+                    ＋ {t("Record shop sale")}
+                  </button>
+                </div>
+              </div>
+              <div className="sales-summary-cards">
+                <div>
+                  <span>{t("Total sales")}</span>
+                  <strong>{money(filteredSalesTotal)}</strong>
+                </div>
+                <div>
+                  <span>{t("Website sales")}</span>
+                  <strong>{money(filteredSalesTotal)}</strong>
+                </div>
+                <div>
+                  <span>{t("Shop sales")}</span>
+                  <strong>{money(0)}</strong>
+                </div>
+              </div>
+              <div className="admin-sales-history">
+                <div className="admin-panel-title">
+                  <h3>{t("Recent sales")}</h3>
+                </div>
+                {salesOrders.map((order) => (
+                  <div className="admin-sales-row" key={order.id}>
+                    <span>
+                      <strong>#{order.id}</strong>
+                      <small>
+                        {new Date(order.date).toLocaleString()} · {t("Website")}
+                      </small>
+                    </span>
+                    <span>{order.name}</span>
+                    <span>
+                      {order.payment?.method === "MANUAL_QR"
+                        ? t("Manual QR")
+                        : order.payment?.method === "ESEWA"
+                          ? "eSewa"
+                          : t("Pay at shop")}
+                    </span>
+                    <strong>{money(order.total)}</strong>
+                    <button
+                      className="button white"
+                      onClick={() => setSelectedOrderId(order.id)}
+                    >
+                      {t("View")}
+                    </button>
+                  </div>
+                ))}
+                {!salesOrders.length && (
+                  <p>{t("No completed sales in this period.")}</p>
+                )}
+              </div>
+            </section>
+          )}
+          {tab === "billing" && (
+            <div
+              id="admin-billing"
+              role="tabpanel"
+              aria-labelledby="billing-tab"
+            >
+              <AdminBilling products={products} onStockChanged={refresh} />
+            </div>
+          )}
+          {tab === "qr" && (
+            <div
+              id="admin-payment-qr"
+              role="tabpanel"
+              aria-labelledby="payment-qr-tab"
+            >
+              <AdminPaymentQr />
+            </div>
+          )}
+          {tab === "repairs" && (
+            <div
+              id="admin-repairs"
+              role="tabpanel"
+              aria-labelledby="repairs-tab"
+            >
+              <AdminRepairs />
+            </div>
+          )}
           {tab === "orders" && (
             <section
               id="admin-orders"
@@ -1979,7 +2888,9 @@ export default function Admin() {
                 <p className="admin-empty" role="status">
                   {t("Loading pickup orders…")}
                 </p>
-              ) : !shownOrders.length && !storeSales.length && !selectedOrder ? (
+              ) : !shownOrders.length &&
+                !storeSales.length &&
+                !selectedOrder ? (
                 <div className="admin-empty">
                   <ShoppingBag size={35} />
                   <h3>
@@ -2047,9 +2958,50 @@ export default function Admin() {
                                 {order.email}
                               </a>
                             )}
-                            <span>{order.fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</span>
+                            <span>
+                              {order.fulfillmentMethod === "DELIVERY"
+                                ? t("Home delivery")
+                                : t("Shop pickup")}
+                            </span>
                           </div>
-                          {order.payment?.method === "MANUAL_QR" && <div className="admin-payment-review"><strong>{t("QR payment")}</strong><span>{t("Status")}: {order.payment.status}</span>{order.payment.reference && <span>{t("Reference")}: {order.payment.reference}</span>}{["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(order.payment.status) && <div className="button-row"><button className="button dark" disabled={!!busy} onClick={() => void reviewPayment(order, "PAID")}>{t("Verify payment")}</button><button className="button white" disabled={!!busy} onClick={() => void reviewPayment(order, "REJECTED")}>{t("Reject payment")}</button></div>}</div>}
+                          {order.payment?.method === "MANUAL_QR" && (
+                            <div className="admin-payment-review">
+                              <strong>{t("QR payment")}</strong>
+                              <span>
+                                {t("Status")}: {order.payment.status}
+                              </span>
+                              {order.payment.reference && (
+                                <span>
+                                  {t("Reference")}: {order.payment.reference}
+                                </span>
+                              )}
+                              {[
+                                "VERIFICATION_PENDING",
+                                "PENDING_VERIFICATION",
+                              ].includes(order.payment.status) && (
+                                <div className="button-row">
+                                  <button
+                                    className="button dark"
+                                    disabled={!!busy}
+                                    onClick={() =>
+                                      void reviewPayment(order, "PAID")
+                                    }
+                                  >
+                                    {t("Verify payment")}
+                                  </button>
+                                  <button
+                                    className="button white"
+                                    disabled={!!busy}
+                                    onClick={() =>
+                                      void reviewPayment(order, "REJECTED")
+                                    }
+                                  >
+                                    {t("Reject payment")}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           <ul>
                             {order.items.map((item) => (
                               <li key={item.product.id}>
@@ -2122,7 +3074,15 @@ export default function Admin() {
                           {order.status === "Completed" && (
                             <p className="summary-note">
                               {t("Order closed. Pickup is complete.")}
-                              {order.handover && <> {t("Handed over by")} {order.handover.by} · {new Date(order.handover.date).toLocaleString()}</>}
+                              {order.handover && (
+                                <>
+                                  {" "}
+                                  {t("Handed over by")} {order.handover.by} ·{" "}
+                                  {new Date(
+                                    order.handover.date,
+                                  ).toLocaleString()}
+                                </>
+                              )}
                             </p>
                           )}
                           <div className="admin-email-updates">
@@ -2174,76 +3134,119 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
-                    {shownOrders.map((order) => (
-                      <article className="admin-order-summary" key={order.id}>
-                        <div className="order-summary-reference">
-                          <strong>{order.id}</strong>
-                          <span>
-                            {new Date(order.date).toLocaleString(
-                              currentLanguage() === "ne" ? "ne-NP" : "en-GB",
-                              {
-                                timeZone: "Asia/Kathmandu",
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              },
-                            )}
+                      {shownOrders.map((order) => (
+                        <article className="admin-order-summary" key={order.id}>
+                          <div className="order-summary-reference">
+                            <strong>{order.id}</strong>
+                            <span>
+                              {new Date(order.date).toLocaleString(
+                                currentLanguage() === "ne" ? "ne-NP" : "en-GB",
+                                {
+                                  timeZone: "Asia/Kathmandu",
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                },
+                              )}
+                            </span>
+                          </div>
+                          <div className="order-summary-customer">
+                            <strong>{order.name}</strong>
+                            <span className="order-source-badge">
+                              {t("Website order")}
+                            </span>
+                            <span>
+                              {t("{{count}} items", {
+                                count: order.items.reduce(
+                                  (total, item) => total + item.quantity,
+                                  0,
+                                ),
+                              })}
+                            </span>
+                          </div>
+                          <strong className="order-summary-total">
+                            {money(order.total)}
+                          </strong>
+                          <span className="order-status">
+                            {t(order.status)}
                           </span>
-                        </div>
-                        <div className="order-summary-customer">
-                          <strong>{order.name}</strong>
-                          <span className="order-source-badge">{t("Website order")}</span>
-                          <span>
-                            {t("{{count}} items", {
-                              count: order.items.reduce(
-                                (total, item) => total + item.quantity,
-                                0,
-                              ),
-                            })}
-                          </span>
-                        </div>
-                        <strong className="order-summary-total">
-                          {money(order.total)}
-                        </strong>
-                        <span className="order-status">{t(order.status)}</span>
-                        {order.status === "Completed" && (
+                          {order.status === "Completed" && (
+                            <button
+                              type="button"
+                              className="button white order-bill-button"
+                              disabled={busy === `bill-${order.id}`}
+                              onClick={() => void printOrderBill(order)}
+                            >
+                              {busy === `bill-${order.id}`
+                                ? t("Preparing…")
+                                : order.billIssued
+                                  ? t("Print bill")
+                                  : t("Create bill")}
+                            </button>
+                          )}
                           <button
+                            id={`order-open-${order.id}`}
                             type="button"
-                            className="button white order-bill-button"
-                            disabled={busy === `bill-${order.id}`}
-                            onClick={() => void printOrderBill(order)}
+                            className="button white"
+                            aria-label={t("Open order {{reference}}", {
+                              reference: order.id,
+                            })}
+                            onClick={() => setSelectedOrderId(order.id)}
                           >
-                            {busy === `bill-${order.id}` ? t("Preparing…") : order.billIssued ? t("Print bill") : t("Create bill")}
+                            {t("Open order")} <ArrowUpRight size={16} />
                           </button>
-                        )}
-                        <button
-                          id={`order-open-${order.id}`}
-                          type="button"
-                          className="button white"
-                          aria-label={t("Open order {{reference}}", {
-                            reference: order.id,
-                          })}
-                          onClick={() => setSelectedOrderId(order.id)}
-                        >
-                          {t("Open order")} <ArrowUpRight size={16} />
-                        </button>
-                      </article>
-                      ))}
-                    {storeSales
-                      .filter((sale) => {
-                        if (orderQuery && !`${sale.id} ${sale.customerName}`.toLowerCase().includes(orderQuery.toLowerCase())) return false;
-                        if (dateFilter && !sale.date.startsWith(dateFilter)) return false;
-                        return orderFilter === "all" || orderFilter === "completed";
-                      })
-                      .map((sale) => (
-                        <article className="admin-order-summary" key={sale.id}>
-                          <div className="order-summary-reference"><strong>{sale.id}</strong><span>{new Date(sale.date).toLocaleString("en-GB", { timeZone: "Asia/Kathmandu", dateStyle: "medium", timeStyle: "short" })}</span></div>
-                          <div className="order-summary-customer"><strong>{sale.customerName || t("Walk-in customer")}</strong><span className="order-source-badge in-store">{t("In-store order")}</span><span>{t("Completed")}</span></div>
-                          <strong className="order-summary-total">{money(sale.total)}</strong>
-                          <span className="order-status">{t("Completed")}</span>
-                          <span className="order-payment-label">{sale.paymentMethod}</span>
-                          <span />
                         </article>
                       ))}
+                      {storeSales
+                        .filter((sale) => {
+                          if (
+                            orderQuery &&
+                            !`${sale.id} ${sale.customerName}`
+                              .toLowerCase()
+                              .includes(orderQuery.toLowerCase())
+                          )
+                            return false;
+                          if (dateFilter && !sale.date.startsWith(dateFilter))
+                            return false;
+                          return (
+                            orderFilter === "all" || orderFilter === "completed"
+                          );
+                        })
+                        .map((sale) => (
+                          <article
+                            className="admin-order-summary"
+                            key={sale.id}
+                          >
+                            <div className="order-summary-reference">
+                              <strong>{sale.id}</strong>
+                              <span>
+                                {new Date(sale.date).toLocaleString("en-GB", {
+                                  timeZone: "Asia/Kathmandu",
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                })}
+                              </span>
+                            </div>
+                            <div className="order-summary-customer">
+                              <strong>
+                                {sale.customerName || t("Walk-in customer")}
+                              </strong>
+                              <span className="order-source-badge in-store">
+                                {t("In-store order")}
+                              </span>
+                              <span>{t("Completed")}</span>
+                            </div>
+                            <strong className="order-summary-total">
+                              {money(sale.total)}
+                            </strong>
+                            <span className="order-status">
+                              {t("Completed")}
+                            </span>
+                            <span className="order-payment-label">
+                              {sale.paymentMethod}
+                            </span>
+                            <span />
+                          </article>
+                        ))}
                     </>
                   )}
                 </div>
@@ -2263,16 +3266,36 @@ export default function Admin() {
           }}
         />
       )}
-      {discardPrompt && <div className="modal-backdrop" role="presentation"><div className="admin-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="discard-title"><h2 id="discard-title">{t("Leave product editor?")}</h2><p>{t("Your unsaved product changes will be lost.")}</p><div className="button-row"><button className="button white" onClick={() => setDiscardPrompt(false)}>{t("Keep editing")}</button><button className="button dark" onClick={() => { setDiscardPrompt(false); resetDraft(); }}>{t("Leave without saving")}</button></div></div></div>}
+      {discardPrompt && (
+        <div className="modal-backdrop" role="presentation">
+          <div
+            className="admin-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="discard-title"
+          >
+            <h2 id="discard-title">{t("Leave product editor?")}</h2>
+            <p>{t("Your unsaved product changes will be lost.")}</p>
+            <div className="button-row">
+              <button
+                className="button white"
+                onClick={() => setDiscardPrompt(false)}
+              >
+                {t("Keep editing")}
+              </button>
+              <button
+                className="button dark"
+                onClick={() => {
+                  setDiscardPrompt(false);
+                  resetDraft();
+                }}
+              >
+                {t("Leave without saving")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-

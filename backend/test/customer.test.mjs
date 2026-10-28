@@ -149,10 +149,7 @@ test("phone login, saved checkout details, private order ownership, multi-device
       code: correct,
     });
     const aliceCookie = verified.headers.get("set-cookie").split(";")[0];
-    assert.match(
-      verified.headers.get("set-cookie"),
-      /HttpOnly; SameSite=Lax/,
-    );
+    assert.match(verified.headers.get("set-cookie"), /HttpOnly; SameSite=Lax/);
     assert.equal(verified.data.customer.phone, "+9779806600444");
     assert.equal(verified.data.customer.profileComplete, false);
     assert.equal(

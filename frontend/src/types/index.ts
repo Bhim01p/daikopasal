@@ -21,7 +21,20 @@ export interface Product {
   variantKey?: string;
   image: string;
   images?: string[];
-  catalogueImage?: { url: string; deviceId: string; attributionRequired: boolean; sourceUrl: string; license: string; images?: { url: string; sourceUrl?: string; license?: string; attributionRequired?: boolean; position?: number }[] };
+  catalogueImage?: {
+    url: string;
+    deviceId: string;
+    attributionRequired: boolean;
+    sourceUrl: string;
+    license: string;
+    images?: {
+      url: string;
+      sourceUrl?: string;
+      license?: string;
+      attributionRequired?: boolean;
+      position?: number;
+    }[];
+  };
   catalogueDescription?: { en: string; ne: string; deviceId: string };
   catalogueSpecs?: { specs: Record<string, string>; sourceUrl?: string };
   color: string;
@@ -78,7 +91,25 @@ export interface Order {
   fulfillmentMethod?: "PICKUP" | "DELIVERY";
   deliveryFee?: number;
   deliveryAddress?: Record<string, string> | null;
-  payment?: { orderId?: string; method: "MANUAL_QR" | "PAY_AT_SHOP" | "ESEWA"; status: string; amount?: number; currency?: string; provider?: string; reference?: string; customerReference?: string; providerTransactionId?: string; verificationType?: "ADMIN" | "GATEWAY"; verifiedAt?: string; verifiedBy?: string; createdAt?: string; updatedAt?: string; submittedAt?: string; reviewedAt?: string; reviewedBy?: string };
+  payment?: {
+    orderId?: string;
+    method: "MANUAL_QR" | "PAY_AT_SHOP" | "ESEWA";
+    status: string;
+    amount?: number;
+    currency?: string;
+    provider?: string;
+    reference?: string;
+    customerReference?: string;
+    providerTransactionId?: string;
+    verificationType?: "ADMIN" | "GATEWAY";
+    verifiedAt?: string;
+    verifiedBy?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    submittedAt?: string;
+    reviewedAt?: string;
+    reviewedBy?: string;
+  };
   language?: "en" | "ne";
   receiptToken?: string;
   accountOrder?: boolean;
@@ -95,4 +126,3 @@ export interface Order {
     error?: string;
   }[];
 }
-

@@ -245,7 +245,10 @@ export default function MyOrders() {
       )}
       <div className="customer-orders">
         {shownOrders?.map((order) => (
-          <article className="customer-order compact-customer-order" key={order.id}>
+          <article
+            className="customer-order compact-customer-order"
+            key={order.id}
+          >
             <div className="customer-order-top">
               <div>
                 <h2>{order.id}</h2>
@@ -267,12 +270,31 @@ export default function MyOrders() {
                 {t(order.status)}
               </span>
             </div>
-            <p className="customer-order-count">{t("{{count}} items", { count: order.items.reduce((sum, item) => sum + item.quantity, 0) })}</p>
+            <p className="customer-order-count">
+              {t("{{count}} items", {
+                count: order.items.reduce(
+                  (sum, item) => sum + item.quantity,
+                  0,
+                ),
+              })}
+            </p>
             <div className="customer-order-bottom">
               <div>
                 <strong>{money(order.total)}</strong>
-                <p>{order.fulfillmentMethod === "DELIVERY" ? t("Home delivery") : t("Shop pickup")}</p>
-                <p className="order-payment-status">{order.payment?.status === "PAID" ? t("Payment verified") : order.payment?.status === "REJECTED" ? t("Payment needs attention") : order.payment?.method === "PAY_AT_SHOP" ? t("Pay at shop") : t("Payment verification pending")}</p>
+                <p>
+                  {order.fulfillmentMethod === "DELIVERY"
+                    ? t("Home delivery")
+                    : t("Shop pickup")}
+                </p>
+                <p className="order-payment-status">
+                  {order.payment?.status === "PAID"
+                    ? t("Payment verified")
+                    : order.payment?.status === "REJECTED"
+                      ? t("Payment needs attention")
+                      : order.payment?.method === "PAY_AT_SHOP"
+                        ? t("Pay at shop")
+                        : t("Payment verification pending")}
+                </p>
               </div>
               <Link className="button dark" to={`/order/${order.id}`}>
                 {t("View order")}

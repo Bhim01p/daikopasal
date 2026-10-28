@@ -38,31 +38,85 @@ export default function Catalogue({ category }: { category?: Category }) {
   }, [showFilters]);
   const base = products.filter((p) => !category || p.category === category);
   const brands = [...new Set(base.map((p) => p.brand))].sort();
-  const ramOptions = [...new Set(base.map((p) => p.ram).filter((value): value is number => Number.isFinite(value)))].sort((a, b) => a - b);
-  const storageOptions = [...new Set(base.map((p) => p.storage).filter((value): value is number => Number.isFinite(value)))].sort((a, b) => a - b);
+  const ramOptions = [
+    ...new Set(
+      base
+        .map((p) => p.ram)
+        .filter((value): value is number => Number.isFinite(value)),
+    ),
+  ].sort((a, b) => a - b);
+  const storageOptions = [
+    ...new Set(
+      base
+        .map((p) => p.storage)
+        .filter((value): value is number => Number.isFinite(value)),
+    ),
+  ].sort((a, b) => a - b);
   const conditionOptions = ["Like New", "Excellent", "Good", "Fair"];
-  const sortOptions = ["newest", "low", "high", "name-asc", "name-desc", "brand-asc"];
-  const priceOptions = [...new Set([
-    ...(category === "accessory" ? [500, 1000, 2000, 3500] : [20000, 35000, 50000, 70000, 100000, 150000]),
-    ...base.map((p) => p.price).filter((value) => Number.isFinite(value) && value > 0 && value <= 1000000),
-  ])].sort((a, b) => a - b);
+  const sortOptions = [
+    "newest",
+    "low",
+    "high",
+    "name-asc",
+    "name-desc",
+    "brand-asc",
+  ];
+  const priceOptions = [
+    ...new Set([
+      ...(category === "accessory"
+        ? [500, 1000, 2000, 3500]
+        : [20000, 35000, 50000, 70000, 100000, 150000]),
+      ...base
+        .map((p) => p.price)
+        .filter(
+          (value) => Number.isFinite(value) && value > 0 && value <= 1000000,
+        ),
+    ]),
+  ].sort((a, b) => a - b);
   const updateParam = (name: string, value: string) => {
     setParams((current) => {
       const next = new URLSearchParams(current);
-      if (value) next.set(name, value); else next.delete(name);
+      if (value) next.set(name, value);
+      else next.delete(name);
       return next;
     });
   };
   useEffect(() => {
     const rawBudget = params.get("budget") || "";
-    setBrand(brands.includes(params.get("brand") || "") ? params.get("brand") || "" : "");
+    setBrand(
+      brands.includes(params.get("brand") || "")
+        ? params.get("brand") || ""
+        : "",
+    );
     setBudget(/^\d+(?:\.\d+)?$/.test(rawBudget) ? rawBudget : "");
-    setRam(ramOptions.some((value) => String(value) === params.get("ram")) ? params.get("ram") || "" : "");
-    setStorage(storageOptions.some((value) => String(value) === params.get("storage")) ? params.get("storage") || "" : "");
-    setCondition(conditionOptions.includes(params.get("condition") || "") ? params.get("condition") || "" : "");
-    setAccessory(accessoryCategories.includes(params.get("accessory") || "") ? params.get("accessory") || "" : "");
-    setSort(sortOptions.includes(params.get("sort") || "") ? params.get("sort") || "newest" : "newest");
-    setInStock(["1", "true"].includes((params.get("inStock") || "").toLowerCase()));
+    setRam(
+      ramOptions.some((value) => String(value) === params.get("ram"))
+        ? params.get("ram") || ""
+        : "",
+    );
+    setStorage(
+      storageOptions.some((value) => String(value) === params.get("storage"))
+        ? params.get("storage") || ""
+        : "",
+    );
+    setCondition(
+      conditionOptions.includes(params.get("condition") || "")
+        ? params.get("condition") || ""
+        : "",
+    );
+    setAccessory(
+      accessoryCategories.includes(params.get("accessory") || "")
+        ? params.get("accessory") || ""
+        : "",
+    );
+    setSort(
+      sortOptions.includes(params.get("sort") || "")
+        ? params.get("sort") || "newest"
+        : "newest",
+    );
+    setInStock(
+      ["1", "true"].includes((params.get("inStock") || "").toLowerCase()),
+    );
   }, [params, products, category]);
   const result = useMemo(
     () =>
@@ -70,7 +124,11 @@ export default function Catalogue({ category }: { category?: Category }) {
         .filter(
           (p) =>
             (!query ||
-              `${p.brand} ${p.name} ${p.category} ${p.accessoryCategory || ""} ${t(p.accessoryCategory)} ${p.ram ?? ""} ${p.storage ?? ""} ${p.description || ""} ${p.descriptionNe || ""} ${p.catalogueDescription?.en || ""} ${p.catalogueDescription?.ne || ""} ${Object.entries({ ...p.catalogueSpecs?.specs, ...p.specs }).flat().join(" ")}`
+              `${p.brand} ${p.name} ${p.category} ${p.accessoryCategory || ""} ${t(p.accessoryCategory)} ${p.ram ?? ""} ${p.storage ?? ""} ${p.description || ""} ${p.descriptionNe || ""} ${p.catalogueDescription?.en || ""} ${p.catalogueDescription?.ne || ""} ${Object.entries(
+                { ...p.catalogueSpecs?.specs, ...p.specs },
+              )
+                .flat()
+                .join(" ")}`
                 .toLowerCase()
                 .includes(normalizeDigits(query).toLowerCase())) &&
             (!brand || p.brand === brand) &&
@@ -81,7 +139,20 @@ export default function Catalogue({ category }: { category?: Category }) {
             (!accessory || p.accessoryCategory === accessory) &&
             (!inStock || p.available),
         )
-        .sort((a, b) => sort === "low" ? a.price - b.price : sort === "high" ? b.price - a.price : sort === "name-asc" ? a.name.localeCompare(b.name) : sort === "name-desc" ? b.name.localeCompare(a.name) : sort === "brand-asc" ? a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name) : b.added - a.added),
+        .sort((a, b) =>
+          sort === "low"
+            ? a.price - b.price
+            : sort === "high"
+              ? b.price - a.price
+              : sort === "name-asc"
+                ? a.name.localeCompare(b.name)
+                : sort === "name-desc"
+                  ? b.name.localeCompare(a.name)
+                  : sort === "brand-asc"
+                    ? a.brand.localeCompare(b.brand) ||
+                      a.name.localeCompare(b.name)
+                    : b.added - a.added,
+        ),
     [
       products,
       category,
@@ -136,9 +207,15 @@ export default function Catalogue({ category }: { category?: Category }) {
   ].filter(Boolean).length;
   return (
     <>
-      <div className={`container catalogue-layout${!category ? " catalogue-search-page" : ""}`}>
+      <div
+        className={`container catalogue-layout${!category ? " catalogue-search-page" : ""}`}
+      >
         <div className="catalogue-results">
-          <nav className="breadcrumb" aria-label={t("Breadcrumb") }><Link to="/">{t("Home")}</Link><ArrowRight size={12} /><span>{t(title)}</span></nav>
+          <nav className="breadcrumb" aria-label={t("Breadcrumb")}>
+            <Link to="/">{t("Home")}</Link>
+            <ArrowRight size={12} />
+            <span>{t(title)}</span>
+          </nav>
           <div className="catalogue-heading">
             <h1>{t(title)}</h1>
           </div>
@@ -162,7 +239,12 @@ export default function Catalogue({ category }: { category?: Category }) {
               <select
                 aria-label={t("Sort products")}
                 value={sort}
-                onChange={(e) => updateParam("sort", e.target.value === "newest" ? "" : e.target.value)}
+                onChange={(e) =>
+                  updateParam(
+                    "sort",
+                    e.target.value === "newest" ? "" : e.target.value,
+                  )
+                }
               >
                 <option value="newest">{t("Newest first")}</option>
                 <option value="low">{t("Price: low to high")}</option>
@@ -200,7 +282,9 @@ export default function Catalogue({ category }: { category?: Category }) {
               <input
                 type="checkbox"
                 checked={inStock}
-                onChange={(event) => updateParam("inStock", event.target.checked ? "1" : "")}
+                onChange={(event) =>
+                  updateParam("inStock", event.target.checked ? "1" : "")
+                }
               />{" "}
               {t("In stock only")}
             </label>
@@ -247,10 +331,10 @@ export default function Catalogue({ category }: { category?: Category }) {
                   >
                     <option value="">{t("Any RAM")}</option>
                     {ramOptions.map((v) => (
-                        <option value={v} key={v}>
-                          {v} {t(" GB")}
-                        </option>
-                      ))}
+                      <option value={v} key={v}>
+                        {v} {t(" GB")}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label>
@@ -322,7 +406,8 @@ export default function Catalogue({ category }: { category?: Category }) {
             <span>{t("Shop pickup available")}</span>
             {active && (
               <button className="mobile-clear-filters" onClick={reset}>
-                {t("Clear all ")}<X size={14} />
+                {t("Clear all ")}
+                <X size={14} />
               </button>
             )}
           </div>

@@ -1,7 +1,13 @@
 import SafeImage from "../components/SafeImage";
 import { useT } from "../context/LanguageContext";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play,
+} from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export default function ReferenceHome() {
@@ -10,9 +16,13 @@ export default function ReferenceHome() {
     {
       title: "New and used phones",
       description: "Find your next phone or a pre-owned option.",
-      links: [{ to: "/mobiles", label: "New phones" }, { to: "/second-hand", label: "Used phones" }],
+      links: [
+        { to: "/mobiles", label: "New phones" },
+        { to: "/second-hand", label: "Used phones" },
+      ],
       image: "/assets/catalogue-iphone-15-1000.webp",
-      srcSet: "/assets/catalogue-iphone-15-640.webp 640w, /assets/catalogue-iphone-15-1000.webp 1000w",
+      srcSet:
+        "/assets/catalogue-iphone-15-640.webp 640w, /assets/catalogue-iphone-15-1000.webp 1000w",
       sizes: "(max-width: 767px) 88vw, 60vw",
       width: 1000,
       height: 1000,
@@ -20,9 +30,13 @@ export default function ReferenceHome() {
     {
       title: "Phone and meter repair",
       description: "Help for your phone or vehicle meter.",
-      links: [{ to: "/repair#phone-repairs", label: "Phone repair" }, { to: "/repair#digital-meter-repairs", label: "Digital meter repair" }],
+      links: [
+        { to: "/repair#phone-repairs", label: "Phone repair" },
+        { to: "/repair#digital-meter-repairs", label: "Digital meter repair" },
+      ],
       image: "/assets/pulsar-meter-repair-1280.webp",
-      srcSet: "/assets/pulsar-meter-repair-640.webp 640w, /assets/pulsar-meter-repair-1280.webp 1280w",
+      srcSet:
+        "/assets/pulsar-meter-repair-640.webp 640w, /assets/pulsar-meter-repair-1280.webp 1280w",
       sizes: "100vw",
       width: 1672,
       height: 941,
@@ -32,7 +46,8 @@ export default function ReferenceHome() {
       description: "Everyday essentials",
       links: [{ to: "/accessories", label: "Explore category" }],
       image: "/assets/catalogue-redmi-buds-6-play-1280.webp",
-      srcSet: "/assets/catalogue-redmi-buds-6-play-640.webp 640w, /assets/catalogue-redmi-buds-6-play-1280.webp 1280w",
+      srcSet:
+        "/assets/catalogue-redmi-buds-6-play-640.webp 640w, /assets/catalogue-redmi-buds-6-play-1280.webp 1280w",
       sizes: "(max-width: 767px) 88vw, 60vw",
       width: 2560,
       height: 1400,
@@ -53,10 +68,7 @@ export default function ReferenceHome() {
         (header?.getBoundingClientRect().height || 0) +
         (tabs?.getBoundingClientRect().height || 0);
       const dockHeight = dock?.getBoundingClientRect().height || 64;
-      section.style.setProperty(
-        "--home-top-height",
-        `${topHeight}px`,
-      );
+      section.style.setProperty("--home-top-height", `${topHeight}px`);
       section.style.setProperty("--home-dock-height", `${dockHeight}px`);
     };
     const observer = new ResizeObserver(measure);
@@ -83,7 +95,13 @@ export default function ReferenceHome() {
   };
   useEffect(() => {
     const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible" && !drag.current && !interactionPaused.current && !manualPaused.current && Date.now() > pauseUntil.current)
+      if (
+        document.visibilityState === "visible" &&
+        !drag.current &&
+        !interactionPaused.current &&
+        !manualPaused.current &&
+        Date.now() > pauseUntil.current
+      )
         setIndex((i) => (i + 1) % slides.length);
     }, 6000);
     return () => window.clearInterval(timer);
@@ -98,10 +116,21 @@ export default function ReferenceHome() {
         aria-roledescription="carousel"
         aria-label={t("Shop categories")}
         tabIndex={0}
-        onMouseEnter={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) interactionPaused.current = true; }}
-        onMouseLeave={() => { interactionPaused.current = false; }}
-        onFocusCapture={() => { if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) interactionPaused.current = true; }}
-        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) interactionPaused.current = false; }}
+        onMouseEnter={() => {
+          if (window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+            interactionPaused.current = true;
+        }}
+        onMouseLeave={() => {
+          interactionPaused.current = false;
+        }}
+        onFocusCapture={() => {
+          if (window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+            interactionPaused.current = true;
+        }}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget))
+            interactionPaused.current = false;
+        }}
         onKeyDown={(e) => {
           if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
             e.preventDefault();
@@ -109,18 +138,31 @@ export default function ReferenceHome() {
           }
         }}
         onPointerDown={(e) => {
-          if (e.pointerType !== "touch" && e.button === 0) { drag.current = { x: e.clientX, y: e.clientY }; }
+          if (e.pointerType !== "touch" && e.button === 0) {
+            drag.current = { x: e.clientX, y: e.clientY };
+          }
         }}
         onPointerMove={(e) => {
           if (e.pointerType === "touch") return;
-          if (window.matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)").matches && heroVisual.current) {
+          if (
+            window.matchMedia(
+              "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)",
+            ).matches &&
+            heroVisual.current
+          ) {
             const rect = e.currentTarget.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
             if (tiltFrame.current) cancelAnimationFrame(tiltFrame.current);
             tiltFrame.current = requestAnimationFrame(() => {
-              heroVisual.current?.style.setProperty("--hero-tilt-x", `${(-y * 4).toFixed(2)}deg`);
-              heroVisual.current?.style.setProperty("--hero-tilt-y", `${(x * 6).toFixed(2)}deg`);
+              heroVisual.current?.style.setProperty(
+                "--hero-tilt-x",
+                `${(-y * 4).toFixed(2)}deg`,
+              );
+              heroVisual.current?.style.setProperty(
+                "--hero-tilt-y",
+                `${(x * 6).toFixed(2)}deg`,
+              );
             });
           }
           const d = drag.current;
@@ -146,10 +188,16 @@ export default function ReferenceHome() {
         }}
         onPointerCancel={() => {
           drag.current = null;
-          if (heroVisual.current) { heroVisual.current.style.setProperty("--hero-tilt-x", "0deg"); heroVisual.current.style.setProperty("--hero-tilt-y", "0deg"); }
+          if (heroVisual.current) {
+            heroVisual.current.style.setProperty("--hero-tilt-x", "0deg");
+            heroVisual.current.style.setProperty("--hero-tilt-y", "0deg");
+          }
         }}
         onPointerLeave={() => {
-          if (heroVisual.current) { heroVisual.current.style.setProperty("--hero-tilt-x", "0deg"); heroVisual.current.style.setProperty("--hero-tilt-y", "0deg"); }
+          if (heroVisual.current) {
+            heroVisual.current.style.setProperty("--hero-tilt-x", "0deg");
+            heroVisual.current.style.setProperty("--hero-tilt-y", "0deg");
+          }
         }}
         onTouchStart={(e) => {
           const touch = e.touches[0];
@@ -159,7 +207,13 @@ export default function ReferenceHome() {
           const start = drag.current;
           const touch = e.changedTouches[0];
           drag.current = null;
-          if (start && touch && Math.abs(touch.clientX - start.x) > 45 && Math.abs(touch.clientX - start.x) > Math.abs(touch.clientY - start.y) * 1.25) {
+          if (
+            start &&
+            touch &&
+            Math.abs(touch.clientX - start.x) > 45 &&
+            Math.abs(touch.clientX - start.x) >
+              Math.abs(touch.clientY - start.y) * 1.25
+          ) {
             suppress.current = Date.now() + 500;
             move(touch.clientX < start.x ? 1 : -1);
           }
@@ -181,7 +235,11 @@ export default function ReferenceHome() {
           aria-roledescription="slide"
           aria-label={`${index + 1} / ${slides.length}: ${t(slide.title)}`}
         >
-          <div key={`visual-${index}`} ref={heroVisual} className="reference-banner-visual">
+          <div
+            key={`visual-${index}`}
+            ref={heroVisual}
+            className="reference-banner-visual"
+          >
             <SafeImage
               className="reference-banner-photo"
               src={slide.image}
@@ -199,10 +257,25 @@ export default function ReferenceHome() {
             <span className="eyebrow">{t("Machhapuchhree Electronics")}</span>
             <h1>{t(slide.title)}</h1>
             <p>{t(slide.description)}</p>
-            <div className="home-slide-links">{slide.links.map((link) => <Link key={link.to} className="button dark" to={link.to}>{t(link.label)} <ArrowRight size={17} /></Link>)}</div>
+            <div className="home-slide-links">
+              {slide.links.map((link) => (
+                <Link key={link.to} className="button dark" to={link.to}>
+                  {t(link.label)} <ArrowRight size={17} />
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="home-carousel-controls" role="group" aria-label={t("Shop categories")}>
-            <button className="home-carousel-arrow" type="button" aria-label={t("Previous category")} onClick={() => move(-1)}>
+          <div
+            className="home-carousel-controls"
+            role="group"
+            aria-label={t("Shop categories")}
+          >
+            <button
+              className="home-carousel-arrow"
+              type="button"
+              aria-label={t("Previous category")}
+              onClick={() => move(-1)}
+            >
               <ChevronLeft size={19} aria-hidden="true" />
             </button>
             <div className="home-carousel-dots">
@@ -217,7 +290,12 @@ export default function ReferenceHome() {
                 />
               ))}
             </div>
-            <button className="home-carousel-arrow" type="button" aria-label={t("Next category")} onClick={() => move(1)}>
+            <button
+              className="home-carousel-arrow"
+              type="button"
+              aria-label={t("Next category")}
+              onClick={() => move(1)}
+            >
               <ChevronRight size={19} aria-hidden="true" />
             </button>
             <button
@@ -230,7 +308,11 @@ export default function ReferenceHome() {
                 setIsPaused(manualPaused.current);
               }}
             >
-              {isPaused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}
+              {isPaused ? (
+                <Play size={16} aria-hidden="true" />
+              ) : (
+                <Pause size={16} aria-hidden="true" />
+              )}
             </button>
           </div>
         </div>

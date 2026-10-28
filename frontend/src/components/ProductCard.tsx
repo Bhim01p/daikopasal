@@ -21,7 +21,8 @@ export function ProductImage({
   fetchPriority?: "high" | "low" | "auto";
 }) {
   const t = useT();
-  const isGenericPhoneFallback = product.image === "/assets/phone.svg" && !product.catalogueImage?.url;
+  const isGenericPhoneFallback =
+    product.image === "/assets/phone.svg" && !product.catalogueImage?.url;
   return (
     <div
       className={`product-visual ${isIllustration(product) ? "product-visual-placeholder" : ""} ${className}`}
@@ -29,8 +30,14 @@ export function ProductImage({
     >
       <SafeImage
         src={productImageSource(product)}
-        srcSet={isGenericPhoneFallback ? "/assets/sample-phone-fallback-320.webp 320w, /assets/sample-phone-fallback-640.webp 640w" : undefined}
-        sizes={isGenericPhoneFallback ? "(max-width: 767px) 45vw, 50vw" : undefined}
+        srcSet={
+          isGenericPhoneFallback
+            ? "/assets/sample-phone-fallback-320.webp 320w, /assets/sample-phone-fallback-640.webp 640w"
+            : undefined
+        }
+        sizes={
+          isGenericPhoneFallback ? "(max-width: 767px) 45vw, 50vw" : undefined
+        }
         alt={`${product.brand} ${product.name}${isIllustration(product) ? " — illustrative placeholder" : ""}`}
         loading={loading}
         fetchPriority={fetchPriority}
@@ -46,11 +53,17 @@ export default function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const [added, setAdded] = useState(false);
   const addedTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => {
-    if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (addedTimer.current !== undefined)
+        window.clearTimeout(addedTimer.current);
+    },
+    [],
+  );
   return (
-    <article className={`product-card${isIllustration(product) ? " product-card-placeholder" : ""}`}>
+    <article
+      className={`product-card${isIllustration(product) ? " product-card-placeholder" : ""}`}
+    >
       <ProductTools product={product} />
       <Link to={`/product/${product.slug}`} className="product-image-link">
         <ProductImage product={product} />
@@ -105,8 +118,12 @@ export default function ProductCard({ product }: { product: Product }) {
             onClick={() => {
               add(product.id);
               setAdded(true);
-              if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
-              addedTimer.current = window.setTimeout(() => setAdded(false), 1400);
+              if (addedTimer.current !== undefined)
+                window.clearTimeout(addedTimer.current);
+              addedTimer.current = window.setTimeout(
+                () => setAdded(false),
+                1400,
+              );
             }}
             aria-label={t("Add {{v0}} to cart", { v0: String(product.name) })}
           >

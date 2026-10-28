@@ -16,7 +16,14 @@ type StaffAccount = {
   username: string;
   enabled: boolean;
   createdAt: string;
-  permissions?: { orders?: boolean; sales?: boolean; billing?: boolean; inventory?: boolean; repairs?: boolean; paymentQr?: boolean };
+  permissions?: {
+    orders?: boolean;
+    sales?: boolean;
+    billing?: boolean;
+    inventory?: boolean;
+    repairs?: boolean;
+    paymentQr?: boolean;
+  };
 };
 const emptyDraft = {
   id: "",
@@ -157,7 +164,14 @@ export default function StaffManager({
             ...(!draft.id || draft.password
               ? { password: draft.password }
               : {}),
-            permissions: { orders: draft.orders, sales: draft.sales, billing: draft.billing, inventory: draft.inventory, repairs: draft.repairs, paymentQr: draft.paymentQr },
+            permissions: {
+              orders: draft.orders,
+              sales: draft.sales,
+              billing: draft.billing,
+              inventory: draft.inventory,
+              repairs: draft.repairs,
+              paymentQr: draft.paymentQr,
+            },
           }),
         },
       );
@@ -305,8 +319,29 @@ export default function StaffManager({
             <ShieldCheck size={17} />{" "}
             {t("Passwords are stored securely and are never shown again.")}
           </p>
-          <fieldset className="staff-permissions"><legend>{t("Admin access roles")}</legend>
-            {([['orders','Can manage orders'],['sales','Can view sales'],['billing','Can create bills'],['inventory','Can update inventory'],['repairs','Can manage repair tickets'],['paymentQr','Can manage payment QR']] as const).map(([key, label]) => <label key={key}><input type="checkbox" checked={draft[key]} onChange={(e) => setDraft({ ...draft, [key]: e.target.checked })} /> {t(label)}</label>)}
+          <fieldset className="staff-permissions">
+            <legend>{t("Admin access roles")}</legend>
+            {(
+              [
+                ["orders", "Can manage orders"],
+                ["sales", "Can view sales"],
+                ["billing", "Can create bills"],
+                ["inventory", "Can update inventory"],
+                ["repairs", "Can manage repair tickets"],
+                ["paymentQr", "Can manage payment QR"],
+              ] as const
+            ).map(([key, label]) => (
+              <label key={key}>
+                <input
+                  type="checkbox"
+                  checked={draft[key]}
+                  onChange={(e) =>
+                    setDraft({ ...draft, [key]: e.target.checked })
+                  }
+                />{" "}
+                {t(label)}
+              </label>
+            ))}
           </fieldset>
           <label htmlFor="staff-name">{t("Staff name")}</label>
           <input

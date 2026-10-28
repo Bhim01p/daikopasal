@@ -146,6 +146,39 @@ export function createOrderEmail(order, kind = "status") {
   };
 }
 
+export function createPasswordChangedEmail(customer) {
+  if (!customer?.email || customer.verifiedVia !== "email") return null;
+  const changedAt = new Date().toISOString();
+  const text = [
+    `Hello ${customer.name || "customer"},`,
+    "",
+    "The password for your Machhapuchhree Electronics account was changed.",
+    `Time: ${changedAt}`,
+    "",
+    "If you did not make this change, reset your password using your verified email code and contact the shop.",
+    "",
+    shop.name,
+  ].join("\n");
+  const safeName = escape(customer.name || "customer");
+  const html = `<!doctype html><html><body style="font-family:Arial,sans-serif;line-height:1.6;padding:24px"><p>Hello ${safeName},</p><p>The password for your Machhapuchhree Electronics account was changed.</p><p>Time: ${escape(changedAt)}</p><p>If you did not make this change, reset your password using your verified email code and contact the shop.</p><p>${escape(shop.name)}</p></body></html>`;
+  const id = randomUUID();
+  return {
+    id,
+    orderId: `account-security-${customer.id}-${id}`,
+    kind: "account-security",
+    createdAt: changedAt,
+    state: "queued",
+    attempts: 0,
+    nextAttemptAt: 0,
+    message: {
+      to: [customer.email],
+      subject: `Your account password was changed · ${shop.name}`,
+      text,
+      html,
+    },
+  };
+}
+
 export function createEmailTransport(env = process.env, fetcher = fetch) {
   if (env.EMAIL_PROVIDER === "gmail") return createGmailTransport(env);
   if (env.EMAIL_PROVIDER !== "resend" || !env.RESEND_API_KEY || !env.EMAIL_FROM)

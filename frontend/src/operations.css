@@ -1,78 +1,456 @@
-.billing-panel, .repair-admin-panel { display:grid; gap:18px; }
-.billing-panel label, .repair-ticket-form label, .repair-tracking label { display:grid; gap:7px; font-weight:600; }
-.billing-panel input, .billing-panel select, .repair-ticket-form input, .repair-ticket-form textarea,
-.repair-ticket-list select, .repair-tracking input { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-surface); color:var(--sky-text); }
-.billing-products { display:grid; gap:8px; max-height:360px; overflow:auto; }
-.billing-products label { grid-template-columns:minmax(0,1fr) 80px; align-items:center; padding:8px; border:1px solid var(--sky-border); border-radius:8px; }
-.billing-products input { text-align:center; }
-.billing-list, .repair-ticket-list { display:grid; gap:12px; }
-.billing-list article { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px; border:1px solid var(--sky-border); border-radius:10px; }
-.repair-ticket-form { display:grid; gap:12px; }
-.repair-ticket-list article { padding:16px; border:1px solid var(--sky-border); border-radius:10px; }
-.repair-ticket-list article > div { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-.repair-ticket-list code { overflow-wrap:anywhere; }
-.used-inspection-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; border:1px solid var(--sky-border); border-radius:10px; margin-top:18px; padding:16px; }
-.used-inspection-editor legend { font-weight:700; }
-.used-inspection-editor label { display:grid; gap:6px; }
-.used-inspection-editor select, .used-inspection-editor input, .used-inspection-editor textarea { width:100%; }
-.used-condition-report { border:1px solid var(--sky-border); border-radius:12px; padding:18px; margin:18px 0; }
-.used-condition-report h2 { font-size:20px; margin:0 0 10px; }
-.used-condition-report dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-.used-condition-report dl div { display:grid; gap:4px; padding:8px; background:var(--sky-background); border-radius:7px; }
-.used-condition-report dt { color:var(--sky-muted); }
-.used-condition-report dd { margin:0; font-weight:700; }
-.repair-tracking { padding-block:40px; }
-.customer-repair-request { display:grid; gap:16px; max-width:760px; margin:0 auto 36px; padding:24px; border:1px solid var(--sky-border); border-radius:14px; background:var(--sky-surface); }
-.customer-repair-request h2, .customer-repair-request p { margin:0; }
-.customer-repair-request form { display:grid; gap:14px; }
-.customer-repair-request label { display:grid; gap:7px; font-weight:600; }
-.customer-repair-request input, .customer-repair-request select, .customer-repair-request textarea { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-surface); color:var(--sky-text); font:inherit; }
-.customer-repair-request textarea { min-height:100px; resize:vertical; }
-.repair-request-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-.customer-repair-request fieldset { display:flex; flex-wrap:wrap; gap:14px; border:1px solid var(--sky-border); border-radius:8px; padding:12px; }
-.customer-repair-request fieldset label, .customer-repair-request .repair-checkbox { display:flex; align-items:center; gap:8px; font-weight:400; }
-.customer-repair-request fieldset input, .customer-repair-request .repair-checkbox input { width:auto; min-height:0; }
-.repair-success { max-width:620px; }
-.repair-success .repair-current-status { display:grid; gap:4px; padding:14px; border-radius:10px; background:var(--sky-background); }
-.customer-repair-request .form-error { color:#b42318; }
-.legacy-repair-tracking form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; gap:12px; align-items:end; }
-.repair-status-card { margin-top:18px; padding:18px; border:1px solid var(--sky-border); border-radius:10px; }
-.repair-admin-toolbar { display:grid; grid-template-columns:minmax(0,1fr) 220px; gap:10px; margin:18px 0; }
-.repair-admin-toolbar input, .repair-admin-toolbar select, .repair-detail-card input, .repair-detail-card select, .repair-detail-card textarea { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--sky-border); border-radius:8px; background:var(--sky-surface); color:var(--sky-text); font:inherit; }
-.repair-detail-card { display:grid; gap:14px; margin-top:20px; padding:20px; border:1px solid var(--sky-border); border-radius:12px; background:var(--sky-surface); }
-.repair-detail-card h3, .repair-detail-card p { margin:0; }
-.repair-detail-card textarea { min-height:90px; resize:vertical; }
-@media(max-width:700px) { .legacy-repair-tracking form, .used-inspection-editor, .repair-request-grid { grid-template-columns:1fr; } .billing-list article { display:grid; grid-template-columns:1fr auto; } }
-@media(max-width:700px) { .repair-admin-toolbar { grid-template-columns:1fr; } }
-.billing-heading p { margin:4px 0; }
-.billing-workspace { display:grid; grid-template-columns:minmax(0, 1.7fr) minmax(280px, 1fr); gap:18px; align-items:start; }
-.billing-main-column { display:grid; gap:18px; }
-.billing-card, .billing-current-card { margin:0; padding:18px; border:1px solid var(--sky-border); border-radius:12px; background:var(--sky-surface); }
-.billing-card legend { padding:0 8px; font-weight:700; }
-.billing-customer-fields { display:grid; grid-template-columns:1fr 1fr auto; gap:12px; align-items:end; }
-.billing-toolbar { display:grid; grid-template-columns:minmax(0, 1fr) 170px; gap:10px; margin-bottom:12px; }
-.billing-product-list, .billing-selected-list { display:grid; gap:8px; max-height:460px; overflow:auto; }
-.billing-product-row, .billing-selected-list article { display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:10px; align-items:center; padding:9px; border:1px solid var(--sky-border); border-radius:9px; }
-.billing-product-row img, .billing-selected-list img { width:48px; height:48px; object-fit:contain; border-radius:7px; background:#f5f7f7; }
-.billing-product-info, .billing-selected-list article > div { display:grid; gap:2px; min-width:0; }
-.billing-product-info span, .billing-product-info small, .billing-selected-list article span { color:var(--sky-muted); font-size:13px; }
-.billing-row-actions { display:flex; align-items:center; gap:8px; }
-.billing-quantity { display:flex; align-items:center; border:1px solid var(--sky-border); border-radius:7px; overflow:hidden; }
-.billing-quantity button { width:30px; height:30px; border:0; background:transparent; color:var(--sky-text); font-size:18px; cursor:pointer; }
-.billing-quantity button:disabled { opacity:.35; cursor:not-allowed; }
-.billing-quantity span { min-width:25px; text-align:center; }
-.billing-current-card { position:sticky; top:18px; }
-.billing-card-heading, .billing-totals span, .billing-totals strong { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.billing-card-heading h3 { margin:0; }
-.billing-empty { display:grid; gap:6px; padding:28px 8px; color:var(--sky-muted); }
-.billing-selected-list article { grid-template-columns:42px minmax(0,1fr) auto; }
-.billing-selected-list article img { width:42px; height:42px; }
-.billing-selected-list article .billing-quantity { margin-top:6px; width:max-content; }
-.billing-remove { border:0; background:transparent; color:#c8102e; font-size:22px; cursor:pointer; }
-.billing-totals { display:grid; gap:10px; border-top:1px solid var(--sky-border); margin-top:14px; padding-top:14px; }
-.billing-totals strong { font-size:20px; }
-.billing-totals b { color:var(--sky-text); }
-.billing-issue { width:100%; margin-top:14px; }
-.billing-issued { margin-top:20px; }
-.billing-issued h3 { margin-bottom:10px; }
-@media(max-width:800px) { .billing-workspace { grid-template-columns:1fr; } .billing-current-card { position:static; } .billing-customer-fields { grid-template-columns:1fr; } .billing-toolbar { grid-template-columns:1fr; } .billing-product-row { grid-template-columns:42px minmax(0,1fr); } .billing-row-actions { grid-column:2; justify-content:space-between; } }
+.billing-panel,
+.repair-admin-panel {
+  display: grid;
+  gap: 18px;
+}
+.billing-panel label,
+.repair-ticket-form label,
+.repair-tracking label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+.billing-panel input,
+.billing-panel select,
+.repair-ticket-form input,
+.repair-ticket-form textarea,
+.repair-ticket-list select,
+.repair-tracking input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--sky-border);
+  border-radius: 8px;
+  background: var(--sky-surface);
+  color: var(--sky-text);
+}
+.billing-products {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  overflow: auto;
+}
+.billing-products label {
+  grid-template-columns: minmax(0, 1fr) 80px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--sky-border);
+  border-radius: 8px;
+}
+.billing-products input {
+  text-align: center;
+}
+.billing-list,
+.repair-ticket-list {
+  display: grid;
+  gap: 12px;
+}
+.billing-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--sky-border);
+  border-radius: 10px;
+}
+.repair-ticket-form {
+  display: grid;
+  gap: 12px;
+}
+.repair-ticket-list article {
+  padding: 16px;
+  border: 1px solid var(--sky-border);
+  border-radius: 10px;
+}
+.repair-ticket-list article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.repair-ticket-list code {
+  overflow-wrap: anywhere;
+}
+.used-inspection-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border: 1px solid var(--sky-border);
+  border-radius: 10px;
+  margin-top: 18px;
+  padding: 16px;
+}
+.used-inspection-editor legend {
+  font-weight: 700;
+}
+.used-inspection-editor label {
+  display: grid;
+  gap: 6px;
+}
+.used-inspection-editor select,
+.used-inspection-editor input,
+.used-inspection-editor textarea {
+  width: 100%;
+}
+.used-condition-report {
+  border: 1px solid var(--sky-border);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 18px 0;
+}
+.used-condition-report h2 {
+  font-size: 20px;
+  margin: 0 0 10px;
+}
+.used-condition-report dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.used-condition-report dl div {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  background: var(--sky-background);
+  border-radius: 7px;
+}
+.used-condition-report dt {
+  color: var(--sky-muted);
+}
+.used-condition-report dd {
+  margin: 0;
+  font-weight: 700;
+}
+.repair-tracking {
+  padding-block: 40px;
+}
+.customer-repair-request {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  margin: 0 auto 36px;
+  padding: 24px;
+  border: 1px solid var(--sky-border);
+  border-radius: 14px;
+  background: var(--sky-surface);
+}
+.customer-repair-request h2,
+.customer-repair-request p {
+  margin: 0;
+}
+.customer-repair-request form {
+  display: grid;
+  gap: 14px;
+}
+.customer-repair-request label {
+  display: grid;
+  gap: 7px;
+  font-weight: 600;
+}
+.customer-repair-request input,
+.customer-repair-request select,
+.customer-repair-request textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--sky-border);
+  border-radius: 8px;
+  background: var(--sky-surface);
+  color: var(--sky-text);
+  font: inherit;
+}
+.customer-repair-request textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.repair-request-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.customer-repair-request fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  border: 1px solid var(--sky-border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.customer-repair-request fieldset label,
+.customer-repair-request .repair-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+.customer-repair-request fieldset input,
+.customer-repair-request .repair-checkbox input {
+  width: auto;
+  min-height: 0;
+}
+.repair-success {
+  max-width: 620px;
+}
+.repair-success .repair-current-status {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--sky-background);
+}
+.customer-repair-request .form-error {
+  color: #b42318;
+}
+.legacy-repair-tracking form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+}
+.repair-status-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--sky-border);
+  border-radius: 10px;
+}
+.repair-admin-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 10px;
+  margin: 18px 0;
+}
+.repair-admin-toolbar input,
+.repair-admin-toolbar select,
+.repair-detail-card input,
+.repair-detail-card select,
+.repair-detail-card textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--sky-border);
+  border-radius: 8px;
+  background: var(--sky-surface);
+  color: var(--sky-text);
+  font: inherit;
+}
+.repair-detail-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid var(--sky-border);
+  border-radius: 12px;
+  background: var(--sky-surface);
+}
+.repair-detail-card h3,
+.repair-detail-card p {
+  margin: 0;
+}
+.repair-detail-card textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+@media (max-width: 700px) {
+  .legacy-repair-tracking form,
+  .used-inspection-editor,
+  .repair-request-grid {
+    grid-template-columns: 1fr;
+  }
+  .billing-list article {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+}
+@media (max-width: 700px) {
+  .repair-admin-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+.billing-heading p {
+  margin: 4px 0;
+}
+.billing-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.billing-main-column {
+  display: grid;
+  gap: 18px;
+}
+.billing-card,
+.billing-current-card {
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--sky-border);
+  border-radius: 12px;
+  background: var(--sky-surface);
+}
+.billing-card legend {
+  padding: 0 8px;
+  font-weight: 700;
+}
+.billing-customer-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+.billing-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.billing-product-list,
+.billing-selected-list {
+  display: grid;
+  gap: 8px;
+  max-height: 460px;
+  overflow: auto;
+}
+.billing-product-row,
+.billing-selected-list article {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid var(--sky-border);
+  border-radius: 9px;
+}
+.billing-product-row img,
+.billing-selected-list img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: #f5f7f7;
+}
+.billing-product-info,
+.billing-selected-list article > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.billing-product-info span,
+.billing-product-info small,
+.billing-selected-list article span {
+  color: var(--sky-muted);
+  font-size: 13px;
+}
+.billing-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.billing-quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--sky-border);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.billing-quantity button {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--sky-text);
+  font-size: 18px;
+  cursor: pointer;
+}
+.billing-quantity button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.billing-quantity span {
+  min-width: 25px;
+  text-align: center;
+}
+.billing-current-card {
+  position: sticky;
+  top: 18px;
+}
+.billing-card-heading,
+.billing-totals span,
+.billing-totals strong {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.billing-card-heading h3 {
+  margin: 0;
+}
+.billing-empty {
+  display: grid;
+  gap: 6px;
+  padding: 28px 8px;
+  color: var(--sky-muted);
+}
+.billing-selected-list article {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+}
+.billing-selected-list article img {
+  width: 42px;
+  height: 42px;
+}
+.billing-selected-list article .billing-quantity {
+  margin-top: 6px;
+  width: max-content;
+}
+.billing-remove {
+  border: 0;
+  background: transparent;
+  color: #c8102e;
+  font-size: 22px;
+  cursor: pointer;
+}
+.billing-totals {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--sky-border);
+  margin-top: 14px;
+  padding-top: 14px;
+}
+.billing-totals strong {
+  font-size: 20px;
+}
+.billing-totals b {
+  color: var(--sky-text);
+}
+.billing-issue {
+  width: 100%;
+  margin-top: 14px;
+}
+.billing-issued {
+  margin-top: 20px;
+}
+.billing-issued h3 {
+  margin-bottom: 10px;
+}
+@media (max-width: 800px) {
+  .billing-workspace {
+    grid-template-columns: 1fr;
+  }
+  .billing-current-card {
+    position: static;
+  }
+  .billing-customer-fields {
+    grid-template-columns: 1fr;
+  }
+  .billing-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .billing-product-row {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+  .billing-row-actions {
+    grid-column: 2;
+    justify-content: space-between;
+  }
+}

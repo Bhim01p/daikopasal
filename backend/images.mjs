@@ -10,7 +10,11 @@ export async function saveProductImage(
   { avatar = false } = {},
 ) {
   const { type, data } = await readImageUpload(request, storage ? 4 : 5);
-  const extensions = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+  const extensions = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/webp": "webp",
+  };
   const name = `${avatar ? "avatar" : "upload"}-${randomUUID()}.${extensions[type]}`;
   if (storage) return storage.saveImage(name, type, data);
   mkdirSync(directory, { recursive: true });
@@ -29,19 +33,13 @@ export async function readImageUpload(request, maxMB = 5) {
     throw new HttpError(415, "Choose a JPG, PNG, or WebP photo.");
   const limit = maxMB * 1024 * 1024;
   if (Number(request.headers["content-length"]) > limit)
-    throw new HttpError(
-      413,
-      `Photo must be ${maxMB} MB or smaller.`,
-    );
+    throw new HttpError(413, `Photo must be ${maxMB} MB or smaller.`);
   const chunks = [];
   let bytes = 0;
   for await (const chunk of request) {
     bytes += chunk.length;
     if (bytes > limit)
-      throw new HttpError(
-        413,
-        `Photo must be ${maxMB} MB or smaller.`,
-      );
+      throw new HttpError(413, `Photo must be ${maxMB} MB or smaller.`);
     chunks.push(chunk);
   }
   const data = Buffer.concat(chunks);

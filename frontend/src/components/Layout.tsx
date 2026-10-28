@@ -36,8 +36,14 @@ const searchHistoryKey = "me-search-history-v1";
 function readSearchHistory() {
   try {
     const value = JSON.parse(localStorage.getItem(searchHistoryKey) || "[]");
-    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string").slice(0, 8) : [];
-  } catch { return []; }
+    return Array.isArray(value)
+      ? value
+          .filter((item): item is string => typeof item === "string")
+          .slice(0, 8)
+      : [];
+  } catch {
+    return [];
+  }
 }
 const links = [
   ["/", "Home"],
@@ -76,7 +82,10 @@ export default function Layout() {
   useLayoutEffect(() => {
     const measure = () => {
       const height = header.current?.getBoundingClientRect().height || 84;
-      document.documentElement.style.setProperty("--site-header-height", `${height}px`);
+      document.documentElement.style.setProperty(
+        "--site-header-height",
+        `${height}px`,
+      );
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -88,7 +97,8 @@ export default function Layout() {
   const { count, notice, dismiss } = useCart();
   const [menu, setMenu] = useState(false);
   const [query, setQuery] = useState("");
-  const [searchHistory, setSearchHistory] = useState<string[]>(readSearchHistory);
+  const [searchHistory, setSearchHistory] =
+    useState<string[]>(readSearchHistory);
   const [searchFocused, setSearchFocused] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -104,8 +114,15 @@ export default function Layout() {
       "/search",
     ].includes(location.pathname) || location.pathname.startsWith("/product/");
   useEffect(() => {
-    const keepsSearch = ["/search", "/mobiles", "/second-hand", "/accessories"].includes(location.pathname);
-    const nextQuery = keepsSearch ? new URLSearchParams(location.search).get("q") || "" : "";
+    const keepsSearch = [
+      "/search",
+      "/mobiles",
+      "/second-hand",
+      "/accessories",
+    ].includes(location.pathname);
+    const nextQuery = keepsSearch
+      ? new URLSearchParams(location.search).get("q") || ""
+      : "";
     setQuery(nextQuery);
   }, [location.pathname, location.search]);
   useEffect(() => {
@@ -195,9 +212,21 @@ export default function Layout() {
                   navigate("/search");
                   return;
                 }
-                const nextHistory = [value, ...searchHistory.filter((item) => item.toLowerCase() !== value.toLowerCase())].slice(0, 8);
+                const nextHistory = [
+                  value,
+                  ...searchHistory.filter(
+                    (item) => item.toLowerCase() !== value.toLowerCase(),
+                  ),
+                ].slice(0, 8);
                 setSearchHistory(nextHistory);
-                try { localStorage.setItem(searchHistoryKey, JSON.stringify(nextHistory)); } catch { /* optional cache */ }
+                try {
+                  localStorage.setItem(
+                    searchHistoryKey,
+                    JSON.stringify(nextHistory),
+                  );
+                } catch {
+                  /* optional cache */
+                }
                 navigate(`/search?q=${encodeURIComponent(value)}`);
               }}
             >
@@ -212,7 +241,12 @@ export default function Layout() {
                   const value = event.target.value;
                   setQuery(value);
                   if (location.pathname === "/search") {
-                    navigate(value.trim() ? `/search?q=${encodeURIComponent(value)}` : "/search", { replace: true });
+                    navigate(
+                      value.trim()
+                        ? `/search?q=${encodeURIComponent(value)}`
+                        : "/search",
+                      { replace: true },
+                    );
                   }
                 }}
                 placeholder={t("Search products…")}
@@ -220,10 +254,55 @@ export default function Layout() {
               <button type="submit" aria-label={t("Search the shop")}>
                 <Search size={21} />
               </button>
-              {searchFocused && searchHistory.length > 0 && <div className="search-history" onMouseLeave={() => setSearchFocused(false)}>
-                <div className="search-history-heading"><strong>{t("Recent searches")}</strong><button type="button" onClick={() => { setSearchHistory([]); localStorage.removeItem(searchHistoryKey); }}>{t("Clear all")}</button></div>
-                {searchHistory.map((item) => <div className="search-history-item" key={item}><button type="button" onClick={() => { setQuery(item); setSearchFocused(false); navigate(`/search?q=${encodeURIComponent(item)}`); }}>{item}</button><button type="button" aria-label={t("Delete search {{v0}}", { v0: item })} onClick={() => { const next = searchHistory.filter((entry) => entry !== item); setSearchHistory(next); localStorage.setItem(searchHistoryKey, JSON.stringify(next)); }}><X size={14} /></button></div>)}
-              </div>}
+              {searchFocused && searchHistory.length > 0 && (
+                <div
+                  className="search-history"
+                  onMouseLeave={() => setSearchFocused(false)}
+                >
+                  <div className="search-history-heading">
+                    <strong>{t("Recent searches")}</strong>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchHistory([]);
+                        localStorage.removeItem(searchHistoryKey);
+                      }}
+                    >
+                      {t("Clear all")}
+                    </button>
+                  </div>
+                  {searchHistory.map((item) => (
+                    <div className="search-history-item" key={item}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setQuery(item);
+                          setSearchFocused(false);
+                          navigate(`/search?q=${encodeURIComponent(item)}`);
+                        }}
+                      >
+                        {item}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={t("Delete search {{v0}}", { v0: item })}
+                        onClick={() => {
+                          const next = searchHistory.filter(
+                            (entry) => entry !== item,
+                          );
+                          setSearchHistory(next);
+                          localStorage.setItem(
+                            searchHistoryKey,
+                            JSON.stringify(next),
+                          );
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </form>
           )}
           <div className="nav-tools">
@@ -264,14 +343,19 @@ export default function Layout() {
             </HeaderDropdown>
             <button
               type="button"
-              onClick={() => { setAccountOpen(false); setCartOpen(true); }}
+              onClick={() => {
+                setAccountOpen(false);
+                setCartOpen(true);
+              }}
               className="bag-link"
               aria-label={t("Shopping cart, {{v0}} items", {
                 v0: String(count),
               })}
             >
               <ShoppingBag size={20} />
-              <span key={count} className="cart-count-badge">{count}</span>
+              <span key={count} className="cart-count-badge">
+                {count}
+              </span>
             </button>
             <button
               className="icon-button menu-button"
@@ -294,7 +378,10 @@ export default function Layout() {
         <div className="container footer-grid">
           <div>
             <Brand />
-            <p className="footer-shop-hours">{t("Open ")}{t(shop.hours)}</p>
+            <p className="footer-shop-hours">
+              {t("Open ")}
+              {t(shop.hours)}
+            </p>
             <p className="footer-shop-address">{t(shop.location)}</p>
             <small>
               © {new Date().getFullYear()} {shop.name}
@@ -302,11 +389,14 @@ export default function Layout() {
           </div>
           <div>
             <h2 className="footer-section-heading">{t("Explore the shop")}</h2>
-            {links.slice(1).filter(([, label]) => label !== "My orders").map(([to, label]) => (
-              <Link key={to} to={to}>
-                {t(label)}
-              </Link>
-            ))}
+            {links
+              .slice(1)
+              .filter(([, label]) => label !== "My orders")
+              .map(([to, label]) => (
+                <Link key={to} to={to}>
+                  {t(label)}
+                </Link>
+              ))}
           </div>
           <div>
             <h2 className="footer-section-heading">{t("Let’s talk.")}</h2>
@@ -321,8 +411,20 @@ export default function Layout() {
             </a>
             <p className="footer-note">
               <span className="footer-social-links">
-                <a href="https://www.facebook.com/share/1ErPWxDyZK/" target="_blank" rel="noreferrer"><span className="social-mark facebook-mark">f</span>Facebook</a>
-                <a href="https://www.tiktok.com/@snake_siddhartha?_r=1&_t=ZS-9AYFE49MZk2" target="_blank" rel="noreferrer"><span className="social-mark tiktok-mark">♪</span>TikTok</a>
+                <a
+                  href="https://www.facebook.com/share/1ErPWxDyZK/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="social-mark facebook-mark">f</span>Facebook
+                </a>
+                <a
+                  href="https://www.tiktok.com/@snake_siddhartha?_r=1&_t=ZS-9AYFE49MZk2"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="social-mark tiktok-mark">♪</span>TikTok
+                </a>
               </span>
             </p>
           </div>
@@ -455,7 +557,9 @@ export default function Layout() {
             aria-label={t("Shopping cart, {{v0}} items", { v0: String(count) })}
           >
             <ShoppingBag size={24} />
-            <span key={count} className="cart-count-badge">{count}</span>
+            <span key={count} className="cart-count-badge">
+              {count}
+            </span>
           </button>
           <a
             className="floating-whatsapp"

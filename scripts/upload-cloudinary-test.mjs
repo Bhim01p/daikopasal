@@ -5,13 +5,16 @@ import { fileURLToPath } from "node:url";
 import { cloudinary, configureCloudinary } from "../backend/cloudinary.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-if (existsSync(path.join(root, ".env.local"))) loadEnvFile(path.join(root, ".env.local"));
+if (existsSync(path.join(root, ".env.local")))
+  loadEnvFile(path.join(root, ".env.local"));
 if (existsSync(path.join(root, "backend", ".env")))
   loadEnvFile(path.join(root, "backend", ".env"));
 
 const file = process.argv[2];
 if (!file || process.argv.length !== 3) {
-  console.error("Usage: node scripts/upload-cloudinary-test.mjs path/to/disposable-test-image.jpg");
+  console.error(
+    "Usage: node scripts/upload-cloudinary-test.mjs path/to/disposable-test-image.jpg",
+  );
   process.exit(1);
 }
 if (!existsSync(file) || !statSync(file).isFile()) {
@@ -30,15 +33,21 @@ try {
     overwrite: true,
     resource_type: "image",
   });
-  console.log(JSON.stringify({
-    success: true,
-    secure_url: result.secure_url,
-    public_id: result.public_id,
-    width: result.width,
-    height: result.height,
-    format: result.format,
-    bytes: result.bytes,
-  }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        success: true,
+        secure_url: result.secure_url,
+        public_id: result.public_id,
+        width: result.width,
+        height: result.height,
+        format: result.format,
+        bytes: result.bytes,
+      },
+      null,
+      2,
+    ),
+  );
 } catch {
   console.error(JSON.stringify({ success: false }));
   process.exitCode = 1;

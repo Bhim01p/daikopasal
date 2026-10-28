@@ -1,7 +1,8 @@
 import { createApp } from "../backend/server.mjs";
 import { hashAdminPassword } from "../backend/admin-settings.mjs";
 const app = createApp({
-  dataFile: process.env.WORKFLOW_QA_STORE || "qa-results/admin-theme-store.json",
+  dataFile:
+    process.env.WORKFLOW_QA_STORE || "qa-results/admin-theme-store.json",
   username: "qaowner",
   passwordHash: hashAdminPassword("qa-owner-password-only"),
   emailTransport: null,

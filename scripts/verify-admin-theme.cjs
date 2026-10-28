@@ -35,11 +35,15 @@ const fs = require("node:fs");
       .evaluate((img) => img.complete && img.naturalWidth > 0),
     true,
   );
-  await page.getByRole('combobox', { name: 'Language', exact: true }).selectOption('ne');
-  await page.getByRole('heading', { name: 'ड्यासबोर्ड', exact: true }).waitFor();
-  await page.getByRole('tab', { name: 'कर्मचारी लगइन', exact: true }).click();
-  await page.getByLabel('कर्मचारीको नाम', { exact: true }).waitFor();
-  await page.locator('.language-switch select').selectOption('en');
+  await page
+    .getByRole("combobox", { name: "Language", exact: true })
+    .selectOption("ne");
+  await page
+    .getByRole("heading", { name: "ड्यासबोर्ड", exact: true })
+    .waitFor();
+  await page.getByRole("tab", { name: "कर्मचारी लगइन", exact: true }).click();
+  await page.getByLabel("कर्मचारीको नाम", { exact: true }).waitFor();
+  await page.locator(".language-switch select").selectOption("en");
   await page.getByRole("tab", { name: "Staff logins", exact: true }).click();
   await page
     .getByLabel("Staff name", { exact: true })

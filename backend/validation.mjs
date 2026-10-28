@@ -21,7 +21,15 @@ export const fulfillmentMethods = ["PICKUP", "DELIVERY"];
 export const paymentMethods = ["PAY_AT_SHOP", "MANUAL_QR", "ESEWA"];
 // PENDING_VERIFICATION remains accepted for orders created before the canonical
 // VERIFICATION_PENDING status was introduced.
-export const paymentStatuses = ["PENDING", "VERIFICATION_PENDING", "PENDING_VERIFICATION", "PAID", "FAILED", "REFUNDED", "REJECTED"];
+export const paymentStatuses = [
+  "PENDING",
+  "VERIFICATION_PENDING",
+  "PENDING_VERIFICATION",
+  "PAID",
+  "FAILED",
+  "REFUNDED",
+  "REJECTED",
+];
 function variantKeyFor(ram, storage) {
   const parts = [];
   if (ram !== undefined) parts.push(`${ram}gb`);
@@ -177,11 +185,28 @@ export function validateProduct(input, existing) {
     added: existing?.added || Date.now(),
     reviewedAt: existing?.reviewedAt || null,
   };
-  if (category === "used" && !existing && !images.some((value) => /^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(value)))
-    throw new HttpError(400, "Upload at least one actual device photo for a used phone.");
-  const catalogueDeviceId = category === "new" ? input.catalogueDeviceId ?? existing?.catalogueDeviceId : undefined;
+  if (
+    category === "used" &&
+    !existing &&
+    !images.some((value) =>
+      /^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(value),
+    )
+  )
+    throw new HttpError(
+      400,
+      "Upload at least one actual device photo for a used phone.",
+    );
+  const catalogueDeviceId =
+    category === "new"
+      ? (input.catalogueDeviceId ?? existing?.catalogueDeviceId)
+      : undefined;
   if (catalogueDeviceId !== undefined) {
-    result.catalogueDeviceId = text(catalogueDeviceId, "Catalogue device ID", 1, 160);
+    result.catalogueDeviceId = text(
+      catalogueDeviceId,
+      "Catalogue device ID",
+      1,
+      160,
+    );
   }
   result.specVariant = text(
     input.specVariant ?? existing?.specVariant ?? "",
@@ -256,7 +281,8 @@ export function validateProduct(input, existing) {
     }
     if (input.ram !== undefined) result.ram = integer(input.ram, "RAM", 1, 64);
     if (result.ram) result.specs.RAM = `${result.ram} GB`;
-    if (result.catalogueDeviceId) result.variantKey = variantKeyFor(result.ram, result.storage);
+    if (result.catalogueDeviceId)
+      result.variantKey = variantKeyFor(result.ram, result.storage);
   } else {
     delete result.specs.RAM;
     delete result.specs.Storage;
@@ -271,13 +297,32 @@ export function validateProduct(input, existing) {
         throw new HttpError(400, "Select a phone condition.");
       result.condition = input.condition;
     }
-    if (input.battery !== undefined && input.battery !== null && input.battery !== "")
+    if (
+      input.battery !== undefined &&
+      input.battery !== null &&
+      input.battery !== ""
+    )
       result.battery = integer(input.battery, "Battery health", 0, 100);
     const inspection = input.inspection ?? existing?.inspection ?? {};
-    if (!inspection || typeof inspection !== "object" || Array.isArray(inspection))
+    if (
+      !inspection ||
+      typeof inspection !== "object" ||
+      Array.isArray(inspection)
+    )
       throw new HttpError(400, "Invalid used-phone inspection.");
     const checks = {};
-    for (const key of ["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"]) {
+    for (const key of [
+      "screen",
+      "body",
+      "cameras",
+      "charging",
+      "speakers",
+      "microphone",
+      "buttons",
+      "biometrics",
+      "network",
+      "wireless",
+    ]) {
       const value = inspection.checks?.[key] || "not_checked";
       if (!["not_checked", "passed", "issue"].includes(value))
         throw new HttpError(400, "Invalid used-phone inspection status.");
@@ -324,18 +369,30 @@ export function validateCustomer(input) {
     return { productId, quantity: integer(item.quantity, "Quantity", 1, 10) };
   });
   const requestId = text(input.requestId, "Request reference", 16, 100);
-  const fulfillmentMethod = input.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP";
-  const paymentMethod = ["MANUAL_QR", "ESEWA"].includes(input.paymentMethod) ? input.paymentMethod : "PAY_AT_SHOP";
-  if (fulfillmentMethod === "DELIVERY" && !["MANUAL_QR", "ESEWA"].includes(paymentMethod))
+  const fulfillmentMethod =
+    input.fulfillmentMethod === "DELIVERY" ? "DELIVERY" : "PICKUP";
+  const paymentMethod = ["MANUAL_QR", "ESEWA"].includes(input.paymentMethod)
+    ? input.paymentMethod
+    : "PAY_AT_SHOP";
+  if (
+    fulfillmentMethod === "DELIVERY" &&
+    !["MANUAL_QR", "ESEWA"].includes(paymentMethod)
+  )
     throw new HttpError(400, "Delivery orders must use QR or online payment.");
   const deliveryAddress = input.deliveryAddress;
   if (fulfillmentMethod === "DELIVERY") {
-    if (!deliveryAddress || typeof deliveryAddress !== "object" || Array.isArray(deliveryAddress))
+    if (
+      !deliveryAddress ||
+      typeof deliveryAddress !== "object" ||
+      Array.isArray(deliveryAddress)
+    )
       throw new HttpError(400, "Enter your delivery address.");
     for (const key of ["province", "district", "city", "area", "address"])
       text(deliveryAddress[key], `Delivery ${key}`, 2, 200);
-    if (deliveryAddress.landmark) text(deliveryAddress.landmark, "Landmark", 0, 200);
-    if (deliveryAddress.notes) text(deliveryAddress.notes, "Delivery notes", 0, 500);
+    if (deliveryAddress.landmark)
+      text(deliveryAddress.landmark, "Landmark", 0, 200);
+    if (deliveryAddress.notes)
+      text(deliveryAddress.notes, "Delivery notes", 0, 500);
   }
   return {
     name,
@@ -347,14 +404,21 @@ export function validateCustomer(input) {
     language: input.language === "ne" ? "ne" : "en",
     fulfillmentMethod,
     paymentMethod,
-    deliveryAddress: fulfillmentMethod === "DELIVERY" ? {
-      province: text(deliveryAddress.province, "Province", 2, 100),
-      district: text(deliveryAddress.district, "District", 2, 100),
-      city: text(deliveryAddress.city, "City / municipality", 2, 120),
-      area: text(deliveryAddress.area, "Area / tole", 2, 160),
-      address: text(deliveryAddress.address, "Full address", 2, 300),
-      ...(deliveryAddress.landmark ? { landmark: text(deliveryAddress.landmark, "Landmark", 0, 200) } : {}),
-      ...(deliveryAddress.notes ? { notes: text(deliveryAddress.notes, "Delivery notes", 0, 500) } : {}),
-    } : null,
+    deliveryAddress:
+      fulfillmentMethod === "DELIVERY"
+        ? {
+            province: text(deliveryAddress.province, "Province", 2, 100),
+            district: text(deliveryAddress.district, "District", 2, 100),
+            city: text(deliveryAddress.city, "City / municipality", 2, 120),
+            area: text(deliveryAddress.area, "Area / tole", 2, 160),
+            address: text(deliveryAddress.address, "Full address", 2, 300),
+            ...(deliveryAddress.landmark
+              ? { landmark: text(deliveryAddress.landmark, "Landmark", 0, 200) }
+              : {}),
+            ...(deliveryAddress.notes
+              ? { notes: text(deliveryAddress.notes, "Delivery notes", 0, 500) }
+              : {}),
+          }
+        : null,
   };
 }

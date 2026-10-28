@@ -359,7 +359,18 @@ export function createCustomerAuth(store, options = {}) {
         ),
       });
     }
-    cookie(response, "", 0);
+    cookie(response, "", 0, request);
+  }
+  function logoutAll(request, response) {
+    const { customer } = requireSession(request);
+    const current = store.read();
+    store.commit({
+      ...current,
+      customerSessions: current.customerSessions.filter(
+        (item) => item.customerId !== customer.id,
+      ),
+    });
+    cookie(response, "", 0, request);
   }
   function passwordValue(value) {
     if (typeof value !== "string" || value.length < 10 || value.length > 128)
@@ -503,6 +514,7 @@ export function createCustomerAuth(store, options = {}) {
     verify,
     updateProfile,
     logout,
+    logoutAll,
     passwordLogin,
     setPassword,
     updatePhoto,

@@ -856,7 +856,9 @@
     padding-bottom: 3px;
     font-size: 10px;
   }
-  .checkout-stepper span:not(:last-child)::after { margin-left: 1px; }
+  .checkout-stepper span:not(:last-child)::after {
+    margin-left: 1px;
+  }
   .checkout-form > p,
   .contact-form > p {
     font-size: 15px;

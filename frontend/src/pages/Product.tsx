@@ -37,12 +37,18 @@ export default function Product() {
     setQuantity(1);
     setAdded(false);
     return () => {
-      if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
+      if (addedTimer.current !== undefined)
+        window.clearTimeout(addedTimer.current);
     };
   }, [slug]);
-  const variantGroup = useMemo(() => product ? getVariantGroup(products, product) : null, [products, product]);
+  const variantGroup = useMemo(
+    () => (product ? getVariantGroup(products, product) : null),
+    [products, product],
+  );
   const [selectedRam, setSelectedRam] = useState<number | undefined>(undefined);
-  const [selectedStorage, setSelectedStorage] = useState<number | undefined>(undefined);
+  const [selectedStorage, setSelectedStorage] = useState<number | undefined>(
+    undefined,
+  );
   useEffect(() => {
     setSelectedRam(product?.ram);
     setSelectedStorage(product?.storage);
@@ -108,16 +114,41 @@ export default function Product() {
             )}
           </div>
           {variantGroup && (
-            <section className="product-variant-selector" aria-label={t("Choose a variant")}>
+            <section
+              className="product-variant-selector"
+              aria-label={t("Choose a variant")}
+            >
               <h2>{t("Choose a variant")}</h2>
               {variantGroup.ramValues.length > 1 && (
                 <div className="product-variant-row">
                   <span>{t("RAM")}</span>
                   <div className="product-variant-options">
                     {variantGroup.ramValues.map((ram) => {
-                      const candidate = findVariantProduct(variantGroup, ram, selectedStorage);
-                      const hasRam = variantGroup.products.some((item) => item.ram === ram);
-                      return <button key={ram} type="button" className={selectedRam === ram ? "selected" : ""} disabled={!hasRam} aria-pressed={selectedRam === ram} onClick={() => chooseVariant(ram, candidate ? selectedStorage : undefined)}>{ram} GB</button>;
+                      const candidate = findVariantProduct(
+                        variantGroup,
+                        ram,
+                        selectedStorage,
+                      );
+                      const hasRam = variantGroup.products.some(
+                        (item) => item.ram === ram,
+                      );
+                      return (
+                        <button
+                          key={ram}
+                          type="button"
+                          className={selectedRam === ram ? "selected" : ""}
+                          disabled={!hasRam}
+                          aria-pressed={selectedRam === ram}
+                          onClick={() =>
+                            chooseVariant(
+                              ram,
+                              candidate ? selectedStorage : undefined,
+                            )
+                          }
+                        >
+                          {ram} GB
+                        </button>
+                      );
                     })}
                   </div>
                 </div>
@@ -127,9 +158,36 @@ export default function Product() {
                   <span>{t("Storage")}</span>
                   <div className="product-variant-options">
                     {variantGroup.storageValues.map((storage) => {
-                      const candidate = findVariantProduct(variantGroup, selectedRam, storage) || findVariantProduct(variantGroup, undefined, storage);
-                      const available = variantGroup.products.some((item) => item.storage === storage && (selectedRam === undefined || item.ram === selectedRam));
-                      return <button key={storage} type="button" className={selectedStorage === storage ? "selected" : ""} disabled={!available} aria-pressed={selectedStorage === storage} onClick={() => chooseVariant(candidate?.ram, storage)}>{storage} GB{candidate && !candidate.available ? ` · ${t("Out of stock")}` : ""}</button>;
+                      const candidate =
+                        findVariantProduct(
+                          variantGroup,
+                          selectedRam,
+                          storage,
+                        ) ||
+                        findVariantProduct(variantGroup, undefined, storage);
+                      const available = variantGroup.products.some(
+                        (item) =>
+                          item.storage === storage &&
+                          (selectedRam === undefined ||
+                            item.ram === selectedRam),
+                      );
+                      return (
+                        <button
+                          key={storage}
+                          type="button"
+                          className={
+                            selectedStorage === storage ? "selected" : ""
+                          }
+                          disabled={!available}
+                          aria-pressed={selectedStorage === storage}
+                          onClick={() => chooseVariant(candidate?.ram, storage)}
+                        >
+                          {storage} GB
+                          {candidate && !candidate.available
+                            ? ` · ${t("Out of stock")}`
+                            : ""}
+                        </button>
+                      );
                     })}
                   </div>
                 </div>
@@ -138,16 +196,43 @@ export default function Product() {
           )}
           <p>
             {language === "ne"
-              ? product.catalogueDescription?.ne || product.descriptionNe || product.description
+              ? product.catalogueDescription?.ne ||
+                product.descriptionNe ||
+                product.description
               : product.catalogueDescription?.en || product.description}
           </p>
           {(product.category === "new" || product.category === "accessory") && (
-            <section className="detail-highlights" aria-label={t("Product details")}>
+            <section
+              className="detail-highlights"
+              aria-label={t("Product details")}
+            >
               <h2>{t("Product details")}</h2>
               <dl>
-                {product.ram !== undefined && <div><dt>{t("RAM")}</dt><dd>{product.ram} GB</dd></div>}
-                {product.storage !== undefined && <div><dt>{t("Storage")}</dt><dd>{product.storage} GB</dd></div>}
-                {Object.entries({ ...product.catalogueSpecs?.specs, ...product.specs }).filter(([key]) => !["RAM", "Storage", "Warranty"].includes(key)).map(([key, value]) => <div key={key}><dt>{t(key)}</dt><dd>{t(value)}</dd></div>)}
+                {product.ram !== undefined && (
+                  <div>
+                    <dt>{t("RAM")}</dt>
+                    <dd>{product.ram} GB</dd>
+                  </div>
+                )}
+                {product.storage !== undefined && (
+                  <div>
+                    <dt>{t("Storage")}</dt>
+                    <dd>{product.storage} GB</dd>
+                  </div>
+                )}
+                {Object.entries({
+                  ...product.catalogueSpecs?.specs,
+                  ...product.specs,
+                })
+                  .filter(
+                    ([key]) => !["RAM", "Storage", "Warranty"].includes(key),
+                  )
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <dt>{t(key)}</dt>
+                      <dd>{t(value)}</dd>
+                    </div>
+                  ))}
               </dl>
             </section>
           )}
@@ -168,7 +253,9 @@ export default function Product() {
               <div>
                 <span>{t("Storage")}</span>
                 <strong>
-                  {product.storage === undefined ? t("Not recorded") : `${product.storage}${t(" GB")}`}
+                  {product.storage === undefined
+                    ? t("Not recorded")
+                    : `${product.storage}${t(" GB")}`}
                 </strong>
               </div>
               <div>
@@ -178,20 +265,60 @@ export default function Product() {
             </div>
           )}
           {product.category === "used" && product.inspection && (
-            <section className="used-trust-summary" aria-label={t("Inspection")}>
+            <section
+              className="used-trust-summary"
+              aria-label={t("Inspection")}
+            >
               <h2>{t("Inspection")}</h2>
-              <dl>{["screen", "body", "cameras", "charging", "speakers", "microphone", "buttons", "biometrics", "network", "wireless"].map((key) => {
-                const status = product.inspection?.checks?.[key] || "not_checked";
-                return <div key={key}><dt>{t(key)}</dt><dd>{status === "passed" ? `✓ ${t("Passed")}` : status === "issue" ? `⚠ ${t("Issue found")}` : `○ ${t("Not checked")}`}</dd></div>;
-              })}</dl>
+              <dl>
+                {[
+                  "screen",
+                  "body",
+                  "cameras",
+                  "charging",
+                  "speakers",
+                  "microphone",
+                  "buttons",
+                  "biometrics",
+                  "network",
+                  "wireless",
+                ].map((key) => {
+                  const status =
+                    product.inspection?.checks?.[key] || "not_checked";
+                  return (
+                    <div key={key}>
+                      <dt>{t(key)}</dt>
+                      <dd>
+                        {status === "passed"
+                          ? `✓ ${t("Passed")}`
+                          : status === "issue"
+                            ? `⚠ ${t("Issue found")}`
+                            : `○ ${t("Not checked")}`}
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
             </section>
           )}
-          {product.category === "used" && <section className="used-condition-report">
-            <h2>{t("Inspection report")}</h2>
-            <p>{product.inspection?.inspectedAt ? `${t("Inspected")}: ${new Date(product.inspection.inspectedAt).toLocaleDateString()}` : t("Inspection details have not been recorded yet.")}</p>
-            <p><strong>{t("Known Changes / Defects")}:</strong> {product.inspection?.defects || t("Not recorded")}</p>
-            <p><strong>{t("Included accessories")}:</strong> {product.inspection?.included || t("Not recorded")}</p>
-          </section>}
+          {product.category === "used" && (
+            <section className="used-condition-report">
+              <h2>{t("Inspection report")}</h2>
+              <p>
+                {product.inspection?.inspectedAt
+                  ? `${t("Inspected")}: ${new Date(product.inspection.inspectedAt).toLocaleDateString()}`
+                  : t("Inspection details have not been recorded yet.")}
+              </p>
+              <p>
+                <strong>{t("Known Changes / Defects")}:</strong>{" "}
+                {product.inspection?.defects || t("Not recorded")}
+              </p>
+              <p>
+                <strong>{t("Included accessories")}:</strong>{" "}
+                {product.inspection?.included || t("Not recorded")}
+              </p>
+            </section>
+          )}
           {(product.priceIsEstimate || isSampleProduct(product)) && (
             <div className="sample-note">
               <Info size={17} />
@@ -228,8 +355,12 @@ export default function Product() {
               onClick={() => {
                 add(product.id, selectedQuantity);
                 setAdded(true);
-                if (addedTimer.current !== undefined) window.clearTimeout(addedTimer.current);
-                addedTimer.current = window.setTimeout(() => setAdded(false), 1600);
+                if (addedTimer.current !== undefined)
+                  window.clearTimeout(addedTimer.current);
+                addedTimer.current = window.setTimeout(
+                  () => setAdded(false),
+                  1600,
+                );
               }}
             >
               <ShoppingBag size={17} />
@@ -282,7 +413,10 @@ export default function Product() {
           </a>
         )}
         <dl>
-          {Object.entries({ ...product.catalogueSpecs?.specs, ...product.specs }).map(([key, value]) => (
+          {Object.entries({
+            ...product.catalogueSpecs?.specs,
+            ...product.specs,
+          }).map(([key, value]) => (
             <div key={key}>
               <dt>{t(key)}</dt>
               <dd>{t(value)}</dd>

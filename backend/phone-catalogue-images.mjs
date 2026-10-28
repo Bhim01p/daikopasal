@@ -8,7 +8,8 @@ export function phoneCataloguePublicId(deviceId, position = 1) {
 }
 
 export async function uploadPhoneCatalogueImage(deviceId, file, position = 1) {
-  if (!configureCloudinary()) throw new Error("Cloudinary configuration is incomplete.");
+  if (!configureCloudinary())
+    throw new Error("Cloudinary configuration is incomplete.");
   return cloudinary.uploader.upload(file, {
     public_id: phoneCataloguePublicId(deviceId, position),
     overwrite: false,
@@ -16,10 +17,23 @@ export async function uploadPhoneCatalogueImage(deviceId, file, position = 1) {
   });
 }
 
-export async function uploadPhoneCatalogueBuffer(deviceId, data, position = 1, overwrite = false) {
-  if (!configureCloudinary()) throw new Error("Cloudinary configuration is incomplete.");
+export async function uploadPhoneCatalogueBuffer(
+  deviceId,
+  data,
+  position = 1,
+  overwrite = false,
+) {
+  if (!configureCloudinary())
+    throw new Error("Cloudinary configuration is incomplete.");
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream({ public_id: phoneCataloguePublicId(deviceId, position), overwrite, resource_type: "image" }, (error, result) => error ? reject(error) : resolve(result));
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        public_id: phoneCataloguePublicId(deviceId, position),
+        overwrite,
+        resource_type: "image",
+      },
+      (error, result) => (error ? reject(error) : resolve(result)),
+    );
     stream.end(data);
   });
 }

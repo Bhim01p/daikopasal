@@ -11,7 +11,14 @@ export function publicStaff(account) {
     username: account.username,
     name: account.name,
     enabled: account.enabled,
-    permissions: account.permissions || { orders: true, sales: true, billing: true, inventory: true, repairs: true, paymentQr: false },
+    permissions: account.permissions || {
+      orders: true,
+      sales: true,
+      billing: true,
+      inventory: true,
+      repairs: true,
+      paymentQr: false,
+    },
     createdAt: account.createdAt,
   };
 }

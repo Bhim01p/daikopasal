@@ -14,7 +14,9 @@ import { FavouritesProvider } from "./context/FavouritesContext";
 import Layout from "./components/Layout";
 import Home from "./pages/ReferenceHome";
 const Checkout = React.lazy(() => import("./pages/Checkout"));
-const OrderSuccess = React.lazy(async () => ({ default: (await import("./pages/Checkout")).OrderSuccess }));
+const OrderSuccess = React.lazy(async () => ({
+  default: (await import("./pages/Checkout")).OrderSuccess,
+}));
 import NotFound from "./pages/NotFound";
 const Admin = React.lazy(() => import("./pages/Admin"));
 const Favourites = React.lazy(() => import("./pages/Favourites"));
@@ -26,7 +28,9 @@ const Cart = React.lazy(() => import("./pages/Cart"));
 const Contact = React.lazy(() => import("./pages/Contact"));
 const Repair = React.lazy(() => import("./pages/Repair"));
 const Account = React.lazy(() => import("./pages/Account"));
-const Login = React.lazy(async () => ({ default: (await import("./pages/Account")).Login }));
+const Login = React.lazy(async () => ({
+  default: (await import("./pages/Account")).Login,
+}));
 const MyOrders = React.lazy(() => import("./pages/MyOrders"));
 import { CustomerProvider, useCustomer } from "./context/CustomerContext";
 import "./admin.css";
@@ -61,12 +65,33 @@ function ProductRouteGate({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();
   const { loading, error, retry } = useProducts();
   const t = useT();
-  const needsCatalogue = ["/shop", "/mobiles", "/second-hand", "/accessories", "/search", "/cart", "/checkout", "/favourites"].includes(pathname) || pathname.startsWith("/product/") || pathname.startsWith("/checkout/");
+  const needsCatalogue =
+    [
+      "/shop",
+      "/mobiles",
+      "/second-hand",
+      "/accessories",
+      "/search",
+      "/cart",
+      "/checkout",
+      "/favourites",
+    ].includes(pathname) ||
+    pathname.startsWith("/product/") ||
+    pathname.startsWith("/checkout/");
   if (!needsCatalogue) return children;
   // Keep the route shell interactive while the catalogue request refreshes.
   // ProductContext serves cached products immediately when available.
   if (loading) return children;
-  if (error) return <div className="shop-loading-screen" role="alert"><h1>{t("Let’s reconnect.")}</h1><p>{t(error)}</p><button className="button dark" onClick={() => void retry()}>{t("Try again")}</button></div>;
+  if (error)
+    return (
+      <div className="shop-loading-screen" role="alert">
+        <h1>{t("Let’s reconnect.")}</h1>
+        <p>{t(error)}</p>
+        <button className="button dark" onClick={() => void retry()}>
+          {t("Try again")}
+        </button>
+      </div>
+    );
   return children;
 }
 function Meta() {
@@ -106,15 +131,35 @@ function Meta() {
     document.title = `${t(title)} | ${shop.name}`;
     const publicOrigin = "https://machhapuchhreeelectronics.vercel.app";
     const canonicalPath = pathname === "/" ? "" : pathname;
-    let canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.appendChild(canonical); }
+    let canonical = document.querySelector<HTMLLinkElement>(
+      'link[rel="canonical"]',
+    );
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
     canonical.href = `${publicOrigin}${canonicalPath}`;
-    const setMeta = (selector: string, attribute: "name" | "property", content: string) => {
-      let element = document.querySelector<HTMLMetaElement>(`meta[${attribute}="${selector}"]`);
-      if (!element) { element = document.createElement("meta"); element.setAttribute(attribute, selector); document.head.appendChild(element); }
+    const setMeta = (
+      selector: string,
+      attribute: "name" | "property",
+      content: string,
+    ) => {
+      let element = document.querySelector<HTMLMetaElement>(
+        `meta[${attribute}="${selector}"]`,
+      );
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attribute, selector);
+        document.head.appendChild(element);
+      }
       element.content = content;
     };
-    const description = p ? (language === "ne" && p.descriptionNe ? p.descriptionNe : p.description) : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand phones, accessories and repair services.`;
+    const description = p
+      ? language === "ne" && p.descriptionNe
+        ? p.descriptionNe
+        : p.description
+      : `${title} at ${shop.name}, ${shop.location}. New mobiles, second-hand phones, accessories and repair services.`;
     setMeta("description", "name", description);
     setMeta("og:title", "property", document.title);
     setMeta("og:description", "property", description);
@@ -128,8 +173,14 @@ function Meta() {
         : p.image
       : "/assets/logo.png";
     if (imageUrl)
-      setMeta("og:image", "property", imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`);
-    let structured = document.querySelector<HTMLScriptElement>('script[data-seo="product"]');
+      setMeta(
+        "og:image",
+        "property",
+        imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`,
+      );
+    let structured = document.querySelector<HTMLScriptElement>(
+      'script[data-seo="product"]',
+    );
     if (!p) {
       structured?.remove();
     } else {
@@ -143,7 +194,10 @@ function Meta() {
         "@context": "https://schema.org",
         "@type": "Product",
         name: `${p.brand} ${p.name}`,
-        description: language === "ne" && p.descriptionNe ? p.descriptionNe : p.description,
+        description:
+          language === "ne" && p.descriptionNe
+            ? p.descriptionNe
+            : p.description,
         brand: { "@type": "Brand", name: p.brand },
         url: `${publicOrigin}/product/${p.slug}`,
         offers: {
@@ -156,7 +210,9 @@ function Meta() {
         },
       };
       if (imageUrl)
-        productSchema.image = [imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`];
+        productSchema.image = [
+          imageUrl.startsWith("http") ? imageUrl : `${publicOrigin}${imageUrl}`,
+        ];
       if (p.id) productSchema.sku = p.id;
       structured.textContent = JSON.stringify(productSchema);
     }
@@ -197,7 +253,13 @@ function OrderPage() {
 function PaymentPage() {
   const { id } = useParams();
   const { customer } = useCustomer();
-  return <OrderSuccess key={`${id}-${customer?.id || "guest"}-payment`} id={id} paymentOnly />;
+  return (
+    <OrderSuccess
+      key={`${id}-${customer?.id || "guest"}-payment`}
+      id={id}
+      paymentOnly
+    />
+  );
 }
 function ProductPage() {
   const { slug } = useParams();
@@ -213,70 +275,76 @@ function App() {
               <FavouritesProvider>
                 <Meta />
                 <ProductRouteGate>
-                <React.Suspense fallback={<RouteLoading />}>
-                  <Routes>
-                    <Route
-                      path="not-admin/*"
-                      caseSensitive
-                      element={<Admin />}
-                    />
-                    <Route element={<Layout />}>
-                      <Route index element={<Home />} />
+                  <React.Suspense fallback={<RouteLoading />}>
+                    <Routes>
                       <Route
-                        path="mobiles"
-                        element={<Catalogue key="new" category="new" />}
+                        path="not-admin/*"
+                        caseSensitive
+                        element={<Admin />}
                       />
-                      <Route
-                        path="second-hand"
-                        element={<Catalogue key="used" category="used" />}
-                      />
-                      <Route
-                        path="accessories"
-                        element={
-                          <Catalogue key="accessory" category="accessory" />
-                        }
-                      />
-                      <Route path="favourites" element={<Favourites />} />
-                      <Route path="compare" element={<Compare />} />
-                      <Route path="shop" element={<Shop />} />
-                      <Route
-                        path="search"
-                        element={<Catalogue key="search" />}
-                      />
-                      <Route path="product/:slug" element={<ProductPage />} />
-                      <Route path="cart" element={<Cart />} />
-                      <Route path="checkout" element={<Checkout />} />
-                      <Route path="checkout/review/*" element={<Checkout />} />
-                      <Route path="login" element={<Login />} />
-                      <Route path="account" element={<Account />} />
-                      <Route path="my-orders" element={<MyOrders />} />
-                      <Route path="order/:id" element={<OrderPage />} />
-                      <Route path="order/:id/payment" element={<PaymentPage />} />
-                      <Route path="help" element={<Contact />} />
-                      <Route
-                        path="contact"
-                        element={<Navigate to="/help" replace />}
-                      />
-                      <Route path="repair" element={<Repair />} />
-                      <Route
-                        path="digital-meter-repair"
-                        element={
-                          <Navigate
-                            to="/repair#digital-meter-repairs"
-                            replace
-                          />
-                        }
-                      />
-                      <Route
-                        path="mobile-repair"
-                        element={
-                          <Navigate to="/repair#phone-repairs" replace />
-                        }
-                      />
-                      <Route path="*" element={<NotFound />} />
-                    </Route>
-                  </Routes>
-                </React.Suspense>
+                      <Route element={<Layout />}>
+                        <Route index element={<Home />} />
+                        <Route
+                          path="mobiles"
+                          element={<Catalogue key="new" category="new" />}
+                        />
+                        <Route
+                          path="second-hand"
+                          element={<Catalogue key="used" category="used" />}
+                        />
+                        <Route
+                          path="accessories"
+                          element={
+                            <Catalogue key="accessory" category="accessory" />
+                          }
+                        />
+                        <Route path="favourites" element={<Favourites />} />
+                        <Route path="compare" element={<Compare />} />
+                        <Route path="shop" element={<Shop />} />
+                        <Route
+                          path="search"
+                          element={<Catalogue key="search" />}
+                        />
+                        <Route path="product/:slug" element={<ProductPage />} />
+                        <Route path="cart" element={<Cart />} />
+                        <Route path="checkout" element={<Checkout />} />
+                        <Route
+                          path="checkout/review/*"
+                          element={<Checkout />}
+                        />
+                        <Route path="login" element={<Login />} />
+                        <Route path="account" element={<Account />} />
+                        <Route path="my-orders" element={<MyOrders />} />
+                        <Route path="order/:id" element={<OrderPage />} />
+                        <Route
+                          path="order/:id/payment"
+                          element={<PaymentPage />}
+                        />
+                        <Route path="help" element={<Contact />} />
+                        <Route
+                          path="contact"
+                          element={<Navigate to="/help" replace />}
+                        />
+                        <Route path="repair" element={<Repair />} />
+                        <Route
+                          path="digital-meter-repair"
+                          element={
+                            <Navigate
+                              to="/repair#digital-meter-repairs"
+                              replace
+                            />
+                          }
+                        />
+                        <Route
+                          path="mobile-repair"
+                          element={
+                            <Navigate to="/repair#phone-repairs" replace />
+                          }
+                        />
+                        <Route path="*" element={<NotFound />} />
+                      </Route>
+                    </Routes>
+                  </React.Suspense>
                 </ProductRouteGate>
               </FavouritesProvider>
             </CartProvider>

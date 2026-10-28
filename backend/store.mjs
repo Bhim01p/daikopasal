@@ -57,7 +57,9 @@ export function upgradeStarterStock(current) {
     products: current.products.map((product) => {
       const seed = starters.find((p) => p.id === product.id);
       const usedInOrder = current.orders.some((order) =>
-        order.items?.some((item) => (item.product?.id || item.productId) === product.id),
+        order.items?.some(
+          (item) => (item.product?.id || item.productId) === product.id,
+        ),
       );
       const untouched =
         seed &&
@@ -77,7 +79,12 @@ export function upgradeStarterStock(current) {
 export function removeStarterListings(current) {
   if (current.ownerCatalogueRevision === 1) return current;
   const supplied = new Set(seedStore().products.map((product) => product.id));
-  const legacy = JSON.parse(readFileSync(new URL("./seed/legacy-signatures.json", import.meta.url), "utf8"));
+  const legacy = JSON.parse(
+    readFileSync(
+      new URL("./seed/legacy-signatures.json", import.meta.url),
+      "utf8",
+    ),
+  );
   for (const product of legacy) supplied.add(product.id);
   return {
     ...current,
@@ -124,7 +131,11 @@ export function normalizeStore(current) {
     staffAccounts: current.staffAccounts ?? [],
     bills: current.bills ?? [],
     repairTickets: current.repairTickets ?? [],
-    paymentConfig: current.paymentConfig ?? { qrImage: "", instructions: "", accountName: "" },
+    paymentConfig: current.paymentConfig ?? {
+      qrImage: "",
+      instructions: "",
+      accountName: "",
+    },
     sales: current.sales ?? [],
   };
   if (
@@ -149,7 +160,9 @@ export function createStore(
     : seedStore(initialProducts ?? (migrateStarter ? [] : undefined));
   const previous = current;
   if (migrateStarter)
-    current = removeStarterListings(upgradeStarterStock(upgradeStarterCatalogue(current)));
+    current = removeStarterListings(
+      upgradeStarterStock(upgradeStarterCatalogue(current)),
+    );
   current = upgradePhoneCatalogue(current);
   function commit(next) {
     mkdirSync(path.dirname(file), { recursive: true });

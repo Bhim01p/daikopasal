@@ -222,7 +222,13 @@ export default function Compare() {
                   <th scope="col">{t("Specification")}</th>
                   {[first, second].map((p) => (
                     <th scope="col" key={p.id}>
-                      {"image" in p && p.image ? <SafeImage className="comparison-phone-image" src={p.image} alt={`${p.brand} ${p.name}`} /> : null}
+                      {"image" in p && p.image ? (
+                        <SafeImage
+                          className="comparison-phone-image"
+                          src={p.image}
+                          alt={`${p.brand} ${p.name}`}
+                        />
+                      ) : null}
                       <strong>{p.name}</strong>
                       <small>{p.variant}</small>
                       <small>{t(p.origin)}</small>

@@ -78,4 +78,3 @@ const assert = require("node:assert/strict");
   console.error(e);
   process.exit(1);
 });
-

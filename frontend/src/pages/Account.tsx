@@ -180,7 +180,11 @@ export function Login({
     <div
       className={`container account-page ${embedded ? "embedded-account" : ""}`}
     >
-      {!embedded && <div className="login-language"><LanguageSwitch /></div>}
+      {!embedded && (
+        <div className="login-language">
+          <LanguageSwitch />
+        </div>
+      )}
       <div className="account-heading">
         <span className="eyebrow">{t("Your shop account")}</span>
         <h1>{t("Welcome back.")}</h1>
@@ -435,6 +439,7 @@ export default function Account({
     error: sessionError,
     setCustomer,
     logout,
+    logoutAll,
   } = useCustomer();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -521,6 +526,20 @@ export default function Account({
     setError("");
     try {
       await logout();
+      if (!embedded) navigate("/login", { replace: true });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function signOutEverywhere() {
+    if (!window.confirm(t("This will sign you out on every device. Continue?")))
+      return;
+    setBusy(true);
+    setError("");
+    try {
+      await logoutAll();
       if (!embedded) navigate("/login", { replace: true });
     } catch (error) {
       setError(error instanceof Error ? error.message : "Please try again.");
@@ -659,6 +678,19 @@ export default function Account({
               section="password"
               onPasswordSaved={() => navigate("/account", { replace: true })}
             />
+            <button
+              type="button"
+              className="button white full"
+              disabled={busy}
+              onClick={() => void signOutEverywhere()}
+            >
+              {t("Sign out of all devices")}
+            </button>
+            {error && (
+              <p className="field-error" role="alert">
+                {t(error)}
+              </p>
+            )}
           </dialog>
         )}
       </section>
