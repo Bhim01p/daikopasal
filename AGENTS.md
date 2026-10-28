@@ -560,3 +560,12 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: No application behavior was changed; stale assertions now reflect the current upload limit, billing lifecycle, repair status workflow, and staff API contract.
 - **Known issues**: None from this test-alignment change.
 - **Recommended next step**: Continue deployment readiness review; retain the test suite as a release gate.
+
+### Entry: 2026-10-28 - GPT/Codex (Dynamic Product Sitemap)
+- **Agent**: GPT/Codex
+- **Task completed**: Extended the submitted sitemap to include live, non-sample product URLs from the store, while retaining public category and service pages.
+- **Files changed**: `backend/server.mjs`, `frontend/public/sitemap.xml`, `AGENTS.md`.
+- **Tests/checks performed**: Backend syntax check; isolated sitemap route smoke check (real product included, sample excluded); frontend production build; `git diff --check`.
+- **Result**: The existing `/sitemap.xml` is now a sitemap index that points to `/api/sitemap.xml`; the backend generates a cached XML sitemap from real store products and excludes sample listings. The robots sitemap reference remains unchanged.
+- **Known issues**: Product titles, descriptions, canonical metadata, and Product JSON-LD are still added by client-side JavaScript; initial HTML rendering was not changed. Google Search Console URL inspection/indexing requests and Google Business Profile edits remain user-side actions.
+- **Recommended next step**: Deploy, then inspect `/sitemap.xml` and `/api/sitemap.xml` in browser and resubmit `/sitemap.xml` in Search Console.

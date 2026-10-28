@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/mobiles</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/second-hand</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/accessories</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/repair</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/shop</loc></url>
-  <url><loc>https://machhapuchhreeelectronics.vercel.app/help</loc></url>
-</urlset>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://machhapuchhreeelectronics.vercel.app/api/sitemap.xml</loc>
+  </sitemap>
+</sitemapindex>

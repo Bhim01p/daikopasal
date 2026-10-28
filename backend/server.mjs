@@ -86,6 +86,22 @@ function json(response, status, data) {
   });
   response.end(JSON.stringify(data));
 }
+function xml(response, status, data) {
+  response.writeHead(status, {
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+    "X-Content-Type-Options": "nosniff",
+  });
+  response.end(data);
+}
+function escapeXml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+}
 async function body(request) {
   if (!request.headers["content-type"]?.startsWith("application/json"))
     throw new HttpError(415, "Send JSON content.");
@@ -464,6 +480,45 @@ export function createApp(options = {}) {
         const origin = request.headers.origin;
         if (origin && new URL(origin).host !== request.headers.host)
           throw new HttpError(403, "This request origin is not allowed.");
+      }
+      if (route === "/api/sitemap.xml" && method === "GET") {
+        const publicOrigin = "https://machhapuchhreeelectronics.vercel.app";
+        const publicPaths = [
+          "/",
+          "/mobiles",
+          "/second-hand",
+          "/accessories",
+          "/repair",
+          "/mobile-repair",
+          "/digital-meter-repair",
+          "/shop",
+          "/help",
+        ];
+        const productSlugs = new Set(
+          store
+            .read()
+            .products.filter(
+              (product) =>
+                product.isSample === false &&
+                typeof product.slug === "string" &&
+                product.slug.trim(),
+            )
+            .map((product) => product.slug.trim()),
+        );
+        const locations = [
+          ...publicPaths.map((pathname) => `${publicOrigin}${pathname}`),
+          ...[...productSlugs].map(
+            (slug) => `${publicOrigin}/product/${encodeURIComponent(slug)}`,
+          ),
+        ];
+        const entries = locations
+          .map((location) => `<url><loc>${escapeXml(location)}</loc></url>`)
+          .join("");
+        return xml(
+          response,
+          200,
+          `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries}</urlset>`,
+        );
       }
       if (route === "/api/health" && method === "GET")
         return json(response, 200, { ok: true });
