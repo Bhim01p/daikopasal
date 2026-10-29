@@ -623,3 +623,21 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: The Shop menu links directly to the accessories listing filtered to Vehicle Meter Repair Parts.
 - **Known issues**: Production page still requires deployment and visual confirmation.
 - **Recommended next step**: Deploy and check the Shop menu on desktop and mobile.
+
+### Entry: 2026-10-29 - GPT/Codex (Vehicle Meter Parts Minimal Admin Form and Cancel Fix)
+- **Agent**: GPT/Codex
+- **Task completed**: Simplified the dedicated Vehicle Meter Repair Parts add/edit form to collect only the part name, optional compatibility notes, price, stock, and optional photos. The category/subcategory stay fixed by the route; a generic brand/description is supplied only when required values are blank. Fixed Cancel editing so its discard confirmation closes in one step.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `frontend/src/refinement.css`, `frontend/src/admin.css`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript and production build passed; Nepali locale JSON validation and `git diff --check` passed.
+- **Result**: Removed phone-specific illustration, color, warranty, and catalogue controls from this route without changing the general accessory editor or product API. Discard confirmation is now visible as a modal and does not prompt twice. The category route and category assignment are present in source; an older deployed build requires a deployment to receive them.
+- **Known issues**: Manual browser check of Add/Edit/Cancel remains recommended. Current local changes are not automatically reflected on production.
+- **Recommended next step**: Deploy the latest commit when ready, then verify `/not-admin/vehicle-meter-parts` and its Shop category with one draft listing.
+
+### Entry: 2026-10-29 - GPT/Codex (Themed Confirmations and Backend Review)
+- **Agent**: GPT/Codex
+- **Task completed**: Replaced app-controlled browser confirmation dialogs with a shared theme-aware dialog across Admin product/catalogue actions, staff actions, and account sign-out. Reviewed the backend image upload/read flow prompted by the broken Admin photo preview.
+- **Files changed**: `frontend/src/context/ConfirmDialogContext.tsx`, `frontend/src/main.tsx`, `frontend/src/admin.css`, `frontend/src/components/AdminPhoneCatalogue.tsx`, `frontend/src/components/StaffManager.tsx`, `frontend/src/pages/Account.tsx`, `frontend/src/pages/Admin.tsx`, `frontend/src/refinement.css`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build passed; all backend `.mjs` files passed `node --check`; Nepali locale JSON and `git diff --check` passed. Backend suite: 32/49 passed; 17 could not complete due Windows temp-file rename `EPERM` or network `fetch failed` errors.
+- **Result**: No backend code defect was confirmed in the image flow by static review; uploads use the database image store and the corresponding API route reads that store. All explicit app confirmation prompts are themed; the browser-controlled tab-close warning remains native.
+- **Known issues**: The Admin photo-preview failure still needs a live request/response check; browser inspection was unavailable under the current Windows URL policy. The 17 backend fixture/network failures leave those specific behaviors unverified in this environment.
+- **Recommended next step**: Deploy the reviewed changes and verify the Admin photo upload/preview in the live browser; use its image GET status to diagnose the remaining preview failure.

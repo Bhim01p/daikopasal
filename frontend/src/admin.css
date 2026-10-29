@@ -170,6 +170,51 @@
   background: rgb(16 18 24 / 48%);
   backdrop-filter: blur(3px);
 }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(16 18 24 / 58%);
+  backdrop-filter: blur(3px);
+}
+.app-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(18 10 14 / 58%);
+  backdrop-filter: blur(4px);
+}
+.app-confirm-dialog {
+  width: min(92vw, 480px);
+  padding: 24px;
+  border: 1px solid var(--line, #e5dfe1);
+  border-radius: 18px;
+  background: var(--sky-surface, #fff);
+  color: var(--sky-text, #251b20);
+  box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+}
+.app-confirm-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+}
+.app-confirm-dialog p {
+  margin: 0;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.app-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
 .admin-editor-overlay > .admin-editor {
   width: min(980px, 100%);
   max-height: calc(100vh - 48px);

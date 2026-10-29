@@ -1195,6 +1195,22 @@ html[lang="ne"] h3 {
 .accessory-simple .accessory-hide {
   display: none;
 }
+.vehicle-meter-parts-editor .vehicle-parts-fixed-category {
+  display: none;
+}
+.vehicle-meter-parts-editor .catalogue-store-details .summary-note,
+.vehicle-meter-parts-editor .catalogue-store-details > button {
+  display: none;
+}
+.vehicle-meter-parts-editor .vehicle-parts-notes-label {
+  display: block;
+  margin-top: 14px;
+}
+.vehicle-meter-parts-editor .vehicle-parts-notes-label textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+}
 .admin-editor {
   position: relative;
 }

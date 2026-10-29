@@ -48,6 +48,7 @@ import "./ruby-theme.css";
 import "./operations.css";
 import "./bugfix.css";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ConfirmDialogProvider } from "./context/ConfirmDialogContext";
 function RouteLoading() {
   const t = useT();
   return (
@@ -266,87 +267,92 @@ function App() {
   return (
     <BrowserRouter>
       <LanguageProvider>
-        <CustomerProvider>
-          <ProductProvider>
-            <CartProvider>
-              <FavouritesProvider>
-                <Meta />
-                <ProductRouteGate>
-                  <React.Suspense fallback={<RouteLoading />}>
-                    <Routes>
-                      <Route
-                        path="not-admin/*"
-                        caseSensitive
-                        element={<Admin />}
-                      />
-                      <Route element={<Layout />}>
-                        <Route index element={<Home />} />
+        <ConfirmDialogProvider>
+          <CustomerProvider>
+            <ProductProvider>
+              <CartProvider>
+                <FavouritesProvider>
+                  <Meta />
+                  <ProductRouteGate>
+                    <React.Suspense fallback={<RouteLoading />}>
+                      <Routes>
                         <Route
-                          path="mobiles"
-                          element={<Catalogue key="new" category="new" />}
+                          path="not-admin/*"
+                          caseSensitive
+                          element={<Admin />}
                         />
-                        <Route
-                          path="second-hand"
-                          element={<Catalogue key="used" category="used" />}
-                        />
-                        <Route
-                          path="accessories"
-                          element={
-                            <Catalogue key="accessory" category="accessory" />
-                          }
-                        />
-                        <Route path="favourites" element={<Favourites />} />
-                        <Route path="compare" element={<Compare />} />
-                        <Route path="shop" element={<Shop />} />
-                        <Route
-                          path="search"
-                          element={<Catalogue key="search" />}
-                        />
-                        <Route path="product/:slug" element={<ProductPage />} />
-                        <Route path="cart" element={<Cart />} />
-                        <Route path="checkout" element={<Checkout />} />
-                        <Route
-                          path="checkout/review/*"
-                          element={<Checkout />}
-                        />
-                        <Route path="login" element={<Login />} />
-                        <Route path="account" element={<Account />} />
-                        <Route path="my-orders" element={<MyOrders />} />
-                        <Route path="order/:id" element={<OrderPage />} />
-                        <Route
-                          path="order/:id/payment"
-                          element={<PaymentPage />}
-                        />
-                        <Route path="help" element={<Contact />} />
-                        <Route
-                          path="contact"
-                          element={<Navigate to="/help" replace />}
-                        />
-                        <Route path="repair" element={<Repair />} />
-                        <Route
-                          path="digital-meter-repair"
-                          element={
-                            <Navigate
-                              to="/repair#digital-meter-repairs"
-                              replace
-                            />
-                          }
-                        />
-                        <Route
-                          path="mobile-repair"
-                          element={
-                            <Navigate to="/repair#phone-repairs" replace />
-                          }
-                        />
-                        <Route path="*" element={<NotFound />} />
-                      </Route>
-                    </Routes>
-                  </React.Suspense>
-                </ProductRouteGate>
-              </FavouritesProvider>
-            </CartProvider>
-          </ProductProvider>
-        </CustomerProvider>
+                        <Route element={<Layout />}>
+                          <Route index element={<Home />} />
+                          <Route
+                            path="mobiles"
+                            element={<Catalogue key="new" category="new" />}
+                          />
+                          <Route
+                            path="second-hand"
+                            element={<Catalogue key="used" category="used" />}
+                          />
+                          <Route
+                            path="accessories"
+                            element={
+                              <Catalogue key="accessory" category="accessory" />
+                            }
+                          />
+                          <Route path="favourites" element={<Favourites />} />
+                          <Route path="compare" element={<Compare />} />
+                          <Route path="shop" element={<Shop />} />
+                          <Route
+                            path="search"
+                            element={<Catalogue key="search" />}
+                          />
+                          <Route
+                            path="product/:slug"
+                            element={<ProductPage />}
+                          />
+                          <Route path="cart" element={<Cart />} />
+                          <Route path="checkout" element={<Checkout />} />
+                          <Route
+                            path="checkout/review/*"
+                            element={<Checkout />}
+                          />
+                          <Route path="login" element={<Login />} />
+                          <Route path="account" element={<Account />} />
+                          <Route path="my-orders" element={<MyOrders />} />
+                          <Route path="order/:id" element={<OrderPage />} />
+                          <Route
+                            path="order/:id/payment"
+                            element={<PaymentPage />}
+                          />
+                          <Route path="help" element={<Contact />} />
+                          <Route
+                            path="contact"
+                            element={<Navigate to="/help" replace />}
+                          />
+                          <Route path="repair" element={<Repair />} />
+                          <Route
+                            path="digital-meter-repair"
+                            element={
+                              <Navigate
+                                to="/repair#digital-meter-repairs"
+                                replace
+                              />
+                            }
+                          />
+                          <Route
+                            path="mobile-repair"
+                            element={
+                              <Navigate to="/repair#phone-repairs" replace />
+                            }
+                          />
+                          <Route path="*" element={<NotFound />} />
+                        </Route>
+                      </Routes>
+                    </React.Suspense>
+                  </ProductRouteGate>
+                </FavouritesProvider>
+              </CartProvider>
+            </ProductProvider>
+          </CustomerProvider>
+        </ConfirmDialogProvider>
       </LanguageProvider>
     </BrowserRouter>
   );

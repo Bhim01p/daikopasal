@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { useT } from "../context/LanguageContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import { api } from "../utils/api";
 import { Plus, Pencil, Users, ShieldCheck } from "lucide-react";
 
@@ -45,6 +46,7 @@ export default function StaffManager({
   onError: (error: unknown) => void;
 }) {
   const t = useT();
+  const confirmDialog = useConfirmDialog();
   const location = useLocation();
   const navigate = useNavigate();
   const editorId = location.pathname.split("/")[3];
@@ -83,11 +85,22 @@ export default function StaffManager({
     if (loadedPath.current === location.pathname) return;
     if (
       loadedPath.current.split("/")[3] &&
-      JSON.stringify(draft) !== baseline.current &&
-      !window.confirm(t("Discard unsaved staff changes?"))
+      JSON.stringify(draft) !== baseline.current
     ) {
+      const previous = loadedPath.current;
+      const destination = location.pathname;
       restoringPath.current = true;
-      navigate(loadedPath.current, { replace: true });
+      navigate(previous, { replace: true });
+      void confirmDialog(t("Discard unsaved staff changes?")).then(
+        (accepted) => {
+          if (accepted) {
+            baseline.current = JSON.stringify(draft);
+            navigate(destination, { replace: true });
+          } else {
+            restoringPath.current = false;
+          }
+        },
+      );
       return;
     }
     loadedPath.current = location.pathname;
@@ -114,7 +127,7 @@ export default function StaffManager({
     setDraft(next);
     setError("");
     document.getElementById("staff-editor-title")?.focus();
-  }, [location.pathname, loading, accounts]);
+  }, [location.pathname, loading, accounts, confirmDialog, draft, navigate, t]);
   const dirty = editorOpen && JSON.stringify(draft) !== baseline.current;
   useEffect(() => {
     if (!dirty) return;
@@ -122,24 +135,11 @@ export default function StaffManager({
       event.preventDefault();
       event.returnValue = "";
     };
-    const click = (event: MouseEvent) => {
-      const target = (event.target as Element).closest(
-        'a[href], [role="tab"], .staff-back',
-      );
-      if (target) {
-        if (!window.confirm(t("Discard unsaved staff changes?"))) {
-          event.preventDefault();
-          event.stopPropagation();
-        } else baseline.current = JSON.stringify(draft);
-      }
-    };
     window.addEventListener("beforeunload", unload);
-    document.addEventListener("click", click, true);
     return () => {
       window.removeEventListener("beforeunload", unload);
-      document.removeEventListener("click", click, true);
     };
-  }, [dirty, t]);
+  }, [dirty]);
   async function reload() {
     const result = await api<{ staff: StaffAccount[] }>("/admin/staff");
     setAccounts(result.staff);
@@ -191,11 +191,11 @@ export default function StaffManager({
   async function toggle(account: StaffAccount) {
     if (
       account.enabled &&
-      !window.confirm(
+      !(await confirmDialog(
         t(
           "Disable this staff login? Their current sessions will stop working.",
         ),
-      )
+      ))
     )
       return;
     setBusy(true);

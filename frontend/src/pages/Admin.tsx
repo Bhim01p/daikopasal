@@ -125,7 +125,8 @@ import StaffManager from "../components/StaffManager";
 import { ThemeSwitch } from "../context/ThemeContext";
 import QuickStock from "../components/QuickStock";
 import OrderCloseDialog from "../components/OrderCloseDialog";
-import { LanguageSwitch, translateCurrent } from "../context/LanguageContext";
+import { LanguageSwitch } from "../context/LanguageContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import { Brand } from "../components/Layout";
 import { useProducts } from "../context/ProductContext";
 import { api, ApiError } from "../utils/api";
@@ -188,6 +189,7 @@ const freshProduct = (): Product => ({
 });
 export default function Admin() {
   const t = useT();
+  const confirmDialog = useConfirmDialog();
   const { products, refresh } = useProducts();
   const [user, setUser] = useState<string | null>(null);
   const [role, setRole] = useState<"owner" | "staff">("staff");
@@ -229,6 +231,8 @@ export default function Admin() {
     parts[0] === "vehicle-meter-parts"
       ? "Vehicle Meter Repair Parts"
       : undefined;
+  const isVehicleMeterPartsEditor =
+    inventorySubcategory === "Vehicle Meter Repair Parts";
   const tab: AdminTab =
     parts[0] === "orders"
       ? "orders"
@@ -297,7 +301,6 @@ export default function Admin() {
   const [catalogueSearch, setCatalogueSearch] = useState("");
   const [catalogueAdvancedOpen, setCatalogueAdvancedOpen] = useState(false);
   const [cataloguePickerOpen, setCataloguePickerOpen] = useState(false);
-  const [discardPrompt, setDiscardPrompt] = useState(false);
   const [salesRange, setSalesRange] = useState<
     "today" | "7days" | "month" | "all"
   >("today");
@@ -428,39 +431,23 @@ export default function Admin() {
     draftKey(freshProduct(), initialSpecs),
   );
   const dirty = draftKey(draft, specRows) !== baseline;
-  function mayDiscard() {
-    return (
-      !dirty ||
-      window.confirm(
-        translateCurrent(
-          "You have unsaved product changes. Leave without saving?",
-        ),
-      )
+  const confirmDiscardIfDirty = async () => {
+    if (!dirty) return true;
+    const accepted = await confirmDialog(
+      t("You have unsaved product changes. Leave without saving?"),
     );
-  }
+    if (accepted) setBaseline(draftKey(draft, specRows));
+    return accepted;
+  };
   useEffect(() => {
     if (!dirty) return;
     const beforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "";
     };
-    const onLink = (event: MouseEvent) => {
-      const link = (event.target as Element).closest("a[href]");
-      if (
-        link &&
-        !link.hasAttribute("download") &&
-        !link.hasAttribute("target") &&
-        !mayDiscard()
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
     window.addEventListener("beforeunload", beforeUnload);
-    document.addEventListener("click", onLink, true);
     return () => {
       window.removeEventListener("beforeunload", beforeUnload);
-      document.removeEventListener("click", onLink, true);
     };
   }, [dirty]);
   useLayoutEffect(() => {
@@ -468,15 +455,18 @@ export default function Admin() {
       restoringPath.current = false;
       return;
     }
-    if (
-      previousPath.current !== location.pathname &&
-      dirty &&
-      !window.confirm(
-        t("You have unsaved product changes. Leave without saving?"),
-      )
-    ) {
+    if (previousPath.current !== location.pathname && dirty) {
+      const previous = previousPath.current;
+      const destination = location.pathname;
       restoringPath.current = true;
-      navigate(previousPath.current, { replace: true });
+      navigate(previous, { replace: true });
+      void confirmDiscardIfDirty().then((accepted) => {
+        if (accepted) {
+          navigate(destination, { replace: true });
+        } else {
+          restoringPath.current = false;
+        }
+      });
       return;
     }
     previousPath.current = location.pathname;
@@ -565,7 +555,7 @@ export default function Admin() {
     }
   }
   async function importInventory() {
-    if (!inventoryPreview || !mayDiscard()) return;
+    if (!inventoryPreview || !(await confirmDiscardIfDirty())) return;
     setBusy("import");
     setError("");
     setNotice("");
@@ -596,7 +586,12 @@ export default function Admin() {
     }
   }
   function resetDraft(force = false) {
-    if (!force && !mayDiscard()) return;
+    if (!force && dirty) {
+      void confirmDiscardIfDirty().then((accepted) => {
+        if (accepted) resetDraft(true);
+      });
+      return;
+    }
     const next = freshProduct();
     setBaseline(draftKey(next, initialSpecs));
     setProductEditorOpen(false);
@@ -849,7 +844,7 @@ export default function Admin() {
     }
   }
   async function logout() {
-    if (!mayDiscard()) return;
+    if (!(await confirmDiscardIfDirty())) return;
     setBusy("logout");
     try {
       await api("/admin/logout", { method: "POST", body: "{}" });
@@ -904,20 +899,31 @@ export default function Admin() {
               catalogueDeviceId: selectedCatalogue.deviceId,
             }
           : draft;
-      if (catalogueDraft.category === "used") {
-        if (!catalogueDraft.condition)
+      const productDraft = isVehicleMeterPartsEditor
+        ? {
+            ...catalogueDraft,
+            category: "accessory" as const,
+            accessoryCategory: "Vehicle Meter Repair Parts",
+            brand: catalogueDraft.brand.trim() || "Vehicle Parts",
+            description:
+              catalogueDraft.description.trim() ||
+              `${catalogueDraft.name.trim()} for vehicle meter repair.`,
+          }
+        : catalogueDraft;
+      if (productDraft.category === "used") {
+        if (!productDraft.condition)
           throw new Error("Select a condition grade for this used phone.");
         if (
-          catalogueDraft.battery === undefined ||
-          !Number.isInteger(catalogueDraft.battery) ||
-          catalogueDraft.battery < 0 ||
-          catalogueDraft.battery > 100
+          productDraft.battery === undefined ||
+          !Number.isInteger(productDraft.battery) ||
+          productDraft.battery < 0 ||
+          productDraft.battery > 100
         )
           throw new Error(
             "Enter battery health from 0 to 100 for this used phone.",
           );
         if (
-          !productImages(catalogueDraft).some((image) =>
+          !productImages(productDraft).some((image) =>
             image.startsWith("/api/images/upload-"),
           )
         )
@@ -925,18 +931,24 @@ export default function Admin() {
             "Upload at least one actual device photo for this used phone.",
           );
         if (
-          (catalogueDraft.stockQuantity || 0) > 1 &&
-          !window.confirm(
+          (productDraft.stockQuantity || 0) > 1 &&
+          !(await confirmDialog(
             t(
               "Use stock above 1 only when the used phones are genuinely interchangeable in condition, battery, photos, accessories, defects, and price.",
             ),
-          )
+          ))
         )
           return;
       }
       const specs: Record<string, string> = {};
       for (const row of specRows) {
         if (!row.name.trim() && !row.value.trim()) continue;
+        if (
+          isVehicleMeterPartsEditor &&
+          row.name.trim() === "Warranty" &&
+          row.value.trim() === "Confirm with shop"
+        )
+          continue;
         if (!row.name.trim() || !row.value.trim())
           throw new Error("Enter a name and value for each specification.");
         if (specs[row.name.trim()])
@@ -949,7 +961,7 @@ export default function Admin() {
           : "/admin/products",
         {
           method: draft.id ? "PATCH" : "POST",
-          body: JSON.stringify({ ...catalogueDraft, specs }),
+          body: JSON.stringify({ ...productDraft, specs }),
         },
       );
       await refresh(true);
@@ -965,12 +977,12 @@ export default function Admin() {
   }
   async function removeProduct(product: Product) {
     if (
-      !window.confirm(
+      !(await confirmDialog(
         t(
           "Remove {{name}} from the catalogue? Existing order receipts will keep their details.",
           { name: product.name },
         ),
-      )
+      ))
     )
       return;
     setBusy(product.id);
@@ -1064,8 +1076,8 @@ export default function Admin() {
       setBusy("");
     }
   }
-  function selectProduct(product: Product) {
-    if (!mayDiscard()) return;
+  async function selectProduct(product: Product) {
+    if (!(await confirmDiscardIfDirty())) return;
     navigate(listPath + "/" + encodeURIComponent(product.id));
     setError("");
     setNotice("");
@@ -1231,8 +1243,8 @@ export default function Admin() {
                     aria-controls={panel}
                     aria-selected={selected}
                     className={selected ? "selected" : ""}
-                    onClick={() => {
-                      if (!mayDiscard()) return;
+                    onClick={async () => {
+                      if (!(await confirmDiscardIfDirty())) return;
                       if (dirty) resetDraft(true);
                       if (accessoryCategory)
                         navigate("/not-admin/vehicle-meter-parts");
@@ -1404,8 +1416,8 @@ export default function Admin() {
                     <button
                       className="button teal"
                       disabled={!!busy}
-                      onClick={() => {
-                        if (!mayDiscard()) return;
+                      onClick={async () => {
+                        if (!(await confirmDiscardIfDirty())) return;
                         resetDraft(true);
                         if (inventorySubcategory) {
                           const next = {
@@ -1627,7 +1639,7 @@ export default function Admin() {
                   aria-labelledby="product-editor-title"
                 >
                   <form
-                    className={`admin-panel admin-editor${!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${draft.category === "accessory" ? " accessory-simple" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
+                    className={`admin-panel admin-editor${!draft.id && (draft.category === "new" || draft.category === "used") && catalogueMode === "catalogue" ? " catalogue-compact" : ""}${draft.category === "accessory" ? " accessory-simple" : ""}${isVehicleMeterPartsEditor ? " vehicle-meter-parts-editor" : ""}${catalogueAdvancedOpen ? " catalogue-advanced-open" : ""}`}
                     id="product-editor"
                     onSubmit={saveProduct}
                     noValidate
@@ -1636,9 +1648,7 @@ export default function Admin() {
                       type="button"
                       className="button white inventory-back"
                       disabled={!!busy}
-                      onClick={() =>
-                        dirty ? setDiscardPrompt(true) : resetDraft()
-                      }
+                      onClick={() => resetDraft()}
                     >
                       {t("Back to inventory")}
                     </button>
@@ -1647,9 +1657,7 @@ export default function Admin() {
                       className="icon-button admin-editor-close"
                       aria-label={t("Close editor")}
                       disabled={!!busy}
-                      onClick={() =>
-                        dirty ? setDiscardPrompt(true) : resetDraft()
-                      }
+                      onClick={() => resetDraft()}
                     >
                       ×
                     </button>
@@ -1686,7 +1694,9 @@ export default function Admin() {
                     <fieldset className="editor-section catalogue-basic">
                       <legend>{t("Basic details")}</legend>
                       <label htmlFor="product-name">
-                        {t("Product name *")}
+                        {isVehicleMeterPartsEditor
+                          ? t("Part name *")
+                          : t("Product name *")}
                       </label>
                       <input
                         id="product-name"
@@ -1703,21 +1713,46 @@ export default function Admin() {
                           setDraft({ ...draft, name: e.target.value })
                         }
                       />
-                      <label htmlFor="product-brand">{t("Brand *")}</label>
-                      <input
-                        id="product-brand"
-                        value={draft.brand}
-                        readOnly={
-                          !draft.id &&
-                          catalogueMode === "catalogue" &&
-                          catalogueFilled
-                        }
-                        maxLength={60}
-                        required={!!draft.id || catalogueMode !== "catalogue"}
-                        onChange={(e) =>
-                          setDraft({ ...draft, brand: e.target.value })
-                        }
-                      />
+                      {!isVehicleMeterPartsEditor && (
+                        <>
+                          <label htmlFor="product-brand">{t("Brand *")}</label>
+                          <input
+                            id="product-brand"
+                            value={draft.brand}
+                            readOnly={
+                              !draft.id &&
+                              catalogueMode === "catalogue" &&
+                              catalogueFilled
+                            }
+                            maxLength={60}
+                            required={!!draft.id || catalogueMode !== "catalogue"}
+                            onChange={(e) =>
+                              setDraft({ ...draft, brand: e.target.value })
+                            }
+                          />
+                        </>
+                      )}
+                      {isVehicleMeterPartsEditor && (
+                        <label
+                          className="vehicle-parts-notes-label"
+                          htmlFor="vehicle-parts-notes"
+                        >
+                          {t("Compatible vehicle / notes (optional)")}
+                          <textarea
+                            id="vehicle-parts-notes"
+                            rows={2}
+                            maxLength={2000}
+                            value={draft.description}
+                            placeholder={t("Example: compatible vehicle model")}
+                            onChange={(event) =>
+                              setDraft({
+                                ...draft,
+                                description: event.target.value,
+                              })
+                            }
+                          />
+                        </label>
+                      )}
                       {!draft.id &&
                         (draft.category === "new" ||
                           draft.category === "used") &&
@@ -1967,7 +2002,7 @@ export default function Admin() {
                             )}
                           </fieldset>
                         )}
-                      <div className="admin-form-row">
+                      <div className={`admin-form-row${isVehicleMeterPartsEditor ? " vehicle-parts-fixed-category" : ""}`}>
                         <div>
                           <label htmlFor="product-category">
                             {t("Category")}
@@ -2274,6 +2309,7 @@ export default function Admin() {
                     </fieldset>
                     <fieldset className="editor-section catalogue-advanced">
                       <legend>{t("Photos")}</legend>
+                      {!isVehicleMeterPartsEditor && <>
                       <label htmlFor="product-image">{t("Illustration")}</label>
                       <select
                         id="product-image"
@@ -2312,6 +2348,7 @@ export default function Admin() {
                           </option>
                         ))}
                       </select>
+                      </>}
                       <label
                         className="admin-field-label"
                         htmlFor="product-photo"
@@ -2474,7 +2511,7 @@ export default function Admin() {
                           />
                         </label>
                       </div>
-                      <div className="admin-form-row">
+                      {!isVehicleMeterPartsEditor && <div className="admin-form-row">
                         <label>
                           {t("Color")}
                           <input
@@ -2502,8 +2539,8 @@ export default function Admin() {
                             }
                           />
                         </label>
-                      </div>
-                      {uniqueCatalogueVariants.find(
+                      </div>}
+                      {!isVehicleMeterPartsEditor && uniqueCatalogueVariants.find(
                         (phone) => phone.variant === catalogueVariant,
                       ) &&
                         (!uniqueCatalogueVariants.find(
@@ -2518,14 +2555,14 @@ export default function Admin() {
                             )}
                           </p>
                         )}
-                      <p className="summary-note">
+                      {!isVehicleMeterPartsEditor && <p className="summary-note">
                         ✓{" "}
                         {t(
                           "Specifications automatically loaded from catalogue",
                         )}
                         <br />✓ {t("Catalogue image automatically connected")}
-                      </p>
-                      <button
+                      </p>}
+                      {!isVehicleMeterPartsEditor && <button
                         type="button"
                         className="button white"
                         onClick={() =>
@@ -2535,7 +2572,7 @@ export default function Admin() {
                         {catalogueAdvancedOpen
                           ? t("Hide catalogue details")
                           : t("View / edit catalogue details")}
-                      </button>
+                      </button>}
                     </fieldset>
                     <div className="catalogue-advanced catalogue-advanced accessory-hide">
                       <ProductFinanceEditor draft={draft} onChange={setDraft} />
@@ -2718,16 +2755,14 @@ export default function Admin() {
                       >
                         {busy === "save" ? t("Saving…") : t("Save product")}
                       </button>
-                      {(draft.id || dirty) && (
-                        <button
-                          className="button white"
-                          type="button"
-                          disabled={!!busy}
-                          onClick={() => resetDraft()}
-                        >
-                          {t("Cancel editing")}
-                        </button>
-                      )}
+                      <button
+                        className="button white"
+                        type="button"
+                        disabled={!!busy}
+                        onClick={() => resetDraft()}
+                      >
+                        {t("Cancel editing")}
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -3306,36 +3341,6 @@ export default function Admin() {
               setClosingOrder(null);
           }}
         />
-      )}
-      {discardPrompt && (
-        <div className="modal-backdrop" role="presentation">
-          <div
-            className="admin-confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="discard-title"
-          >
-            <h2 id="discard-title">{t("Leave product editor?")}</h2>
-            <p>{t("Your unsaved product changes will be lost.")}</p>
-            <div className="button-row">
-              <button
-                className="button white"
-                onClick={() => setDiscardPrompt(false)}
-              >
-                {t("Keep editing")}
-              </button>
-              <button
-                className="button dark"
-                onClick={() => {
-                  setDiscardPrompt(false);
-                  resetDraft();
-                }}
-              >
-                {t("Leave without saving")}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../utils/api";
 import { useT } from "../context/LanguageContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import SafeImage from "./SafeImage";
 type Image = { url: string; position?: number };
 type Variant = { ram?: number; storage?: number };
@@ -23,6 +24,7 @@ export default function AdminPhoneCatalogue({
   onError: (error: unknown) => void;
 }) {
   const t = useT();
+  const confirmDialog = useConfirmDialog();
   const [phones, setPhones] = useState<Phone[]>([]);
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("all");
@@ -126,7 +128,7 @@ export default function AdminPhoneCatalogue({
     if (!selected) return;
     if (
       action === "remove" &&
-      !window.confirm(t("Remove this image from the catalogue?"))
+      !(await confirmDialog(t("Remove this image from the catalogue?")))
     )
       return;
     setBusy(true);
@@ -148,7 +150,7 @@ export default function AdminPhoneCatalogue({
   const resetImages = async () => {
     if (
       !selected ||
-      !window.confirm(t("Reset images to the catalogue default?"))
+      !(await confirmDialog(t("Reset images to the catalogue default?")))
     )
       return;
     setBusy(true);

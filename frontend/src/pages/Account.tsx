@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useCustomer } from "../context/CustomerContext";
+import { useConfirmDialog } from "../context/ConfirmDialogContext";
 import { api } from "../utils/api";
 import type { Customer } from "../types";
 import AccountSettings from "../components/AccountSettings";
@@ -432,6 +433,7 @@ export default function Account({
   onComplete,
 }: { embedded?: boolean; onComplete?: () => void } = {}) {
   const t = useT();
+  const confirmDialog = useConfirmDialog();
   const formId = useId();
   const {
     customer,
@@ -534,7 +536,7 @@ export default function Account({
     }
   }
   async function signOutEverywhere() {
-    if (!window.confirm(t("This will sign you out on every device. Continue?")))
+    if (!(await confirmDialog(t("This will sign you out on every device. Continue?"))))
       return;
     setBusy(true);
     setError("");
