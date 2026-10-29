@@ -1,6 +1,14 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useT } from "../context/LanguageContext";
-export const shopCategories = [
+export const shopCategories: {
+  to: string;
+  label: string;
+  image: string;
+  srcSet?: string;
+  width?: number;
+  height?: number;
+  accessory?: string;
+}[] = [
   {
     to: "/mobiles",
     label: "New phones",
@@ -27,11 +35,22 @@ export const shopCategories = [
     width: 2560,
     height: 1400,
   },
+  {
+    to: "/accessories",
+    accessory: "Vehicle Meter Repair Parts",
+    label: "Vehicle Meter Repair Parts",
+    image: "/assets/pulsar-meter-repair-1280.webp",
+    srcSet:
+      "/assets/pulsar-meter-repair-640.webp 640w, /assets/pulsar-meter-repair-1280.webp 1280w",
+    width: 1280,
+    height: 720,
+  },
 ];
 export default function CategoryNav({ cards = false }: { cards?: boolean }) {
   const t = useT();
   const location = useLocation();
-  const activeQuery = new URLSearchParams(location.search).get("q") || "";
+  const currentParams = new URLSearchParams(location.search);
+  const activeQuery = currentParams.get("q") || "";
   return (
     <nav
       className={cards ? "shop-category-cards" : "shop-category-switch"}
@@ -39,12 +58,28 @@ export default function CategoryNav({ cards = false }: { cards?: boolean }) {
     >
       {shopCategories.map((category) => (
         <NavLink
-          key={category.to}
-          to={
-            activeQuery
-              ? `${category.to}?q=${encodeURIComponent(activeQuery)}`
-              : category.to
+          key={category.accessory || category.to}
+          className={({ isActive }) =>
+            category.accessory
+              ? currentParams.get("accessory") === category.accessory
+                ? "active"
+                : undefined
+              : category.to === "/accessories"
+                ? isActive && !currentParams.has("accessory")
+                  ? "active"
+                  : undefined
+                : isActive
+                  ? "active"
+                  : undefined
           }
+          to={(() => {
+            const nextParams = new URLSearchParams();
+            if (activeQuery) nextParams.set("q", activeQuery);
+            if (category.accessory)
+              nextParams.set("accessory", category.accessory);
+            const search = nextParams.toString();
+            return search ? `${category.to}?${search}` : category.to;
+          })()}
         >
           {cards && (
             <img

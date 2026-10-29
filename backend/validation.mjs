@@ -44,6 +44,7 @@ export const accessoryCategories = [
   "Speakers",
   "Earphones",
   "Bulbs",
+  "Vehicle Meter Repair Parts",
   "Other Accessories",
 ];
 export function text(value, label, min = 1, max = 200) {

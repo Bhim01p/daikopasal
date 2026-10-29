@@ -194,7 +194,7 @@ export default function Catalogue({ category }: { category?: Category }) {
       : category === "used"
         ? "Shop used phones"
         : category === "accessory"
-          ? "Shop accessories"
+          ? accessory || "Shop accessories"
           : "Search the shop";
   const filterCount = [
     brand,

@@ -596,3 +596,21 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: Removed the oversized navigation shadow/pseudo-element; the existing centered full-width nav background and root horizontal clipping remain.
 - **Known issues**: The deployed site will continue to show the old behavior until this local change is pushed and deployed. Confirm desktop horizontal scrolling after deployment.
 - **Recommended next step**: Deploy and verify that dragging/scrolling horizontally no longer shifts the page into blank space.
+
+### Entry: 2026-10-29 - GPT/Codex (Vehicle Meter Repair Parts Shop Category)
+- **Agent**: GPT/Codex
+- **Task completed**: Added Vehicle Meter Repair Parts as an accessory subcategory connected to product validation, Admin entry, Shop discovery, accessory filtering/search, product detail category display, and return-to-collection links.
+- **Files changed**: `backend/validation.mjs`, `frontend/src/components/CategoryNav.tsx`, `frontend/src/data/categories.ts`, `frontend/src/pages/Catalogue.tsx`, `frontend/src/pages/Product.tsx`, `frontend/src/ruby-theme.css`, `shared/ui-keys.json`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build passed; backend category validation/persistence smoke check passed; backend syntax check, English/Nepali JSON parsing, and `git diff --check` passed.
+- **Result**: The new category uses the existing accessory product type and API contract. Admin can assign it; customers can discover it from Shop and Accessories, filter/search it, and return to the same category from its product page. English and Nepali labels are present.
+- **Known issues**: No category-specific products are created automatically; Admin must add products and select this category.
+- **Recommended next step**: Add the vehicle meter parts as accessory products in Admin, then verify the Shop category after deployment.
+
+### Entry: 2026-10-29 - GPT/Codex (Vehicle Meter Parts Admin and Billing Access)
+- **Agent**: GPT/Codex
+- **Task completed**: Added a dedicated peer-level Admin inventory route for Vehicle Meter Repair Parts and a matching Billing filter.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `frontend/src/components/AdminBilling.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build and translation validation passed; `git diff --check` passed. Full backend suite: 32/49 passed; 17 were blocked by Windows temp-file rename `EPERM` or localhost fixture `EACCES` errors.
+- **Result**: `/not-admin/vehicle-meter-parts` reuses the normal accessory inventory capabilities, filters to this subcategory, and defaults new products to it. Billing can select those products directly; they remain normal accessory products for sale, stock, cart, and checkout flows.
+- **Known issues**: The route is local until deployment; no products were created automatically. Full backend test-suite results are inconclusive in this Windows environment because its fixtures cannot reliably rename files under the sandbox temp directory or bind localhost ports.
+- **Recommended next step**: Deploy and create a meter-parts listing to verify Admin inventory and Billing with real stock.

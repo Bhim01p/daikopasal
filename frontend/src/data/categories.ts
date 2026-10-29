@@ -6,5 +6,6 @@ export const accessoryCategories = [
   "Speakers",
   "Earphones",
   "Bulbs",
+  "Vehicle Meter Repair Parts",
   "Other Accessories",
 ];

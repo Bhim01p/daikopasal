@@ -104,6 +104,15 @@ const adminSections = [
     id: "products-accessory-tab",
   },
   {
+    value: "products",
+    category: "accessory",
+    accessoryCategory: "Vehicle Meter Repair Parts",
+    label: "Vehicle Meter Repair Parts",
+    Icon: Package,
+    panel: "admin-products",
+    id: "products-vehicle-meter-parts-tab",
+  },
+  {
     value: "staff",
     label: "Staff logins",
     Icon: Users,
@@ -208,6 +217,7 @@ export default function Admin() {
     "new-phones": "new",
     "used-phones": "used",
     accessories: "accessory",
+    "vehicle-meter-parts": "accessory",
   };
   const categoryPaths = {
     new: "new-phones",
@@ -215,6 +225,10 @@ export default function Admin() {
     accessory: "accessories",
   };
   const inventoryCategory: "all" | Category = categoryRoutes[parts[0]] || "all";
+  const inventorySubcategory =
+    parts[0] === "vehicle-meter-parts"
+      ? "Vehicle Meter Repair Parts"
+      : undefined;
   const tab: AdminTab =
     parts[0] === "orders"
       ? "orders"
@@ -234,9 +248,11 @@ export default function Admin() {
                     ? "products"
                     : "dashboard";
   const listPath =
-    inventoryCategory === "all"
-      ? "/not-admin/inventory"
-      : `/not-admin/${categoryPaths[inventoryCategory]}`;
+    inventorySubcategory
+      ? "/not-admin/vehicle-meter-parts"
+      : inventoryCategory === "all"
+        ? "/not-admin/inventory"
+        : `/not-admin/${categoryPaths[inventoryCategory]}`;
   function setTab(value: AdminTab) {
     navigate(
       value === "dashboard"
@@ -372,6 +388,8 @@ export default function Admin() {
   ).filter(
     (product) =>
       (inventoryCategory === "all" || product.category === inventoryCategory) &&
+      (!inventorySubcategory ||
+        product.accessoryCategory === inventorySubcategory) &&
       `${product.brand} ${product.name}`
         .toLowerCase()
         .includes(query.toLowerCase()),
@@ -1195,9 +1213,16 @@ export default function Admin() {
                 const { value, label, Icon, panel, id } = section;
                 const category =
                   "category" in section ? section.category : undefined;
+                const accessoryCategory =
+                  "accessoryCategory" in section
+                    ? section.accessoryCategory
+                    : undefined;
                 const selected =
                   tab === value &&
-                  (!category || inventoryCategory === category);
+                  (!category || inventoryCategory === category) &&
+                  (accessoryCategory
+                    ? inventorySubcategory === accessoryCategory
+                    : category !== "accessory" || !inventorySubcategory);
                 return (
                   <button
                     key={id}
@@ -1209,7 +1234,9 @@ export default function Admin() {
                     onClick={() => {
                       if (!mayDiscard()) return;
                       if (dirty) resetDraft(true);
-                      if (category) setInventoryCategory(category);
+                      if (accessoryCategory)
+                        navigate("/not-admin/vehicle-meter-parts");
+                      else if (category) setInventoryCategory(category);
                       else setTab(value);
                       setError("");
                       setNotice("");
@@ -1231,13 +1258,14 @@ export default function Admin() {
                   {
                     dashboard: "Dashboard",
                     products:
-                      inventoryCategory === "new"
+                      inventorySubcategory ||
+                      (inventoryCategory === "new"
                         ? "New phones"
                         : inventoryCategory === "used"
                           ? "Used phones"
                           : inventoryCategory === "accessory"
                             ? "Accessories"
-                            : "Inventory",
+                            : "Inventory"),
                     orders: "Orders",
                     billing: "Billing",
                     qr: "Payment QR",
@@ -1363,7 +1391,9 @@ export default function Admin() {
               aria-labelledby={
                 inventoryCategory === "all"
                   ? undefined
-                  : `products-${inventoryCategory}-tab`
+                    : inventorySubcategory
+                      ? "products-vehicle-meter-parts-tab"
+                      : `products-${inventoryCategory}-tab`
               }
               className="admin-products-layout"
             >
@@ -1377,6 +1407,17 @@ export default function Admin() {
                       onClick={() => {
                         if (!mayDiscard()) return;
                         resetDraft(true);
+                        if (inventorySubcategory) {
+                          const next = {
+                            ...freshProduct(),
+                            category: "accessory" as const,
+                            accessoryCategory: inventorySubcategory,
+                            image: "/assets/cover.svg",
+                            images: ["/assets/cover.svg"],
+                          };
+                          setDraft(next);
+                          setBaseline(draftKey(next, initialSpecs));
+                        }
                         setProductEditorOpen(true);
                       }}
                     >

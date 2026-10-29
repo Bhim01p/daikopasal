@@ -22,6 +22,15 @@ import WhatsAppIcon from "../components/WhatsAppIcon";
 import NotFound from "./NotFound";
 import { isSampleProduct, purchaseLimit } from "../utils/products";
 import { findVariantProduct, getVariantGroup } from "../utils/productVariants";
+function collectionPath(product: { category: string; accessoryCategory?: string }) {
+  return product.category === "accessory" && product.accessoryCategory
+    ? `/accessories?accessory=${encodeURIComponent(product.accessoryCategory)}`
+    : product.category === "new"
+      ? "/mobiles"
+      : product.category === "used"
+        ? "/second-hand"
+        : "/accessories";
+}
 export default function Product() {
   const t = useT();
   const { language } = useLanguage();
@@ -71,13 +80,7 @@ export default function Product() {
         <Link to="/">{t("Home")}</Link>
         <ArrowRight size={12} />
         <Link
-          to={
-            product.category === "new"
-              ? "/mobiles"
-              : product.category === "used"
-                ? "/second-hand"
-                : "/accessories"
-          }
+          to={collectionPath(product)}
         >
           {product.category === "new"
             ? t("New mobiles")
@@ -445,13 +448,7 @@ export default function Product() {
             <p>{t("A few more options to explore.")}</p>
           </div>
           <Link
-            to={
-              product.category === "new"
-                ? "/mobiles"
-                : product.category === "used"
-                  ? "/second-hand"
-                  : "/accessories"
-            }
+            to={collectionPath(product)}
           >
             {t("See collection ")}
             <ArrowUpRight size={15} />

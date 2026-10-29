@@ -48,7 +48,10 @@ export default function AdminBilling({
           product.stockQuantity !== null &&
           product.stockQuantity > 0 &&
           !product.priceIsEstimate &&
-          (category === "all" || product.category === category) &&
+          (category === "all" ||
+            (category === "vehicle-meter-parts"
+              ? product.accessoryCategory === "Vehicle Meter Repair Parts"
+              : product.category === category)) &&
           `${product.brand} ${product.name}`
             .toLowerCase()
             .includes(query.toLowerCase()),
@@ -167,6 +170,9 @@ export default function AdminBilling({
                 <option value="new">{t("New phones")}</option>
                 <option value="used">{t("Used phones")}</option>
                 <option value="accessory">{t("Accessories")}</option>
+                <option value="vehicle-meter-parts">
+                  {t("Vehicle Meter Repair Parts")}
+                </option>
               </select>
             </div>
             <div className="billing-product-list">
