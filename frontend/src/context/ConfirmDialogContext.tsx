@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { useT } from "./LanguageContext";
 
 type PendingConfirmation = {
@@ -45,37 +46,39 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
   return (
     <ConfirmDialogContext.Provider value={confirm}>
       {children}
-      {active && (
-        <div className="app-dialog-backdrop">
-          <section
-            className="app-confirm-dialog"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="app-confirm-title"
-            aria-describedby="app-confirm-message"
-          >
-            <h2 id="app-confirm-title">{t("Please confirm")}</h2>
-            <p id="app-confirm-message">{active.message}</p>
-            <div className="app-confirm-actions">
-              <button
-                type="button"
-                className="button white"
-                onClick={() => settle(false)}
-              >
-                {t("Cancel")}
-              </button>
-              <button
-                type="button"
-                className="button dark"
-                autoFocus
-                onClick={() => settle(true)}
-              >
-                {t("Continue")}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      {active &&
+        createPortal(
+          <div className="app-dialog-backdrop">
+            <section
+              className="app-confirm-dialog"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="app-confirm-title"
+              aria-describedby="app-confirm-message"
+            >
+              <h2 id="app-confirm-title">{t("Please confirm")}</h2>
+              <p id="app-confirm-message">{active.message}</p>
+              <div className="app-confirm-actions">
+                <button
+                  type="button"
+                  className="button white"
+                  onClick={() => settle(false)}
+                >
+                  {t("Cancel")}
+                </button>
+                <button
+                  type="button"
+                  className="button dark"
+                  autoFocus
+                  onClick={() => settle(true)}
+                >
+                  {t("Continue")}
+                </button>
+              </div>
+            </section>
+          </div>,
+          document.body,
+        )}
     </ConfirmDialogContext.Provider>
   );
 }

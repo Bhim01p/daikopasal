@@ -77,6 +77,12 @@ This file serves as the shared project context and handoff log between coding ag
   - Cloudinary public ID pattern: `machhapuchhree-electronics/catalogue/phones/{device_id}/{position}`.
   - Cloudinary uploads must preserve `overwrite: false`.
 
+### Confirmation Dialog Lookup
+- App-controlled confirmations are requested through `useConfirmDialog()` in `frontend/src/context/ConfirmDialogContext.tsx`.
+- The shared dialog markup is rendered in a portal attached to `document.body`; centered overlay and theme styles are in `frontend/src/admin.css` (`.app-dialog-backdrop`, `.app-confirm-dialog`).
+- To find callers/messages, search for `useConfirmDialog` and `confirmDialog(` in `frontend/src`.
+- Browser-controlled beforeunload prompts cannot use this themed dialog.
+
 ---
 
 ## Agent Handoff
@@ -641,3 +647,12 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: No backend code defect was confirmed in the image flow by static review; uploads use the database image store and the corresponding API route reads that store. All explicit app confirmation prompts are themed; the browser-controlled tab-close warning remains native.
 - **Known issues**: The Admin photo-preview failure still needs a live request/response check; browser inspection was unavailable under the current Windows URL policy. The 17 backend fixture/network failures leave those specific behaviors unverified in this environment.
 - **Recommended next step**: Deploy the reviewed changes and verify the Admin photo upload/preview in the live browser; use its image GET status to diagnose the remaining preview failure.
+
+### Entry: 2026-10-29 - GPT/Codex (Global Confirmation Dialog Centering)
+- **Agent**: GPT/Codex
+- **Task completed**: Moved the shared app confirmation dialog into a `document.body` portal so it stays centered in the viewport instead of being positioned relative to a transformed page/container.
+- **Files changed**: `frontend/src/context/ConfirmDialogContext.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: `npm.cmd run build` and `git diff --check` passed.
+- **Result**: All app-controlled confirmation messages continue using the same shared themed dialog, now with viewport-level centering. Added a permanent lookup note for the dialog component, styles, and callers.
+- **Known issues**: Browser-native beforeunload confirmation remains controlled by the browser and cannot be styled this way.
+- **Recommended next step**: Verify an unsaved-edit confirmation on desktop and mobile; check that it is centered regardless of scroll position.
