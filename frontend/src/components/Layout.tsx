@@ -107,6 +107,9 @@ export default function Layout() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
+  const selectedAccessory = new URLSearchParams(location.search).get(
+    "accessory",
+  );
   const navigate = useNavigate();
   const shoppingPage =
     [
@@ -187,7 +190,23 @@ export default function Layout() {
                 }
               >
                 {links.slice(1, 5).map(([to, label]) => (
-                  <NavLink key={to} to={to}>
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) => {
+                      if (label === "Accessories")
+                        return location.pathname === "/accessories" &&
+                          selectedAccessory !== "Vehicle Meter Repair Parts"
+                          ? "active"
+                          : "";
+                      if (label === "Vehicle Meter Repair Parts")
+                        return location.pathname === "/accessories" &&
+                          selectedAccessory === "Vehicle Meter Repair Parts"
+                          ? "active"
+                          : "";
+                      return isActive ? "active" : "";
+                    }}
+                  >
                     {t(label)}
                   </NavLink>
                 ))}

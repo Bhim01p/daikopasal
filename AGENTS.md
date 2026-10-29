@@ -665,3 +665,39 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: Only valid uploaded product image reads are exempted from the staff admin-permission guard. Admin write routes and all other staff permission checks remain protected.
 - **Known issues**: Production needs a deployment before the fix is available there. A signed-in staff account should be used for manual preview verification after deployment.
 - **Recommended next step**: Deploy, then open Add Product as staff and verify an uploaded image preview loads while the staff session remains active.
+
+### Entry: 2026-10-29 - GPT/Codex (Shop Dropdown Double Active State)
+- **Agent**: GPT/Codex
+- **Task completed**: Fixed the Shop dropdown highlighting both Accessories and Vehicle Meter Repair Parts at once.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend production build and `git diff --check` passed.
+- **Result**: The active state for these two links now checks the accessory query parameter as well as the shared `/accessories` path, so only the selected category is highlighted.
+- **Known issues**: Production requires deployment before the fix is visible on the live site; browser QA has not been performed.
+- **Recommended next step**: Deploy and verify the Accessories and Vehicle Meter Repair Parts links highlight separately.
+
+### Entry: 2026-10-29 - GPT/Codex (Checkout Order Error Visibility)
+- **Agent**: GPT/Codex
+- **Task completed**: Made order-placement errors visible beside the Place order button on the checkout review screen.
+- **Files changed**: `frontend/src/pages/Checkout.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build and `git diff --check` passed. The targeted backend API test was blocked before exercising order creation by a Windows temp-file EPERM rename failure.
+- **Result**: If the order API rejects the request, its existing error now appears in the visible review card instead of only inside the offscreen checkout form.
+- **Known issues**: The supplied screenshot shows the pre-submit review page and does not expose the POST `/api/orders` response, so the underlying production rejection reason remains unconfirmed.
+- **Recommended next step**: Deploy, click Place order once, and if it remains on review, inspect the POST `/api/orders` response in the browser Network panel to identify the server-side reason.
+
+### Entry: 2026-10-29 - GPT/Codex (Checkout Progress Steps)
+- **Agent**: GPT/Codex
+- **Task completed**: Simplified the checkout progress indicator from four steps to three.
+- **Files changed**: `frontend/src/pages/Checkout.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build and `git diff --check` passed.
+- **Result**: Progress now shows Cart → Delivery & payment → Tracking. The existing QR payment page maps to the Delivery & payment stage until the customer finishes the payment submission; payment behavior and verification remain unchanged.
+- **Known issues**: Visual verification on the deployed site is still needed.
+- **Recommended next step**: Deploy and check the progress indicator on pickup/pay-at-shop, QR payment, and order tracking screens.
+
+### Entry: 2026-10-29 - GPT/Codex (Homepage Slider Hold-to-Pause)
+- **Agent**: GPT/Codex
+- **Task completed**: Added press-and-hold pausing to the homepage category slider; existing swipe and drag navigation was confirmed in the current implementation.
+- **Files changed**: `frontend/src/pages/ReferenceHome.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build and `git diff --check` passed.
+- **Result**: Touch swipe and desktop drag continue to change slides. Holding a pointer for 450 ms temporarily pauses auto-advance until release; existing keyboard and visible controls remain available.
+- **Known issues**: Manual browser QA on touch and desktop is still recommended.
+- **Recommended next step**: Deploy and verify swipe, hold-to-pause, release-to-resume, and the existing controls on phone and desktop.

@@ -82,9 +82,23 @@ export default function ReferenceHome() {
   const drag = useRef<{ x: number; y: number } | null>(null);
   const suppress = useRef(0);
   const interactionPaused = useRef(false);
+  const holdPaused = useRef(false);
+  const holdTimer = useRef<number | null>(null);
   const manualPaused = useRef(false);
   const [isPaused, setIsPaused] = useState(false);
   const pauseUntil = useRef(0);
+  const startHold = () => {
+    if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
+    holdTimer.current = window.setTimeout(() => {
+      holdPaused.current = true;
+      holdTimer.current = null;
+    }, 450);
+  };
+  const endHold = () => {
+    if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+    holdPaused.current = false;
+  };
   const move = (n: number) => {
     pauseUntil.current = Date.now() + 6000;
     setIndex((i) => (i + n + slides.length) % slides.length);
@@ -99,12 +113,16 @@ export default function ReferenceHome() {
         document.visibilityState === "visible" &&
         !drag.current &&
         !interactionPaused.current &&
+        !holdPaused.current &&
         !manualPaused.current &&
         Date.now() > pauseUntil.current
       )
         setIndex((i) => (i + 1) % slides.length);
     }, 6000);
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearInterval(timer);
+      if (holdTimer.current !== null) window.clearTimeout(holdTimer.current);
+    };
   }, []);
   const slide = slides[index];
   return (
@@ -122,6 +140,7 @@ export default function ReferenceHome() {
         }}
         onMouseLeave={() => {
           interactionPaused.current = false;
+          endHold();
         }}
         onFocusCapture={() => {
           if (window.matchMedia("(hover: hover) and (pointer: fine)").matches)
@@ -138,6 +157,7 @@ export default function ReferenceHome() {
           }
         }}
         onPointerDown={(e) => {
+          if (e.pointerType === "touch" || e.button === 0) startHold();
           if (e.pointerType !== "touch" && e.button === 0) {
             drag.current = { x: e.clientX, y: e.clientY };
           }
@@ -176,6 +196,7 @@ export default function ReferenceHome() {
           }
         }}
         onPointerUp={(e) => {
+          endHold();
           if (e.pointerType === "touch") return;
           const d = drag.current;
           drag.current = null;
@@ -187,6 +208,7 @@ export default function ReferenceHome() {
             move(e.clientX < d.x ? 1 : -1);
         }}
         onPointerCancel={() => {
+          endHold();
           drag.current = null;
           if (heroVisual.current) {
             heroVisual.current.style.setProperty("--hero-tilt-x", "0deg");
@@ -194,6 +216,7 @@ export default function ReferenceHome() {
           }
         }}
         onPointerLeave={() => {
+          endHold();
           if (heroVisual.current) {
             heroVisual.current.style.setProperty("--hero-tilt-x", "0deg");
             heroVisual.current.style.setProperty("--hero-tilt-y", "0deg");

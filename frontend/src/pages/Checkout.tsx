@@ -197,11 +197,11 @@ function CheckoutSteps({
 }: {
   active: "cart" | "checkout" | "payment" | "tracking";
 }) {
-  const steps = ["cart", "checkout", "payment", "tracking"] as const;
+  const steps = ["cart", "checkout", "tracking"] as const;
+  const activeStep = active === "payment" ? "checkout" : active;
   const labels = {
     cart: "Cart",
     checkout: "Delivery & payment",
-    payment: "Payment",
     tracking: "Tracking",
   };
   return (
@@ -209,7 +209,7 @@ function CheckoutSteps({
       {steps.map((step, index) => (
         <span
           key={step}
-          className={steps.indexOf(active) >= index ? "active" : ""}
+          className={steps.indexOf(activeStep) >= index ? "active" : ""}
         >
           <b>{index + 1}</b>
           {labels[step]}
@@ -410,6 +410,11 @@ export default function Checkout() {
                   {t("Change")}
                 </button>
               </div>
+              {errors.save && (
+                <p className="field-error" role="alert">
+                  {errors.save}
+                </p>
+              )}
               <button
                 className="button dark full"
                 type="button"
@@ -726,7 +731,7 @@ export default function Checkout() {
               </div>
             )}
             <CancellationPolicy />
-            {errors.save && (
+            {errors.save && !reviewing && (
               <p className="field-error" role="alert">
                 {errors.save}
               </p>
