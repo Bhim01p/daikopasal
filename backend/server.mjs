@@ -69,6 +69,12 @@ function staffPermissionForRoute(route) {
   if (route.startsWith("/api/admin/payment-config")) return "paymentQr";
   return null;
 }
+function isPublicUploadedImageRead(route, method) {
+  return (
+    ["GET", "HEAD"].includes(method) &&
+    /^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(route)
+  );
+}
 const backendRoot = path.dirname(fileURLToPath(import.meta.url));
 if (existsSync(path.join(backendRoot, ".env")))
   loadEnvFile(path.join(backendRoot, ".env"));
@@ -1123,6 +1129,7 @@ export function createApp(options = {}) {
       const activeAdmin = session(request);
       if (
         activeAdmin?.role === "staff" &&
+        !isPublicUploadedImageRead(route, method) &&
         (!requiredStaffPermission ||
           !activeAdmin.permissions?.[requiredStaffPermission])
       )

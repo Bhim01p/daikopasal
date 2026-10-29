@@ -656,3 +656,12 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: All app-controlled confirmation messages continue using the same shared themed dialog, now with viewport-level centering. Added a permanent lookup note for the dialog component, styles, and callers.
 - **Known issues**: Browser-native beforeunload confirmation remains controlled by the browser and cannot be styled this way.
 - **Recommended next step**: Verify an unsaved-edit confirmation on desktop and mobile; check that it is centered regardless of scroll position.
+
+### Entry: 2026-10-29 - GPT/Codex (Admin Staff Product Image Preview)
+- **Agent**: GPT/Codex
+- **Task completed**: Fixed staff-session authorization rejecting public GET/HEAD requests for uploaded product images, which caused Admin previews to show “Photo unavailable”.
+- **Files changed**: `backend/server.mjs`, `AGENTS.md`.
+- **Tests/checks performed**: Backend syntax check and `git diff --check` passed; no runtime browser retest performed.
+- **Result**: Only valid uploaded product image reads are exempted from the staff admin-permission guard. Admin write routes and all other staff permission checks remain protected.
+- **Known issues**: Production needs a deployment before the fix is available there. A signed-in staff account should be used for manual preview verification after deployment.
+- **Recommended next step**: Deploy, then open Add Product as staff and verify an uploaded image preview loads while the staff session remains active.
