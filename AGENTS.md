@@ -614,3 +614,12 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: `/not-admin/vehicle-meter-parts` reuses the normal accessory inventory capabilities, filters to this subcategory, and defaults new products to it. Billing can select those products directly; they remain normal accessory products for sale, stock, cart, and checkout flows.
 - **Known issues**: The route is local until deployment; no products were created automatically. Full backend test-suite results are inconclusive in this Windows environment because its fixtures cannot reliably rename files under the sandbox temp directory or bind localhost ports.
 - **Recommended next step**: Deploy and create a meter-parts listing to verify Admin inventory and Billing with real stock.
+
+### Entry: 2026-10-29 - GPT/Codex (Vehicle Meter Parts Header Navigation)
+- **Agent**: GPT/Codex
+- **Task completed**: Added Vehicle Meter Repair Parts to the main Shop dropdown and mobile footer category links after visual review showed the menu still had only three entries.
+- **Files changed**: `frontend/src/components/Layout.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build passed; translation validation passed; `git diff --check` passed.
+- **Result**: The Shop menu links directly to the accessories listing filtered to Vehicle Meter Repair Parts.
+- **Known issues**: Production page still requires deployment and visual confirmation.
+- **Recommended next step**: Deploy and check the Shop menu on desktop and mobile.

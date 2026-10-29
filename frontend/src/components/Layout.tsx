@@ -50,6 +50,10 @@ const links = [
   ["/mobiles", "New phones"],
   ["/second-hand", "Used phones"],
   ["/accessories", "Accessories"],
+  [
+    "/accessories?accessory=Vehicle%20Meter%20Repair%20Parts",
+    "Vehicle Meter Repair Parts",
+  ],
   ["/help", "Help"],
   ["/repair", "Repair"],
   ["/my-orders", "My orders"],
@@ -182,7 +186,7 @@ export default function Layout() {
                     : "shop-menu"
                 }
               >
-                {links.slice(1, 4).map(([to, label]) => (
+                {links.slice(1, 5).map(([to, label]) => (
                   <NavLink key={to} to={to}>
                     {t(label)}
                   </NavLink>
@@ -474,7 +478,7 @@ export default function Layout() {
               <ChevronDown size={17} />
             </summary>
             <div className="mobile-footer-links">
-              {links.slice(1, 4).map(([to, label]) => (
+              {links.slice(1, 5).map(([to, label]) => (
                 <Link key={to} to={to}>
                   {t(label)}
                 </Link>
