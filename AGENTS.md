@@ -701,3 +701,30 @@ This file serves as the shared project context and handoff log between coding ag
 - **Result**: Touch swipe and desktop drag continue to change slides. Holding a pointer for 450 ms temporarily pauses auto-advance until release; existing keyboard and visible controls remain available.
 - **Known issues**: Manual browser QA on touch and desktop is still recommended.
 - **Recommended next step**: Deploy and verify swipe, hold-to-pause, release-to-resume, and the existing controls on phone and desktop.
+
+### Entry: 2026-10-29 - GPT/Codex (Separate Vehicle Parts Inventory + Public Checkout)
+- **Agent**: GPT/Codex
+- **Task completed**: Isolated Vehicle Meter Repair Parts from the general Accessories storefront and fixed staff-session permissions blocking public customer APIs/order placement. Added a proper browser title for checkout review.
+- **Files changed**: `backend/server.mjs`, `backend/test/staff.test.mjs`, `frontend/src/main.tsx`, `frontend/src/pages/Admin.tsx`, `frontend/src/pages/Catalogue.tsx`, `AGENTS.md`.
+- **Tests/checks performed**: Backend syntax checks; focused staff permission/order regression test (passed); frontend TypeScript/production build; `git diff --check`.
+- **Result**: Staff permissions now guard admin API routes only; customer/public endpoints remain usable with an admin staff cookie while admin permission checks remain enforced. Guest checkout order creation is covered by the regression test. General Accessories excludes Vehicle Meter Repair Parts unless that category is explicitly selected; Admin inventory count reflects the current filtered list.
+- **Known issues**: Changes are local and require deployment for production checkout. The earlier production order failure should be retried after deployment.
+- **Recommended next step**: Deploy, then test public browsing/order placement while signed in to the admin in the same browser; verify Accessories and Vehicle Meter Repair Parts stay separate in Shop and Admin.
+
+### Entry: 2026-10-30 - GPT/Codex (Order and Payment Route Audit)
+- **Agent**: GPT/Codex
+- **Task completed**: Audited checkout, guest receipts, QR payment submission/verification, admin order transitions, delivery status, customer tracking, and order email content. Fixed confirmed state and data-flow issues.
+- **Files changed**: `backend/server.mjs`, `backend/email.mjs`, `backend/test/order-payment-flow.test.mjs`, `frontend/src/pages/Checkout.tsx`, `frontend/src/pages/MyOrders.tsx`, `frontend/src/pages/Admin.tsx`, `frontend/src/components/OrderCloseDialog.tsx`, `frontend/src/utils/orders.ts`, `frontend/src/types/index.ts`, `shared/ne.json`, `AGENTS.md`. Earlier local uncommitted changes from the separate vehicle-parts/public-checkout fix were preserved.
+- **Tests/checks performed**: Backend suite passed 50/50 on the final full run; focused order/payment test passed; frontend TypeScript and production build passed; backend syntax checks, Nepali JSON validation, and `git diff --check` passed. One parallel suite run returned a transient HTTP 500 in the new delivery test; the isolated test and repeated full suite both passed.
+- **Result**: Checkout review carries customer details and the idempotency reference across route changes; delivery sends the fee-inclusive expected total; guest receipts retain current `PICKUP`/`DELIVERY` orders after refresh. QR orders remain `PENDING` until reference submission, only submitted references can be verified, and paid/closed payments cannot be resubmitted. Customer receipts omit staff verifier names. Delivery orders use delivery statuses and labels in admin, tracking, and email.
+- **Known issues**: Browser QA on deployed pickup/delivery/QR paths remains; no production order was created during this audit. A verified QR order can still be cancelled without an in-system refund record; the admin confirmation now warns that any refund must be handled and recorded separately. The single transient test HTTP 500 did not recur and its cause was not proven.
+- **Recommended next step**: Deploy the local changes when ready, then manually check pickup/pay-at-shop, pickup/QR, delivery/QR, guest refresh/tracking, admin verification, rejection/resubmission, and delivery completion using safe test orders. Do not assume an external refund was performed merely because an order was cancelled.
+
+### Entry: 2026-10-30 - GPT/Codex (Catalogue Store Fields and Homepage Hero)
+- **Agent**: GPT/Codex
+- **Task completed**: Made catalogue phone variants optional for autofill, added manual RAM/storage and available-colors entry to Admin product creation, and removed the desktop repair hero's unintended pale overlay. Checked primary internal navigation and homepage destinations against the current routes.
+- **Files changed**: `frontend/src/pages/Admin.tsx`, `frontend/src/ruby-theme.css`, `shared/ne.json`, `AGENTS.md`.
+- **Tests/checks performed**: Frontend TypeScript/production build passed; product validation accepted manual RAM/storage and available colors; Nepali JSON and `git diff --check` passed; internal route/anchor check found no broken primary links.
+- **Result**: Catalogue specifications and device image remain linked while admin-entered RAM/storage are preserved. Available colors are stored as a product specification; image background color remains separate. The desktop repair slide uses its intended dark image overlay; mobile gradient is unchanged.
+- **Known issues**: Live URL checks were unavailable from this environment, so external links and deployed-page behavior still need browser verification.
+- **Recommended next step**: In Admin, select a catalogue phone without a variant, enter RAM/storage and colors, save and reopen it; visually check the repair hero on desktop and mobile after deployment.

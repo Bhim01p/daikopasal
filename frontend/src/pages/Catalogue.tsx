@@ -136,7 +136,10 @@ export default function Catalogue({ category }: { category?: Category }) {
             (!ram || p.ram === Number(ram)) &&
             (!storage || p.storage === Number(storage)) &&
             (!condition || p.condition === condition) &&
-            (!accessory || p.accessoryCategory === accessory) &&
+            (accessory
+              ? p.accessoryCategory === accessory
+              : category !== "accessory" ||
+                p.accessoryCategory !== "Vehicle Meter Repair Parts") &&
             (!inStock || p.available),
         )
         .sort((a, b) =>

@@ -21,7 +21,7 @@ export function orderMessage(order: Order) {
     ),
     "",
     `${t(sample ? "Sample total" : "Total")}: ${money(order.total)}`,
-    `${t("Collection")}: ${t("Shop pickup in Lekhnath")}`,
+    `${t("Collection")}: ${order.fulfillment === "DELIVERY" ? t("Home delivery") : t("Shop pickup in Lekhnath")}`,
     ...(order.note ? [`${t("Note")}: ${order.note}`] : []),
   ].join("\n");
 }
@@ -40,13 +40,16 @@ export function readOrders(): Order[] {
             typeof o?.total === "number" &&
             Number.isFinite(o.total) &&
             o.total >= 0 &&
-            o?.fulfillment === "Shop pickup" &&
+            ["PICKUP", "DELIVERY", "Shop pickup"].includes(o?.fulfillment) &&
             [
               "Awaiting shop confirmation",
               "Confirmed",
               "Ready for pickup",
               "Completed",
               "Cancelled",
+              "Preparing",
+              "Out for delivery",
+              "Delivered",
             ].includes(o?.status) &&
             Array.isArray(o?.items) &&
             o.items.length > 0 &&

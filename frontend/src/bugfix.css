@@ -17,6 +17,10 @@ body,
   flex-wrap: wrap;
   gap: 10px;
 }
+.home-carousel .repair-slide .hero-copy :is(h1, h1 span, p, .eyebrow) {
+  color: #fff !important;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 24%);
+}
 .customer-repairs {
   margin: 20px 0;
   padding: 20px;

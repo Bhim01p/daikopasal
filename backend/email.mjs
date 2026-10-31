@@ -34,6 +34,8 @@ const descriptions = {
     "Your delivery order has been completed. Thank you for shopping with us.",
   Cancelled:
     "Your order has been cancelled. Contact the shop if you have any questions.",
+  Preparing: "Your order is being prepared for delivery.",
+  "Out for delivery": "Your order is out for delivery.",
 };
 export function createOrderEmail(order, kind = "status") {
   if (!order.email) return null; // Older orders may not have an email address.
@@ -51,7 +53,19 @@ export function createOrderEmail(order, kind = "status") {
     ({ product, quantity }) =>
       `${product.brand} ${product.name} × ${quantity} — ${money(product.price * quantity)}`,
   );
-  const summary = descriptions[order.status];
+  const delivery = order.fulfillment === "DELIVERY";
+  const qr = !!order.payment && order.payment.method !== "PAY_AT_SHOP";
+  const summary =
+    delivery && order.status === "Awaiting shop confirmation"
+      ? "We received your delivery order. The shop still needs to confirm availability and prices."
+      : delivery && order.status === "Confirmed"
+        ? "The shop has confirmed your delivery order."
+        : descriptions[order.status];
+  const paymentLine = qr
+    ? order.payment?.status === "PAID"
+      ? "Your QR payment has been verified."
+      : "Pay using the shop QR and submit your transaction reference. The shop will verify the payment."
+    : "Payment is arranged with the shop at pickup. No online payment has been taken.";
   let text = [
     `Hello ${order.name},`,
     "",
@@ -74,9 +88,9 @@ export function createOrderEmail(order, kind = "status") {
       : []),
     ...(order.note ? [`Your note: ${order.note}`] : []),
     "",
-    `Shop pickup: ${shop.location}`,
-    `Open ${shop.hours}`,
-    "Payment is arranged with the shop at pickup. No online payment has been taken.",
+    delivery ? "Home delivery" : `Shop pickup: ${shop.location}`,
+    ...(delivery ? [] : [`Open ${shop.hours}`]),
+    paymentLine,
     `Questions? Call ${shop.phone}.`,
     "",
     shop.name,
@@ -91,8 +105,8 @@ export function createOrderEmail(order, kind = "status") {
     ${sample ? "<p>This order includes sample listings. Confirm actual prices and availability with the shop.</p>" : ""}
     ${estimated ? "<p>Prices are estimates and require shop confirmation.</p>" : ""}
     ${order.note ? `<p>Your note: ${escape(order.note)}</p>` : ""}
-    <p><strong>Shop pickup</strong><br>${shop.location}<br>Open ${shop.hours}</p>
-    <p>Payment is arranged with the shop at pickup. No online payment has been taken.</p>
+    <p>${delivery ? "<strong>Home delivery</strong>" : `<strong>Shop pickup</strong><br>${shop.location}<br>Open ${shop.hours}`}</p>
+    <p>${escape(paymentLine)}</p>
     <p>Questions? Call <a href="tel:+977${shop.phone}">${shop.phone}</a>.</p></div></body></html>`;
   if (order.language === "ne") {
     const paragraphs = [
@@ -118,11 +132,9 @@ export function createOrderEmail(order, kind = "status") {
         ? [t("Prices are estimates and require shop confirmation.")]
         : []),
       ...(order.note ? [`${t("Your note")}: ${order.note}`] : []),
-      `${t("Shop pickup")}: ${shop.location}`,
-      `${t("Open")} ${shop.hours}`,
-      t(
-        "Payment is arranged with the shop at pickup. No online payment has been taken.",
-      ),
+      delivery ? t("Home delivery") : `${t("Shop pickup")}: ${shop.location}`,
+      ...(delivery ? [] : [`${t("Open")} ${shop.hours}`]),
+      t(paymentLine),
       translate("Questions? Call {{phone}}.", "ne", { phone: shop.phone }),
     ];
     text = paragraphs.join("\n\n");

@@ -7,7 +7,7 @@ export default function OrderCloseDialog({
   onCancel,
   onConfirm,
 }: {
-  value: { order: Order; status: "Completed" | "Cancelled" };
+  value: { order: Order; status: "Completed" | "Delivered" | "Cancelled" };
   busy: boolean;
   onCancel: () => void;
   onConfirm: () => Promise<void>;
@@ -36,7 +36,9 @@ export default function OrderCloseDialog({
         {t(
           value.status === "Completed"
             ? "Complete this pickup?"
-            : "Cancel this order?",
+            : value.status === "Delivered"
+              ? "Complete this delivery?"
+              : "Cancel this order?",
         )}
       </h2>
       <p>
@@ -46,9 +48,19 @@ export default function OrderCloseDialog({
         {t(
           value.status === "Completed"
             ? "Confirm that the customer has collected the items. Stock stays reserved and this order will be closed."
-            : "Reserved units will return to stock and this order will be closed.",
+            : value.status === "Delivered"
+              ? "Confirm that the customer received the items. Stock stays reserved and this order will be closed."
+              : "Reserved units will return to stock and this order will be closed.",
         )}
       </p>
+      {value.status === "Cancelled" &&
+        value.order.payment?.status === "PAID" && (
+          <p role="alert">
+            {t(
+              "Payment was verified. Arrange and record any refund separately before cancelling this order.",
+            )}
+          </p>
+        )}
       <p>
         {t(
           "A customer email update will be queued. This action cannot be undone.",
@@ -73,7 +85,9 @@ export default function OrderCloseDialog({
               ? "Saving…"
               : value.status === "Completed"
                 ? "Complete pickup"
-                : "Cancel order",
+                : value.status === "Delivered"
+                  ? "Complete delivery"
+                  : "Cancel order",
           )}
         </button>
       </div>

@@ -265,7 +265,7 @@ export default function MyOrders() {
                 </p>
               </div>
               <span
-                className={`order-status ${order.status === "Cancelled" ? "cancelled" : order.status === "Completed" ? "completed" : order.status === "Ready for pickup" ? "ready" : order.status === "Confirmed" ? "confirmed" : "pending"}`}
+                className={`order-status ${order.status === "Cancelled" ? "cancelled" : ["Completed", "Delivered"].includes(order.status) ? "completed" : order.status === "Ready for pickup" ? "ready" : order.status === "Confirmed" ? "confirmed" : "pending"}`}
               >
                 {t(order.status)}
               </span>
@@ -282,7 +282,7 @@ export default function MyOrders() {
               <div>
                 <strong>{money(order.total)}</strong>
                 <p>
-                  {order.fulfillmentMethod === "DELIVERY"
+                  {order.fulfillment === "DELIVERY"
                     ? t("Home delivery")
                     : t("Shop pickup")}
                 </p>
@@ -293,7 +293,9 @@ export default function MyOrders() {
                       ? t("Payment needs attention")
                       : order.payment?.method === "PAY_AT_SHOP"
                         ? t("Pay at shop")
-                        : t("Payment verification pending")}
+                        : order.payment?.status === "PENDING"
+                          ? t("Payment not submitted yet")
+                          : t("Payment verification pending")}
                 </p>
               </div>
               <Link className="button dark" to={`/order/${order.id}`}>

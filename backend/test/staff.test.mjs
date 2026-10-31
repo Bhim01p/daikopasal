@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -36,6 +37,17 @@ test("staff permissions, private credentials, revocation and restart persistence
       data: await response.json(),
       cookie: response.headers.get("set-cookie")?.split(";")[0],
     };
+  };
+  const publicRequest = async (route, method = "GET", input, cookie = "") => {
+    const response = await fetch(base + "/api" + route, {
+      method,
+      headers: {
+        Cookie: cookie,
+        ...(input ? { "Content-Type": "application/json" } : {}),
+      },
+      ...(input ? { body: JSON.stringify(input) } : {}),
+    });
+    return { status: response.status, data: await response.json() };
   };
   const login = (username, password) =>
     request("login", "POST", { username, password });
@@ -99,6 +111,38 @@ test("staff permissions, private credentials, revocation and restart persistence
     );
     let staff = await login("HELPER", staffPassword);
     assert.equal(staff.data.user.role, "staff");
+    const publicProducts = await publicRequest(
+      "/products",
+      "GET",
+      undefined,
+      staff.cookie,
+    );
+    assert.equal(publicProducts.status, 200);
+    assert.equal(
+      (await publicRequest("/customer/session", "GET", undefined, staff.cookie))
+        .status,
+      200,
+    );
+    const orderProduct = publicProducts.data.products.find(
+      (product) => product.category === "new" && product.available,
+    );
+    const customerOrder = await publicRequest(
+      "/orders",
+      "POST",
+      {
+        name: "Staff session guest order",
+        email: "guest-order@example.com",
+        phone: "9806600444",
+        note: "",
+        items: [{ productId: orderProduct.id, quantity: 1 }],
+        expectedTotal: orderProduct.price,
+        requestId: randomUUID(),
+        fulfillmentMethod: "PICKUP",
+        paymentMethod: "PAY_AT_SHOP",
+      },
+      staff.cookie,
+    );
+    assert.equal(customerOrder.status, 201);
     assert.equal(
       (await request("orders", "GET", undefined, staff.cookie)).status,
       200,

@@ -107,6 +107,7 @@ function Meta() {
       "/mobile-repair": "Mobile Repair Services",
       "/cart": "Your Shopping Bag",
       "/checkout": "Shop Pickup Checkout",
+      "/checkout/review": "Order Review",
       "/help": "Help",
       "/repair": "Repair",
       "/search": "Search Products",

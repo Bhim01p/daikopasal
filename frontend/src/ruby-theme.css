@@ -342,6 +342,11 @@ body :is(input, select, textarea) {
   );
   padding: clamp(32px, 7vw, 100px);
 }
+@media (min-width: 768px) {
+  :root body .home-carousel .repair-slide.reference-banner-main .hero-copy {
+    background: none;
+  }
+}
 :root body .home-carousel .hero-copy h1 {
   font-size: clamp(42px, 5vw, 72px);
   color: var(--sky-accent);

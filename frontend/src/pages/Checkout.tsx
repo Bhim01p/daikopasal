@@ -226,34 +226,80 @@ export default function Checkout() {
   const { items, total, clear } = useCart();
   const navigate = useNavigate();
   const checkoutLocation = useLocation();
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const checkoutDraft = (
+    checkoutLocation.state as {
+      checkoutDraft?: {
+        name: string;
+        phone: string;
+        email: string;
+        fulfillmentMethod: "PICKUP" | "DELIVERY";
+        paymentMethod: "PAY_AT_SHOP" | "MANUAL_QR";
+        requestId: string;
+        deliveryAddress: {
+          province: string;
+          district: string;
+          city: string;
+          area: string;
+          address: string;
+          landmark: string;
+          notes: string;
+        };
+      };
+    } | null
+  )?.checkoutDraft;
+  const [name, setName] = useState(checkoutDraft?.name || "");
+  const [phone, setPhone] = useState(checkoutDraft?.phone || "");
+  const [email, setEmail] = useState(checkoutDraft?.email || "");
   const [note] = useState("");
   const [fulfillmentMethod, setFulfillmentMethod] = useState<
     "PICKUP" | "DELIVERY"
-  >("PICKUP");
+  >(checkoutDraft?.fulfillmentMethod || "PICKUP");
   const [paymentMethod, setPaymentMethod] = useState<
     "PAY_AT_SHOP" | "MANUAL_QR"
-  >("PAY_AT_SHOP");
-  const [deliveryAddress, setDeliveryAddress] = useState({
-    province: "",
-    district: "",
-    city: "",
-    area: "",
-    address: "",
-    landmark: "",
-    notes: "",
-  });
+  >(checkoutDraft?.paymentMethod || "PAY_AT_SHOP");
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    checkoutDraft?.deliveryAddress || {
+      province: "",
+      district: "",
+      city: "",
+      area: "",
+      address: "",
+      landmark: "",
+      notes: "",
+    },
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [reviewing, setReviewing] = useState(() =>
-    checkoutLocation.pathname.endsWith("/review"),
+  const [reviewing, setReviewing] = useState(
+    () => checkoutLocation.pathname.endsWith("/review") && !!checkoutDraft,
   );
-  const requestId = useRef(crypto.randomUUID());
   useEffect(() => {
+    if (checkoutLocation.pathname.endsWith("/review") && !checkoutDraft) {
+      navigate("/checkout", { replace: true });
+      return;
+    }
+    setReviewing(checkoutLocation.pathname.endsWith("/review"));
+  }, [checkoutLocation.pathname, checkoutDraft, navigate]);
+  const requestId = useRef(checkoutDraft?.requestId || crypto.randomUUID());
+  const previousCustomerId = useRef(customer?.id);
+  useEffect(() => {
+    if (previousCustomerId.current === customer?.id) return;
     requestId.current = crypto.randomUUID();
+    previousCustomerId.current = customer?.id;
   }, [customer?.id]);
+  const currentCheckoutDraft = () => ({
+    name,
+    phone,
+    email,
+    fulfillmentMethod,
+    paymentMethod,
+    deliveryAddress,
+    requestId: requestId.current,
+  });
+  const returnToCheckout = () => {
+    setReviewing(false);
+    navigate("/checkout", { state: { checkoutDraft: currentCheckoutDraft() } });
+  };
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (saving) return;
@@ -290,7 +336,9 @@ export default function Checkout() {
     }
     if (!reviewing) {
       setReviewing(true);
-      navigate("/checkout/review");
+      navigate("/checkout/review", {
+        state: { checkoutDraft: currentCheckoutDraft() },
+      });
       return;
     }
     setSaving(true);
@@ -303,7 +351,7 @@ export default function Checkout() {
         phone: details.phone.trim(),
         note: note.trim(),
         items,
-        expectedTotal: total,
+        expectedTotal: total + (fulfillmentMethod === "DELIVERY" ? 175 : 0),
         requestId: requestId.current,
         fulfillmentMethod,
         paymentMethod,
@@ -351,10 +399,7 @@ export default function Checkout() {
               <button
                 type="button"
                 className="review-back"
-                onClick={() => {
-                  setReviewing(false);
-                  navigate("/checkout");
-                }}
+                onClick={returnToCheckout}
               >
                 ← {t("Edit checkout")}
               </button>
@@ -396,7 +441,7 @@ export default function Checkout() {
                     ? t("Home delivery")
                     : t("Shop pickup")}
                 </strong>
-                <button type="button" onClick={() => setReviewing(false)}>
+                <button type="button" onClick={returnToCheckout}>
                   {t("Change")}
                 </button>
               </div>
@@ -406,7 +451,7 @@ export default function Checkout() {
                     ? t("Pay via QR")
                     : t("Pay at shop")}
                 </strong>
-                <button type="button" onClick={() => setReviewing(false)}>
+                <button type="button" onClick={returnToCheckout}>
                   {t("Change")}
                 </button>
               </div>
@@ -994,10 +1039,20 @@ export function OrderSuccess({
       <div className="success-icon">
         <Check size={36} />
       </div>
-      <span className="eyebrow">{t("Your pickup order")}</span>
+      <span className="eyebrow">
+        {t(
+          order.fulfillment === "DELIVERY"
+            ? "Your delivery order"
+            : "Your pickup order",
+        )}
+      </span>
       <h1>
-        {order.status === "Completed"
-          ? t("Your pickup is complete.")
+        {order.status === "Completed" || order.status === "Delivered"
+          ? t(
+              order.status === "Delivered"
+                ? "Your delivery is complete."
+                : "Your pickup is complete.",
+            )
           : order.status === "Cancelled"
             ? t("Your order has been cancelled.")
             : t("Your order has been received.")}
@@ -1008,7 +1063,7 @@ export function OrderSuccess({
         {t(". Your order has been received by the shop system.")}
         <br />
         <strong>
-          {order.status === "Completed"
+          {order.status === "Completed" || order.status === "Delivered"
             ? t(
                 "Thank you for shopping with us. Keep this receipt for your records.",
               )
@@ -1016,18 +1071,26 @@ export function OrderSuccess({
               ? t(
                   "This order is closed. Contact the shop if you have a question.",
                 )
-              : order.status === "Ready for pickup"
-                ? t(
-                    "Your order is ready. Bring your order reference when collecting it. Open {{v0}}.",
-                    { v0: String(shop.hours) },
-                  )
-                : order.status === "Confirmed"
-                  ? t(
-                      "The shop has confirmed your order. Contact us to arrange pickup timing.",
-                    )
-                  : t(
-                      "Contact the shop to confirm availability and pickup timing.",
-                    )}
+              : order.status === "Out for delivery"
+                ? t("Your order is out for delivery.")
+                : order.status === "Preparing"
+                  ? t("Your order is being prepared for delivery.")
+                  : order.status === "Ready for pickup"
+                    ? t(
+                        "Your order is ready. Bring your order reference when collecting it. Open {{v0}}.",
+                        { v0: String(shop.hours) },
+                      )
+                    : order.status === "Confirmed"
+                      ? t(
+                          order.fulfillment === "DELIVERY"
+                            ? "The shop has confirmed your delivery order."
+                            : "The shop has confirmed your order. Contact us to arrange pickup timing.",
+                        )
+                      : t(
+                          order.fulfillment === "DELIVERY"
+                            ? "Contact the shop to confirm your delivery details."
+                            : "Contact the shop to confirm availability and pickup timing.",
+                        )}
         </strong>
       </p>
       <div className="reference">
@@ -1051,7 +1114,9 @@ export function OrderSuccess({
                 ? t("Payment needs attention")
                 : order.payment?.method === "PAY_AT_SHOP"
                   ? t("Pay at shop")
-                  : t("Payment verification pending")}
+                  : order.payment?.status === "PENDING"
+                    ? t("Payment not submitted yet")
+                    : t("Payment verification pending")}
           </strong>
         </span>
       </section>
@@ -1070,31 +1135,37 @@ export function OrderSuccess({
       </a>
       {!paymentOnly &&
         isManualQr &&
-        !["PAID", "REJECTED"].includes(order.payment?.status || "") && (
+        order.payment?.status === "PENDING" &&
+        !["Cancelled", "Completed", "Delivered"].includes(order.status) && (
           <Link className="button dark full" to={`/order/${order.id}/payment`}>
             {t("Complete payment")} <ArrowRight size={17} />
           </Link>
         )}
-      {!paymentOnly && order.payment?.status === "REJECTED" && (
-        <section className="payment-state-card rejected-payment-state">
-          <div className="payment-state-icon">
-            <span>×</span>
-          </div>
-          <h2>{t("Payment rejected")}</h2>
-          <p>
-            {t(
-              "Your payment could not be verified. You can submit a new payment.",
-            )}
-          </p>
-          <Link className="button dark full" to={`/order/${order.id}/payment`}>
-            {t("Submit new payment")} <ArrowRight size={17} />
-          </Link>
-          <Link className="button white full" to={`/order/${order.id}`}>
-            {t("Back to order")}
-          </Link>
-        </section>
-      )}
-      {!paymentOnly && order.status === "Completed" && (
+      {!paymentOnly &&
+        order.payment?.status === "REJECTED" &&
+        !["Cancelled", "Completed", "Delivered"].includes(order.status) && (
+          <section className="payment-state-card rejected-payment-state">
+            <div className="payment-state-icon">
+              <span>×</span>
+            </div>
+            <h2>{t("Payment rejected")}</h2>
+            <p>
+              {t(
+                "Your payment could not be verified. You can submit a new payment.",
+              )}
+            </p>
+            <Link
+              className="button dark full"
+              to={`/order/${order.id}/payment`}
+            >
+              {t("Submit new payment")} <ArrowRight size={17} />
+            </Link>
+            <Link className="button white full" to={`/order/${order.id}`}>
+              {t("Back to order")}
+            </Link>
+          </section>
+        )}
+      {!paymentOnly && ["Completed", "Delivered"].includes(order.status) && (
         <section className="payment-state-card completed-order-state">
           <div className="payment-state-icon">
             <Check size={30} />
@@ -1107,40 +1178,46 @@ export function OrderSuccess({
           </p>
         </section>
       )}
-      {paymentOnly && paymentSubmitted && (
-        <section className="payment-panel dedicated-payment-step payment-submitted-state">
-          <div className="payment-state-icon">
-            <Check size={30} />
-          </div>
-          <h1>{t("Payment submitted")}</h1>
-          <p>
-            {t(
-              "We have received your payment reference and it is under verification.",
-            )}
-          </p>
-          <div className="payment-reference-card">
-            <span>{t("Order number")}</span>
-            <strong>{order.id}</strong>
-            <span>{t("Amount")}</span>
-            <strong>{money(order.total)}</strong>
-          </div>
-          <button
-            className="button dark full"
-            onClick={() =>
-              navigate(`/order/${order.id}`, {
-                replace: true,
-                state: { order },
-              })
-            }
-          >
-            {t("Go to order tracking")} <ArrowRight size={17} />
-          </button>
-        </section>
-      )}
+      {paymentOnly &&
+        !["Cancelled", "Completed", "Delivered"].includes(order.status) &&
+        (paymentSubmitted ||
+          ["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(
+            order.payment?.status || "",
+          )) && (
+          <section className="payment-panel dedicated-payment-step payment-submitted-state">
+            <div className="payment-state-icon">
+              <Check size={30} />
+            </div>
+            <h1>{t("Payment submitted")}</h1>
+            <p>
+              {t(
+                "We have received your payment reference and it is under verification.",
+              )}
+            </p>
+            <div className="payment-reference-card">
+              <span>{t("Order number")}</span>
+              <strong>{order.id}</strong>
+              <span>{t("Amount")}</span>
+              <strong>{money(order.total)}</strong>
+            </div>
+            <button
+              className="button dark full"
+              onClick={() =>
+                navigate(`/order/${order.id}`, {
+                  replace: true,
+                  state: { order },
+                })
+              }
+            >
+              {t("Go to order tracking")} <ArrowRight size={17} />
+            </button>
+          </section>
+        )}
       {paymentOnly &&
         !paymentSubmitted &&
         isManualQr &&
-        order.payment?.status !== "PAID" && (
+        ["PENDING", "REJECTED"].includes(order.payment?.status || "") &&
+        !["Cancelled", "Completed", "Delivered"].includes(order.status) && (
           <section className="payment-panel dedicated-payment-step">
             <CheckoutSteps active="payment" />
             <h1>{t("Pay with QR")}</h1>
@@ -1337,23 +1414,28 @@ export function OrderSuccess({
           </strong>
           <strong>{money(order.total)}</strong>
         </div>
-        <a
-          className="button white full"
-          href={shopDirections}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t("Directions to the shop ")}
-          <ArrowUpRight size={16} />
-        </a>
-        <p className="summary-note">
-          {t("Opening hours")}: {t(shop.hours)}
-        </p>
-        <div className="pickup-note">
-          <MapPin size={17} />
-          {t("Shop pickup · ")}
-          {t(shop.location)}
-        </div>
+        {order.fulfillment !== "DELIVERY" ? (
+          <>
+            <a
+              className="button white full"
+              href={shopDirections}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("Directions to the shop ")} <ArrowUpRight size={16} />
+            </a>
+            <p className="summary-note">
+              {t("Opening hours")}: {t(shop.hours)}
+            </p>
+            <div className="pickup-note">
+              <MapPin size={17} />
+              {t("Shop pickup · ")}
+              {t(shop.location)}
+            </div>
+          </>
+        ) : (
+          <p className="summary-note">{t("Home delivery")}</p>
+        )}
       </div>
       <a
         className="button teal full"
@@ -1381,7 +1463,9 @@ export function OrderSuccess({
       </button>
       <p className="summary-note">
         {t(
-          "Shop pickup only. Keep your order reference when contacting the shop.",
+          order.fulfillment === "DELIVERY"
+            ? "Keep your order reference when contacting the shop about delivery."
+            : "Shop pickup only. Keep your order reference when contacting the shop.",
         )}
       </p>
       <Link className="text-link" to="/mobiles">

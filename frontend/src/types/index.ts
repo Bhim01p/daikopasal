@@ -86,8 +86,11 @@ export interface Order {
     | "Confirmed"
     | "Ready for pickup"
     | "Completed"
-    | "Cancelled";
-  fulfillment: "Shop pickup";
+    | "Cancelled"
+    | "Preparing"
+    | "Out for delivery"
+    | "Delivered";
+  fulfillment: "PICKUP" | "DELIVERY" | "Shop pickup";
   fulfillmentMethod?: "PICKUP" | "DELIVERY";
   deliveryFee?: number;
   deliveryAddress?: Record<string, string> | null;

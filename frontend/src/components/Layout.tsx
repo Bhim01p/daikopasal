@@ -215,6 +215,9 @@ export default function Layout() {
               <NavLink to="/favourites" className="mobile-favourites-link">
                 {t("Favourites")}
               </NavLink>
+              <NavLink to={customer ? "/my-orders" : "/login?next=/my-orders"}>
+                {t("Orders")}
+              </NavLink>
               <NavLink to="/help">{t("Help")}</NavLink>
               <NavLink to="/repair">{t("Repair")}</NavLink>
               <div className="mobile-menu-preferences">

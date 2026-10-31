@@ -139,11 +139,19 @@ import AdminBilling from "../components/AdminBilling";
 import AdminPaymentQr from "../components/AdminPaymentQr";
 import AdminRepairs from "../components/AdminRepairs";
 import AdminPhoneCatalogue from "../components/AdminPhoneCatalogue";
-const nextActions = {
+const nextActions: Record<string, readonly [Order["status"], string]> = {
   "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
   Confirmed: ["Ready for pickup", "Ready for pickup"],
   "Ready for pickup": ["Completed", "Complete pickup"],
-} as const;
+};
+const deliveryNextActions: Record<string, readonly [Order["status"], string]> =
+  {
+    "Awaiting shop confirmation": ["Confirmed", "Confirm order"],
+    Confirmed: ["Preparing", "Prepare order"],
+    Preparing: ["Out for delivery", "Out for delivery"],
+    "Ready for pickup": ["Out for delivery", "Out for delivery"],
+    "Out for delivery": ["Delivered", "Complete delivery"],
+  };
 type StoreSale = {
   id: string;
   date: string;
@@ -251,12 +259,11 @@ export default function Admin() {
                   : inventoryCategory !== "all" || parts[0] === "inventory"
                     ? "products"
                     : "dashboard";
-  const listPath =
-    inventorySubcategory
-      ? "/not-admin/vehicle-meter-parts"
-      : inventoryCategory === "all"
-        ? "/not-admin/inventory"
-        : `/not-admin/${categoryPaths[inventoryCategory]}`;
+  const listPath = inventorySubcategory
+    ? "/not-admin/vehicle-meter-parts"
+    : inventoryCategory === "all"
+      ? "/not-admin/inventory"
+      : `/not-admin/${categoryPaths[inventoryCategory]}`;
   function setTab(value: AdminTab) {
     navigate(
       value === "dashboard"
@@ -290,7 +297,6 @@ export default function Admin() {
   const [cataloguePhones, setCataloguePhones] = useState<CataloguePhone[]>([]);
   const [catalogueBrand, setCatalogueBrand] = useState("");
   const [catalogueModel, setCatalogueModel] = useState("");
-  const [catalogueVariant, setCatalogueVariant] = useState("");
   const [catalogueMode, setCatalogueMode] = useState<"catalogue" | "manual">(
     "catalogue",
   );
@@ -331,7 +337,7 @@ export default function Admin() {
   const [dateFilter, setDateFilter] = useState("");
   const [closingOrder, setClosingOrder] = useState<{
     order: Order;
-    status: "Completed" | "Cancelled";
+    status: "Completed" | "Delivered" | "Cancelled";
   } | null>(null);
   const [query, setQuery] = useState("");
   const [productFilter, setProductFilter] = useState<
@@ -405,14 +411,16 @@ export default function Admin() {
       orderFilter === "all" ||
       (orderFilter === "attention"
         ? notificationFailures.includes(order)
-        : order.status ===
-          {
-            pending: "Awaiting shop confirmation",
-            confirmed: "Confirmed",
-            ready: "Ready for pickup",
-            completed: "Completed",
-            cancelled: "Cancelled",
-          }[orderFilter]);
+        : orderFilter === "completed"
+          ? ["Completed", "Delivered"].includes(order.status)
+          : order.status ===
+            {
+              pending: "Awaiting shop confirmation",
+              confirmed: "Confirmed",
+              ready: "Ready for pickup",
+              completed: "Completed",
+              cancelled: "Cancelled",
+            }[orderFilter]);
     const queryMatches = `${order.id} ${order.name} ${order.phone}`
       .toLowerCase()
       .includes(normalizeDigits(orderQuery).toLowerCase().trim());
@@ -598,7 +606,6 @@ export default function Admin() {
     setDraft(next);
     setCatalogueBrand("");
     setCatalogueModel("");
-    setCatalogueVariant("");
     setCatalogueMode("catalogue");
     setCatalogueFilled(false);
     setCatalogueImageFilter("all");
@@ -629,31 +636,33 @@ export default function Admin() {
   const catalogueVariants = catalogueModels.filter(
     (phone) => phone.model === catalogueModel,
   );
-  const uniqueCatalogueVariants = Array.from(
-    new Map(catalogueVariants.map((phone) => [phone.variant, phone])).values(),
-  );
   function fillFromCatalogue() {
-    const selected = uniqueCatalogueVariants.find(
-      (phone) => phone.variant === catalogueVariant,
-    );
+    const selected = catalogueVariants[0];
     if (!selected) return;
     const rows = Object.entries(selected.specs)
-      .filter(([name]) => name !== "RAM" && name !== "Storage")
+      .filter(
+        ([name]) =>
+          name !== "RAM" &&
+          name !== "Storage" &&
+          name !== "Available colors",
+      )
       .map(([name, value]) => ({ name, value }));
     setDraft((current) => ({
       ...current,
       brand: selected.brand,
       name: selected.model,
-      ram: selected.ram,
-      storage: selected.storage,
       image: "/assets/phone.svg",
       images: ["/assets/phone.svg"],
       description:
-        current.description ||
-        `${selected.brand} ${selected.model} · ${selected.variant}`,
+        current.description || `${selected.brand} ${selected.model}`,
     }));
-    setSpecRows([{ name: "Warranty", value: "Confirm with shop" }, ...rows]);
+    setSpecRows((current) => [
+      current.find((row) => row.name === "Warranty") || initialSpecs[0],
+      ...rows,
+      ...current.filter((row) => row.name === "Available colors"),
+    ]);
     setCatalogueFilled(true);
+    setCataloguePickerOpen(false);
     setNotice("Catalogue details filled. Review the product before saving.");
   }
   async function uploadPhotos(files?: FileList) {
@@ -869,33 +878,20 @@ export default function Admin() {
     setNotice("");
     setBusy("save");
     try {
-      const selectedCatalogue = uniqueCatalogueVariants.find(
-        (phone) => phone.variant === catalogueVariant,
-      );
+      if (
+        !draft.id &&
+        catalogueMode === "catalogue" &&
+        draft.category !== "accessory" &&
+        !catalogueFilled
+      )
+        throw new Error("Fill from catalogue before saving this phone.");
+      const selectedCatalogue = catalogueVariants[0];
       const catalogueDraft =
         selectedCatalogue && catalogueMode === "catalogue"
           ? {
               ...draft,
               brand: selectedCatalogue.brand,
               name: selectedCatalogue.model,
-              ram:
-                selectedCatalogue.ram ??
-                (Number.isFinite(
-                  Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1]),
-                )
-                  ? Number(selectedCatalogue.variant.match(/(\d+)\s*GB/)?.[1])
-                  : undefined),
-              storage:
-                selectedCatalogue.storage ??
-                (Number.isFinite(
-                  Number(
-                    selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1],
-                  ),
-                )
-                  ? Number(
-                      selectedCatalogue.variant.match(/\/\s*(\d+)\s*GB/)?.[1],
-                    )
-                  : undefined),
               catalogueDeviceId: selectedCatalogue.deviceId,
             }
           : draft;
@@ -1297,7 +1293,10 @@ export default function Admin() {
             <div className="admin-counts">
               <span>
                 <Package size={18} />
-                {products.length} {t(" products")}
+                {tab === "products"
+                  ? shownProducts.length
+                  : products.length}{" "}
+                {t(" products")}
               </span>
               <span>
                 <ShoppingBag size={18} />
@@ -1385,7 +1384,7 @@ export default function Admin() {
               </section>
             </div>
           )}
-          {error && (
+          {error && !productEditorOpen && (
             <div className="admin-error" role="alert">
               {t(error)}
             </div>
@@ -1403,9 +1402,9 @@ export default function Admin() {
               aria-labelledby={
                 inventoryCategory === "all"
                   ? undefined
-                    : inventorySubcategory
-                      ? "products-vehicle-meter-parts-tab"
-                      : `products-${inventoryCategory}-tab`
+                  : inventorySubcategory
+                    ? "products-vehicle-meter-parts-tab"
+                    : `products-${inventoryCategory}-tab`
               }
               className="admin-products-layout"
             >
@@ -1664,6 +1663,11 @@ export default function Admin() {
                     <h2 id="product-editor-title" tabIndex={-1}>
                       {draft.id ? t("Edit product") : t("Add a product")}
                     </h2>
+                    {error && (
+                      <div className="admin-error" role="alert">
+                        {t(error)}
+                      </div>
+                    )}
                     {!draft.id &&
                       (draft.category === "new" ||
                         draft.category === "used") && (
@@ -1725,7 +1729,9 @@ export default function Admin() {
                               catalogueFilled
                             }
                             maxLength={60}
-                            required={!!draft.id || catalogueMode !== "catalogue"}
+                            required={
+                              !!draft.id || catalogueMode !== "catalogue"
+                            }
                             onChange={(e) =>
                               setDraft({ ...draft, brand: e.target.value })
                             }
@@ -1809,7 +1815,7 @@ export default function Admin() {
                                     onClick={() => {
                                       setCatalogueImageFilter(filter);
                                       setCatalogueModel("");
-                                      setCatalogueVariant("");
+                                      setCatalogueFilled(false);
                                     }}
                                   >
                                     {label} ({count})
@@ -1851,7 +1857,12 @@ export default function Admin() {
                                     onClick={() => {
                                       setCatalogueBrand(phone.brand);
                                       setCatalogueModel(phone.model);
-                                      setCatalogueVariant("");
+                                      setCatalogueFilled(false);
+                                      setDraft((current) => ({
+                                        ...current,
+                                        ram: undefined,
+                                        storage: undefined,
+                                      }));
                                     }}
                                   >
                                     <SafeImage
@@ -1920,89 +1931,26 @@ export default function Admin() {
                                   </p>
                                 );
                               })()}
-                            <label htmlFor="catalogue-variant">
-                              {t("Catalogue variant")}
-                            </label>
-                            <select
-                              id="catalogue-variant"
-                              value={catalogueVariant}
-                              disabled={!catalogueModel}
-                              onChange={(event) => {
-                                setCatalogueVariant(event.target.value);
-                                const selected = uniqueCatalogueVariants.find(
-                                  (phone) =>
-                                    phone.variant === event.target.value,
-                                );
-                                if (selected) {
-                                  setDraft((current) => ({
-                                    ...current,
-                                    brand: selected.brand,
-                                    name: selected.model,
-                                    ram: selected.ram,
-                                    storage: selected.storage,
-                                    image: "/assets/phone.svg",
-                                    images: ["/assets/phone.svg"],
-                                    description:
-                                      current.description ||
-                                      `${selected.brand} ${selected.model} · ${selected.variant}`,
-                                  }));
-                                  setSpecRows([
-                                    {
-                                      name: "Warranty",
-                                      value: "Confirm with shop",
-                                    },
-                                    ...Object.entries(selected.specs)
-                                      .filter(
-                                        ([name]) =>
-                                          name !== "RAM" && name !== "Storage",
-                                      )
-                                      .map(([name, value]) => ({
-                                        name,
-                                        value,
-                                      })),
-                                  ]);
-                                  setCatalogueFilled(true);
-                                  setCataloguePickerOpen(false);
-                                }
-                              }}
-                            >
-                              <option value="">
-                                {t("Choose a RAM/storage variant")}
-                              </option>
-                              {uniqueCatalogueVariants.map((phone) => (
-                                <option
-                                  key={`${phone.deviceId}-${phone.variant}`}
-                                  value={phone.variant}
-                                >
-                                  {phone.variant}
-                                </option>
-                              ))}
-                            </select>
                             <button
                               type="button"
                               className="button white"
-                              disabled={!catalogueVariant || busy === "save"}
-                              onClick={fillFromCatalogue}
+                              disabled={!catalogueModel || busy === "save"}
+                              onClick={() => fillFromCatalogue()}
                             >
-                              {t("Fill from Catalogue")}
+                              {t("Confirm catalogue phone")}
                             </button>
-                            {uniqueCatalogueVariants.find(
-                              (phone) => phone.variant === catalogueVariant,
-                            )?.catalogueImage && (
+                            {catalogueVariants[0]?.catalogueImage && (
                               <SafeImage
                                 className="admin-catalogue-preview"
-                                src={
-                                  uniqueCatalogueVariants.find(
-                                    (phone) =>
-                                      phone.variant === catalogueVariant,
-                                  )?.catalogueImage || ""
-                                }
+                                src={catalogueVariants[0].catalogueImage}
                                 alt={t("Catalogue image preview")}
                               />
                             )}
                           </fieldset>
                         )}
-                      <div className={`admin-form-row${isVehicleMeterPartsEditor ? " vehicle-parts-fixed-category" : ""}`}>
+                      <div
+                        className={`admin-form-row${isVehicleMeterPartsEditor ? " vehicle-parts-fixed-category" : ""}`}
+                      >
                         <div>
                           <label htmlFor="product-category">
                             {t("Category")}
@@ -2036,8 +1984,8 @@ export default function Admin() {
                                       value !== draft.image && value !== image,
                                   ),
                                 ],
-                                ram: draft.ram || 8,
-                                storage: draft.storage || 128,
+                                ram: draft.ram,
+                                storage: draft.storage,
                                 condition: draft.condition,
                                 battery: draft.battery,
                                 accessoryCategory:
@@ -2085,9 +2033,7 @@ export default function Admin() {
                               max={2048}
                               step={1}
                               value={draft.storage ?? ""}
-                              required={
-                                !!draft.id || catalogueMode !== "catalogue"
-                              }
+                              required
                               onChange={(e) =>
                                 setDraft({
                                   ...draft,
@@ -2309,46 +2255,50 @@ export default function Admin() {
                     </fieldset>
                     <fieldset className="editor-section catalogue-advanced">
                       <legend>{t("Photos")}</legend>
-                      {!isVehicleMeterPartsEditor && <>
-                      <label htmlFor="product-image">{t("Illustration")}</label>
-                      <select
-                        id="product-image"
-                        disabled={busy === "photo"}
-                        value={draft.image}
-                        onChange={(e) => {
-                          const image = e.target.value;
-                          setDraft({
-                            ...draft,
-                            image,
-                            images: [
-                              image,
-                              ...productImages(draft).filter(
-                                (value) =>
-                                  value !== draft.image && value !== image,
-                              ),
-                            ],
-                          });
-                        }}
-                      >
-                        {draft.image.startsWith("/api/images/") && (
-                          <option value={draft.image}>
-                            {t("Uploaded product photo")}
-                          </option>
-                        )}
-                        {[
-                          ["phone", "Phone"],
-                          ["cover", "Cover / protector"],
-                          ["charger", "Charger"],
-                          ["earbuds", "Earbuds / earphones"],
-                          ["speaker", "Speaker"],
-                          ["bulb", "Bulb"],
-                        ].map(([key, label]) => (
-                          <option key={key} value={`/assets/${key}.svg`}>
-                            {t(label)}
-                          </option>
-                        ))}
-                      </select>
-                      </>}
+                      {!isVehicleMeterPartsEditor && (
+                        <>
+                          <label htmlFor="product-image">
+                            {t("Illustration")}
+                          </label>
+                          <select
+                            id="product-image"
+                            disabled={busy === "photo"}
+                            value={draft.image}
+                            onChange={(e) => {
+                              const image = e.target.value;
+                              setDraft({
+                                ...draft,
+                                image,
+                                images: [
+                                  image,
+                                  ...productImages(draft).filter(
+                                    (value) =>
+                                      value !== draft.image && value !== image,
+                                  ),
+                                ],
+                              });
+                            }}
+                          >
+                            {draft.image.startsWith("/api/images/") && (
+                              <option value={draft.image}>
+                                {t("Uploaded product photo")}
+                              </option>
+                            )}
+                            {[
+                              ["phone", "Phone"],
+                              ["cover", "Cover / protector"],
+                              ["charger", "Charger"],
+                              ["earbuds", "Earbuds / earphones"],
+                              ["speaker", "Speaker"],
+                              ["bulb", "Bulb"],
+                            ].map(([key, label]) => (
+                              <option key={key} value={`/assets/${key}.svg`}>
+                                {t(label)}
+                              </option>
+                            ))}
+                          </select>
+                        </>
+                      )}
                       <label
                         className="admin-field-label"
                         htmlFor="product-photo"
@@ -2511,68 +2461,142 @@ export default function Admin() {
                           />
                         </label>
                       </div>
-                      {!isVehicleMeterPartsEditor && <div className="admin-form-row">
+                      {!draft.id &&
+                        catalogueMode === "catalogue" &&
+                        draft.category !== "accessory" && (
+                          <div className="admin-form-row">
+                            <label>
+                              {t("RAM (GB)")}
+                              <input
+                                type="number"
+                                min={1}
+                                max={64}
+                                step={1}
+                                value={draft.ram ?? ""}
+                                onChange={(e) =>
+                                  setDraft({
+                                    ...draft,
+                                    ram: e.target.value
+                                      ? e.target.valueAsNumber
+                                      : undefined,
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              {t("Storage (GB) *")}
+                              <input
+                                type="number"
+                                min={16}
+                                max={2048}
+                                step={1}
+                                value={draft.storage ?? ""}
+                                required
+                                onChange={(e) =>
+                                  setDraft({
+                                    ...draft,
+                                    storage: e.target.value
+                                      ? e.target.valueAsNumber
+                                      : undefined,
+                                  })
+                                }
+                              />
+                            </label>
+                          </div>
+                        )}
+                      {!isVehicleMeterPartsEditor && (
+                        <div className="admin-form-row">
+                          {(draft.id ||
+                            catalogueMode !== "catalogue" ||
+                            draft.category === "accessory") && (
+                            <label>
+                              {t("Image background color")}
+                              <input
+                                value={draft.color || ""}
+                                onChange={(e) =>
+                                  setDraft({ ...draft, color: e.target.value })
+                                }
+                              />
+                            </label>
+                          )}
+                          <label>
+                            {t("Warranty")}
+                            <input
+                              value={
+                                specRows.find((row) => row.name === "Warranty")
+                                  ?.value || ""
+                              }
+                              onChange={(e) =>
+                                setSpecRows(
+                                  specRows.map((row) =>
+                                    row.name === "Warranty"
+                                      ? { ...row, value: e.target.value }
+                                      : row,
+                                  ),
+                                )
+                              }
+                            />
+                          </label>
+                        </div>
+                      )}
+                      {!isVehicleMeterPartsEditor &&
+                        draft.category !== "accessory" && (
                         <label>
-                          {t("Color")}
+                          {t("Available colors")}
                           <input
-                            value={draft.color || ""}
-                            onChange={(e) =>
-                              setDraft({ ...draft, color: e.target.value })
-                            }
-                          />
-                        </label>
-                        <label>
-                          {t("Warranty")}
-                          <input
+                            type="text"
+                            maxLength={200}
+                            placeholder={t("For example: Black, Blue, White")}
                             value={
-                              specRows.find((row) => row.name === "Warranty")
-                                ?.value || ""
+                              specRows.find(
+                                (row) => row.name === "Available colors",
+                              )?.value || ""
                             }
                             onChange={(e) =>
-                              setSpecRows(
-                                specRows.map((row) =>
-                                  row.name === "Warranty"
-                                    ? { ...row, value: e.target.value }
-                                    : row,
-                                ),
-                              )
+                              setSpecRows((current) => {
+                                const existing = current.find(
+                                  (row) => row.name === "Available colors",
+                                );
+                                return existing
+                                  ? current.map((row) =>
+                                      row.name === "Available colors"
+                                        ? { ...row, value: e.target.value }
+                                        : row,
+                                    )
+                                  : [
+                                      ...current,
+                                      {
+                                        name: "Available colors",
+                                        value: e.target.value,
+                                      },
+                                    ];
+                              })
                             }
                           />
                         </label>
-                      </div>}
-                      {!isVehicleMeterPartsEditor && uniqueCatalogueVariants.find(
-                        (phone) => phone.variant === catalogueVariant,
-                      ) &&
-                        (!uniqueCatalogueVariants.find(
-                          (phone) => phone.variant === catalogueVariant,
-                        )?.ram ||
-                          !uniqueCatalogueVariants.find(
-                            (phone) => phone.variant === catalogueVariant,
-                          )?.storage) && (
-                          <p className="summary-note">
-                            {t(
-                              "Only the catalogue values are applied; missing RAM or storage is left blank.",
-                            )}
-                          </p>
-                        )}
-                      {!isVehicleMeterPartsEditor && <p className="summary-note">
-                        ✓{" "}
-                        {t(
-                          "Specifications automatically loaded from catalogue",
-                        )}
-                        <br />✓ {t("Catalogue image automatically connected")}
-                      </p>}
-                      {!isVehicleMeterPartsEditor && <button
-                        type="button"
-                        className="button white"
-                        onClick={() =>
-                          setCatalogueAdvancedOpen((open) => !open)
-                        }
-                      >
-                        {catalogueAdvancedOpen
-                          ? t("Hide catalogue details")
-                          : t("View / edit catalogue details")}
-                      </button>}
+                      )}
+                      {!isVehicleMeterPartsEditor && (
+                        <p className="summary-note">
+                          ✓{" "}
+                          {t(
+                            "Specifications automatically loaded from catalogue",
+                          )}
+                          <br />✓ {t("Catalogue image automatically connected")}
+                        </p>
+                      )}
+                      {!isVehicleMeterPartsEditor && (
+                        <button
+                          type="button"
+                          className="button white"
+                          onClick={() =>
+                            setCatalogueAdvancedOpen((open) => !open)
+                          }
+                        >
+                          {catalogueAdvancedOpen
+                            ? t("Hide catalogue details")
+                            : t("View / edit catalogue details")}
+                        </button>
+                      )}
                     </fieldset>
                     <div className="catalogue-advanced catalogue-advanced accessory-hide">
                       <ProductFinanceEditor draft={draft} onChange={setDraft} />
@@ -3035,7 +3059,7 @@ export default function Admin() {
                               </a>
                             )}
                             <span>
-                              {order.fulfillmentMethod === "DELIVERY"
+                              {order.fulfillment === "DELIVERY"
                                 ? t("Home delivery")
                                 : t("Shop pickup")}
                             </span>
@@ -3101,28 +3125,33 @@ export default function Admin() {
                               {t(order.status)}
                             </strong>
                             {order.status !== "Completed" &&
+                              order.status !== "Delivered" &&
                               order.status !== "Cancelled" && (
                                 <>
                                   <button
                                     className="button dark"
                                     disabled={!!busy}
                                     onClick={() => {
-                                      const next =
-                                        nextActions[
-                                          order.status as keyof typeof nextActions
-                                        ];
-                                      if (next[0] === "Completed")
+                                      const actions =
+                                        order.fulfillment === "DELIVERY"
+                                          ? deliveryNextActions
+                                          : nextActions;
+                                      const next = actions[order.status];
+                                      if (
+                                        next[0] === "Completed" ||
+                                        next[0] === "Delivered"
+                                      )
                                         setClosingOrder({
                                           order,
-                                          status: "Completed",
+                                          status: next[0],
                                         });
                                       else void updateStatus(order, next[0]);
                                     }}
                                   >
                                     {t(
-                                      nextActions[
-                                        order.status as keyof typeof nextActions
-                                      ][1],
+                                      (order.fulfillment === "DELIVERY"
+                                        ? deliveryNextActions
+                                        : nextActions)[order.status][1],
                                     )}
                                   </button>
                                   <button
@@ -3147,9 +3176,15 @@ export default function Admin() {
                               )}
                             </p>
                           )}
-                          {order.status === "Completed" && (
+                          {["Completed", "Delivered"].includes(
+                            order.status,
+                          ) && (
                             <p className="summary-note">
-                              {t("Order closed. Pickup is complete.")}
+                              {t(
+                                order.status === "Delivered"
+                                  ? "Order closed. Delivery is complete."
+                                  : "Order closed. Pickup is complete.",
+                              )}
                               {order.handover && (
                                 <>
                                   {" "}
@@ -3245,7 +3280,9 @@ export default function Admin() {
                           <span className="order-status">
                             {t(order.status)}
                           </span>
-                          {order.status === "Completed" && (
+                          {["Completed", "Delivered"].includes(
+                            order.status,
+                          ) && (
                             <button
                               type="button"
                               className="button white order-bill-button"

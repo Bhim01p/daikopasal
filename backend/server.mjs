@@ -69,12 +69,6 @@ function staffPermissionForRoute(route) {
   if (route.startsWith("/api/admin/payment-config")) return "paymentQr";
   return null;
 }
-function isPublicUploadedImageRead(route, method) {
-  return (
-    ["GET", "HEAD"].includes(method) &&
-    /^\/api\/images\/upload-[a-f0-9-]{36}\.(png|jpg|webp)$/.test(route)
-  );
-}
 const backendRoot = path.dirname(fileURLToPath(import.meta.url));
 if (existsSync(path.join(backendRoot, ".env")))
   loadEnvFile(path.join(backendRoot, ".env"));
@@ -95,7 +89,8 @@ function json(response, status, data) {
 function xml(response, status, data) {
   response.writeHead(status, {
     "Content-Type": "application/xml; charset=utf-8",
-    "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
+    "Cache-Control":
+      "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
     "X-Content-Type-Options": "nosniff",
   });
   response.end(data);
@@ -131,11 +126,14 @@ function publicOrder(order) {
     customerId,
     stockReserved,
     handover,
+    payment,
     ...receipt
   } = order;
   if (customerId) delete receipt.receiptToken;
+  const { verifiedBy, reviewedBy, ...publicPayment } = payment || {};
   return {
     ...receipt,
+    ...(payment ? { payment: publicPayment } : {}),
     ...(handover ? { handover: { date: handover.date } } : {}),
     accountOrder: !!customerId,
   };
@@ -233,6 +231,7 @@ function adminOrder(order) {
   const { receiptToken, ...receipt } = publicOrder(order);
   return {
     ...receipt,
+    ...(order.payment ? { payment: order.payment } : {}),
     ...(order.handover ? { handover: order.handover } : {}),
   };
 }
@@ -1128,8 +1127,8 @@ export function createApp(options = {}) {
       const requiredStaffPermission = staffPermissionForRoute(route);
       const activeAdmin = session(request);
       if (
+        route.startsWith("/api/admin/") &&
         activeAdmin?.role === "staff" &&
-        !isPublicUploadedImageRead(route, method) &&
         (!requiredStaffPermission ||
           !activeAdmin.permissions?.[requiredStaffPermission])
       )
@@ -1462,6 +1461,18 @@ export function createApp(options = {}) {
           throw new HttpError(
             409,
             "Only manual QR payments can be verified by an admin.",
+          );
+        if (["Cancelled", "Completed", "Delivered"].includes(order.status))
+          throw new HttpError(409, "This order is closed.");
+        if (
+          !["VERIFICATION_PENDING", "PENDING_VERIFICATION"].includes(
+            order.payment?.status,
+          ) ||
+          !order.payment?.reference
+        )
+          throw new HttpError(
+            409,
+            "Wait for a customer payment reference before reviewing payment.",
           );
         const payment = updatePayment(order.payment || {}, {
           status: input.status,
@@ -1799,13 +1810,41 @@ export function createApp(options = {}) {
               emailNotifications: emailSummary(order, current.emailQueue),
             },
           });
-        if (["Cancelled", "Completed"].includes(order.status))
+        if (["Cancelled", "Completed", "Delivered"].includes(order.status))
           throw new HttpError(
             409,
             "This order is closed. Cancelled and completed orders cannot be changed.",
           );
         if (input.status === "Completed" && order.status !== "Ready for pickup")
           throw new HttpError(409, "Mark the order ready before pickup.");
+        if (
+          order.fulfillment === "DELIVERY" &&
+          ["Ready for pickup", "Completed"].includes(input.status)
+        )
+          throw new HttpError(
+            409,
+            "Use delivery statuses for a delivery order.",
+          );
+        if (
+          order.fulfillment !== "DELIVERY" &&
+          ["Preparing", "Out for delivery", "Delivered"].includes(input.status)
+        )
+          throw new HttpError(409, "Use pickup statuses for a pickup order.");
+        if (input.status === "Preparing" && order.status !== "Confirmed")
+          throw new HttpError(
+            409,
+            "Confirm the order before preparing delivery.",
+          );
+        if (
+          input.status === "Out for delivery" &&
+          !["Preparing", "Ready for pickup"].includes(order.status)
+        )
+          throw new HttpError(
+            409,
+            "Prepare the order before dispatching delivery.",
+          );
+        if (input.status === "Delivered" && order.status !== "Out for delivery")
+          throw new HttpError(409, "Mark the order out for delivery first.");
         const releaseStock =
           input.status === "Cancelled" && order.stockReserved === true;
         const products = releaseStock
@@ -2083,8 +2122,6 @@ export function createApp(options = {}) {
           stockReserved: true,
         };
         order.payment.orderId = order.id;
-        if (order.payment.method !== "PAY_AT_SHOP")
-          order.payment.status = "VERIFICATION_PENDING";
         store.commit({
           ...current,
           products: current.products.map((product) => {
@@ -2129,6 +2166,10 @@ export function createApp(options = {}) {
             400,
             "This order does not use manual QR payment.",
           );
+        if (["Cancelled", "Completed", "Delivered"].includes(order.status))
+          throw new HttpError(409, "This order is closed.");
+        if (order.payment?.status === "PAID")
+          throw new HttpError(409, "Payment has already been verified.");
         const reference = text(
           input.reference,
           "Transaction/reference ID",
@@ -2140,6 +2181,10 @@ export function createApp(options = {}) {
           customerReference: reference,
           status: "VERIFICATION_PENDING",
           verificationType: undefined,
+          verifiedAt: undefined,
+          verifiedBy: undefined,
+          reviewedAt: undefined,
+          reviewedBy: undefined,
           submittedAt: new Date().toISOString(),
         });
         const updated = { ...order, payment };
